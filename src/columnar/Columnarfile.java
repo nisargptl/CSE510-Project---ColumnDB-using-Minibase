@@ -1,5 +1,6 @@
 package columnar;
 
+import bitmap.BitMapFile;
 import btree.*;
 import com.sun.jdi.IntegerValue;
 import diskmgr.Page;
@@ -40,6 +41,7 @@ public class Columnarfile implements Filetype {
   int [] asize;
   int tupLen;
   HashMap<String, BTreeFile> BTMap;
+  HashMap<String, BTreeFile> BMMap;
 
 
 public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -264,34 +266,95 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
     return 0;
   }
 
-  public boolean createBtreeIndex(int column) throws ConstructPageException, AddFileEntryException, GetFileEntryException, IOException, InvalidTupleSizeException, HFBufMgrException, InvalidSlotNumberException, IteratorException, ConvertException, InsertException, IndexInsertRecException, LeafDeleteException, NodeNotMatchException, LeafInsertRecException, PinPageException, UnpinPageException, DeleteRecException, KeyTooLongException, KeyNotMatchException, IndexSearchException {
-    Heapfile colHeap = _columnHeaps[column];
+  public boolean createBtreeIndex(int column) throws ConstructPageException, AddFileEntryException, GetFileEntryException, IOException, InvalidTupleSizeException, HFBufMgrException, InvalidSlotNumberException, IteratorException, ConvertException, InsertException, IndexInsertRecException, LeafDeleteException, NodeNotMatchException, LeafInsertRecException, PinPageException, UnpinPageException, DeleteRecException, KeyTooLongException, KeyNotMatchException, IndexSearchException, HFDiskMgrException, HFException {
+    Heapfile colHeap = this.getColumn(column);
     System.out.println(colHeap);
     String index_name = colHeap.getHeapfileName() + ".btree";
     BTreeFile bTreeFile = new BTreeFile(index_name, _ctypes[column].attrType, _asizes[column], DeleteFashion.FULL_DELETE);
     Scan scan = new Scan(colHeap);
 
     Tuple t;
+    RID rid = new RID();
 
-    // Setup to scan the column heapfile
-    PageId currentDirPageId = new PageId(colHeap.getFirstDirPageId().pid);
-    PageId nextDirPageId = new PageId(0);
-    HFPage currentDirPage = new HFPage();
-    Page pageInBuffer = new Page();
-
-    while(currentDirPageId.pid != INVALID_PAGE) {
-      colHeap.pinPage(currentDirPageId, currentDirPage, false);
-      RID rid = new RID();
-      for(rid = currentDirPage.firstRecord(); rid != null; rid = currentDirPage.nextRecord(rid)) {
-        t = currentDirPage.getRecord(rid);
-        KeyClass k = KeyFactory.getKeyClass(t.getTupleByteArray(), _ctypes[column], (short) _asizes[column]);
-          try {
-              bTreeFile.insert(k, rid);
-          } catch (Exception e) {
-            return false;
-          }
-      }
+    while(true) {
+      t = scan.getNext(rid);
+      if(t == null) break;
+      System.out.println(t.getTupleByteArray());
+      bTreeFile.insert(KeyFactory.getKeyClass(t.getTupleByteArray(), _ctypes[column], (short) asize[column]), rid);
     }
+    scan.closescan();
+
+    addIndexToColumnar(0, index_name);
+
     return true;
   }
+
+  public boolean createBitmapIndex(int column) throws Exception {
+    Heapfile colHeap = this.getColumn(column);
+    String indexName = colHeap.getHeapfileName() + ".btmap";
+//    BitMapFile bitMapFile = new BitMapFile(indexName, this, column, value);
+//    Tuple tuple;
+//    int position = 0;
+
+//    ColumnarColumnScan columnScan = new ColumnarColumnScan(getColumnarFileName(), columnNo,
+//      projection,
+//      targetedCols,
+//      null, null);
+//    while (true) {
+//      tuple = columnScan.get_next();
+//      if (tuple == null) {
+//          break;
+//      }
+//      ValueClass valueClass = ValueFactory.getValueClass(tuple.getTupleByteArray(), atype[columnNo], asize[columnNo]);
+//      if (valueClass.toString().equals(value.toString())) {
+//          bitMapFile.insert(position);
+//      } else {
+//          bitMapFile.delete(position);
+//      }
+//      position++;
+//    }
+//  columnScan.close();
+//  bitMapFile.close();
+
+  addIndexToColumnar(1, indexName);
+
+  return true;
+  }
+
+    public Heapfile getColumn(int columnNo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException {
+        if (_columnHeaps[columnNo] == null)
+            _columnHeaps[columnNo] = new Heapfile(_fileName + columnNo);
+        return _columnHeaps[columnNo];
+    }
+
+    private boolean addIndexToColumnar(int _idxType, String indexName) {
+
+        try {
+            AttrType[] _idxTypes = new AttrType[2];
+            _idxTypes[0] = new AttrType(AttrType.attrInteger);
+            _idxTypes[1] = new AttrType(AttrType.attrString);
+            short[] _idxSizes = new short[1];
+            _idxSizes[0] = 50; //index name can't be more than 50 chars
+            Tuple t = new Tuple();
+            t.setHdr((short) 2, _idxTypes, _idxSizes);
+            int size = t.size();
+            t = new Tuple(size);
+            t.setHdr((short) 2, _idxTypes, _idxSizes);
+            t.setIntFld(1, _idxType);
+            t.setStrFld(2, indexName);
+            Heapfile f = new Heapfile(_fileName + ".idx");
+            f.insertRecord(t.getTupleByteArray());
+
+            if (_idxType == 0) {
+                BTMap.put(indexName, null);
+            } else if (_idxType == 1) {
+                BMMap.put(indexName, null);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 }
