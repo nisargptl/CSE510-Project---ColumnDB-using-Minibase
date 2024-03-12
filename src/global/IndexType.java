@@ -35,16 +35,12 @@ public class IndexType {
 
     public String toString() {
 
-    switch (indexType) {
-    case None:
-      return "None";
-    case B_Index:
-      return "B_Index";
-    case Hash:
-      return "Hash";
-    case BitMapIndex:
-      return "BitMapIndex";
+        return switch (indexType) {
+            case None -> "None";
+            case B_Index -> "B_Index";
+            case Hash -> "Hash";
+            case BitMapIndex -> "BitMapIndex";
+            default -> ("Unexpected IndexType " + indexType);
+        };
     }
-    return ("Unexpected IndexType " + indexType);
-  }
 }
