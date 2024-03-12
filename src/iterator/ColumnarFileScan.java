@@ -44,15 +44,15 @@ public class ColumnarFileScan extends Iterator{
             columnarfile = new Columnarfile(file_name);
             targetAttrTypes = ColumnarScanUtils.getTargetColumnAttributeTypes(columnarfile, targetedCols);
             Jtuple = ColumnarScanUtils.getProjectionTuple(columnarfile, perm_mat, targetedCols);
-            scan = columnarfile.openScan();
-            PageId pid = SystemDefs.JavabaseDB.get_file_entry(columnarfile.getDeletedFileName());
+            scan = new TupleScan(columnarfile);
+            PageId pid = SystemDefs.JavabaseDB.get_file_entry(file_name + ".del");
             if (pid != null) {
                 AttrType[] types = new AttrType[1];
                 types[0] = new AttrType(AttrType.attrInteger);
                 short[] sizes = new	short[0];
                 FldSpec[] projlist = new FldSpec[1];
                 projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
-                FileScan fs = new FileScan(columnarfile.getDeletedFileName(), types, sizes, (short)1, 1, projlist, null);
+                FileScan fs = new FileScan(file_name + ".del", types, sizes, (short)1, 1, projlist, null);
                 deletedTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Ascending), 4, 10);
             }
         }
@@ -93,16 +93,16 @@ public class ColumnarFileScan extends Iterator{
         return Jtuple;
     }
 
-    public boolean delete_next()
-            throws Exception {
+    // public boolean delete_next()
+    //         throws Exception {
 
-        int position = getNextPosition();
+    //     int position = getNextPosition();
 
-        if (position < 0)
-            return false;
+    //     if (position < 0)
+    //         return false;
 
-        return columnarfile.markTupleDeleted(position);
-    }
+    //     return columnarfile.markTupleDeleted(position);
+    // }
 
     private int getNextPosition()
             throws Exception {

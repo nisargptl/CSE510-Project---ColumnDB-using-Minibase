@@ -357,4 +357,12 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
         }
         return true;
     }
+
+   public AttrType[] getAttrtypes(){
+    return _ctypes;
+    }
+    public int[] getAttrSize(){
+      return _asizes;
+    }
+   
 }

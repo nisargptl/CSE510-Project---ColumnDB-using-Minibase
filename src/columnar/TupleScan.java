@@ -41,4 +41,11 @@ public class TupleScan implements GlobalConst {
         return true;
     }
 
+    public void closetuplescan(){
+		for(int i=0;i<sc.length;i++){
+			sc[i].closescan();
+		}
+        // file.close();
+	}
+
 }
