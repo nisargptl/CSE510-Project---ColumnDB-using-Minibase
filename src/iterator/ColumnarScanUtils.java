@@ -23,7 +23,7 @@ public class ColumnarScanUtils {
 
         int n = 0;
         AttrType[] atype=columnarfile.getAttrtypes();
-        int[] attrsizes=columnarfile.getAttrSize();
+        short[] attrsizes=columnarfile.getAttrSize();
         // for (int i = 0; i < numColumns; i++) {
         //     if (atype[i].attrType == AttrType.attrString)
         //         n++;
@@ -67,7 +67,7 @@ public class ColumnarScanUtils {
 
         AttrType[] targetAttrTypes = new AttrType[targetedCols.length];
         for (int i = 0; i < targetAttrTypes.length; i++) {
-            targetAttrTypes[i] = attributes[targetedCols[i]];
+            targetAttrTypes[i] = attributes[i];
         }
         return targetAttrTypes;
     }
@@ -89,7 +89,7 @@ public class ColumnarScanUtils {
             switch (fldSpecs[i].relation.key) {
                 case RelSpec.outer:      // Field of outer (t1)
                     // types[i] = columnarfile.getAttrtypeforcolumn(targetedCols[fldSpecs[i].offset-1]);
-                    types[i] = columnarfile.getAttrtypes()[(targetedCols[fldSpecs[i].offset-1])];
+                    types[i] = columnarfile.getAttrtypes()[fldSpecs[i].offset-1];
                     
                     if(types[i].attrType == AttrType.attrString)
                         // sizes.add(columnarfile.getAttrsizeforcolumn(targetedCols[fldSpecs[i].offset-1]));

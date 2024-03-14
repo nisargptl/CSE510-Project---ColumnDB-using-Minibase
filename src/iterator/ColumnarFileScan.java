@@ -2,7 +2,7 @@ package iterator;
 
 import bufmgr.PageNotReadException;
 import columnar.Columnarfile;
-
+import global.TID;
 import columnar.TupleScan;
 import global.*;
 import heap.*;
@@ -33,9 +33,9 @@ public class ColumnarFileScan extends Iterator{
      * @throws InvalidRelation     invalid relation
      */
     public ColumnarFileScan(java.lang.String file_name,
-                     FldSpec[] proj_list,
-                     short[] targetedCols,
-                     CondExpr[] outFilter) throws FileScanException, TupleUtilsException, IOException, InvalidRelation {
+                            FldSpec[] proj_list,
+                            short[] targetedCols,
+                            CondExpr[] outFilter) throws FileScanException, TupleUtilsException, IOException, InvalidRelation {
 
         OutputFilter = outFilter;
         perm_mat = proj_list;
@@ -44,17 +44,7 @@ public class ColumnarFileScan extends Iterator{
             columnarfile = new Columnarfile(file_name);
             targetAttrTypes = ColumnarScanUtils.getTargetColumnAttributeTypes(columnarfile, targetedCols);
             Jtuple = ColumnarScanUtils.getProjectionTuple(columnarfile, perm_mat, targetedCols);
-            scan = new TupleScan(columnarfile);
-            PageId pid = SystemDefs.JavabaseDB.get_file_entry(file_name + ".del");
-            if (pid != null) {
-                AttrType[] types = new AttrType[1];
-                types[0] = new AttrType(AttrType.attrInteger);
-                short[] sizes = new	short[0];
-                FldSpec[] projlist = new FldSpec[1];
-                projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
-                FileScan fs = new FileScan(file_name + ".del", types, sizes, (short)1, 1, projlist, null);
-                deletedTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Ascending), 4, 10);
-            }
+            scan = columnarfile.openTupleScan(targetedCols);
         }
         catch(Exception e){
             throw new FileScanException(e, "openScan() failed");
@@ -93,16 +83,16 @@ public class ColumnarFileScan extends Iterator{
         return Jtuple;
     }
 
-    // public boolean delete_next()
-    //         throws Exception {
-
-    //     int position = getNextPosition();
-
-    //     if (position < 0)
-    //         return false;
-
-    //     return columnarfile.markTupleDeleted(position);
-    // }
+//    public boolean delete_next()
+//            throws Exception {
+//
+//        int position = getNextPosition();
+//
+//        if (position < 0)
+//            return false;
+//
+//        return columnarfile.markTupleDeleted(position);
+//    }
 
     private int getNextPosition()
             throws Exception {
@@ -154,3 +144,4 @@ public class ColumnarFileScan extends Iterator{
         }
     }
 }
+

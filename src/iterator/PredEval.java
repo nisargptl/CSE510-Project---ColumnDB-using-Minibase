@@ -42,7 +42,6 @@ public class PredEval
       AttrType  comparison_type = new AttrType(AttrType.attrInteger);
       int       comp_res;
       boolean   op_res = false, row_res = false, col_res = true;
-      
       if (p == null)
 	{
 	  return true;
@@ -124,7 +123,6 @@ public class PredEval
 		default:
 		  break;
 		}
-	      
 	      
 	      // Got the arguments, now perform a comparison.
 	      try {

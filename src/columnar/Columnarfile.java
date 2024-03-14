@@ -32,9 +32,10 @@ public class Columnarfile implements Filetype {
   // Type information of each of the columns
   AttrType[] _ctypes;
   //store the attribute sizes of each column
-  int[] _asizes;
+  short[] _asizes;
   // Length of a tuple in the column store
-  int [] asize;
+  short[] asize;
+  Tuple hdr;
   int tupLen;
   HashMap<String, BTreeFile> BTMap;
   HashMap<String, BTreeFile> BMMap;
@@ -45,16 +46,19 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
         Scan scan = null;
         RID rid = null;
         _fileName = name;
-        // columnMap = new HashMap<>();
+//        columnMap = new HashMap<>();
         try {
             // get the columnar header page
+            System.out.println("FIRST");
+            System.out.println(name);
             PageId pid = SystemDefs.JavabaseDB.get_file_entry(name + ".hdr");
+            System.out.println("SECOND");
             if (pid == null) {
                 throw new Exception("Columnar with the name: " + name + ".hdr doesn't exists");
             }
 
             f = new Heapfile(name + ".hdr");
-
+            System.out.println("SECOND");
             //Header tuple is organized this way
             //NumColumns, AttrType1, AttrSize1, AttrName1, AttrType2, AttrSize2, AttrName3...
 
@@ -64,39 +68,41 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
             hdr.setHeaderMetaData();
             this.numColumns = (short) hdr.getIntFld(1);
             _ctypes = new AttrType[numColumns];
-            _asizes = new int[numColumns];
-            asize = new int[numColumns];
+            _asizes = new short[numColumns];
+            asize = new short[numColumns];
             _columnHeaps = new Heapfile[numColumns];
             int k = 0;
             for (int i = 0; i < numColumns; i++, k = k + 3) {
                 _ctypes[i] = new AttrType(hdr.getIntFld(2 + k));
                 _asizes[i] = (short) hdr.getIntFld(3 + k);
                 String colName = hdr.getStrFld(4 + k);
-                // columnMap.put(colName, i);
+//                columnMap.put(colName, i);
                 asize[i] = _asizes[i];
                 if (_ctypes[i].attrType == AttrType.attrString)
                     asize[i] += 2;
             }
-            BTMap = new HashMap<>();
-            // BMMap = new HashMap<>();
+
+            System.out.println("LAST");
+//            BTMap = new HashMap<>();
+//            BMMap = new HashMap<>();
 
             // create a idx file to store all column which consists of indexes
-            pid = SystemDefs.JavabaseDB.get_file_entry(name + ".idx");
-            if (pid != null) {
-                f = new Heapfile(name + ".idx");
-                scan = f.openScan();
-                RID r = new RID();
-                Tuple t = scan.getNext(r);
-                while (t != null) {
-                    t.setHeaderMetaData();
-                    int indexType = t.getIntFld(1);
-                    if (indexType == 0)
-                        BTMap.put(t.getStrFld(2), null);
-                    // else if (indexType == 1)
-                    //     BMMap.put(t.getStrFld(2), null);
-                    t = scan.getNext(r);
-                }
-            }
+//            pid = SystemDefs.JavabaseDB.get_file_entry(name + ".idx");
+//            if (pid != null) {
+//                f = new Heapfile(name + ".idx");
+//                scan = f.openScan();
+//                RID r = new RID();
+//                Tuple t = scan.getNext(r);
+//                while (t != null) {
+//                    t.setHeaderMetaData();
+//                    int indexType = t.getIntFld(1);
+//                    if (indexType == 0)
+//                        BTMap.put(t.getStrFld(2), null);
+//                    else if (indexType == 1)
+//                        BMMap.put(t.getStrFld(2), null);
+//                    t = scan.getNext(r);
+//                }
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -104,55 +110,78 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
 
 
 
-  public Columnarfile(String name, AttrType[] types, int numColumns) throws HFDiskMgrException, HFException, HFBufMgrException, IOException, FieldNumberOutOfBoundException, InvalidTupleSizeException, Exception {
-    this._fileName = name;
-    this.numColumns = numColumns;
-    this._ctypes = types;
-    this._asizes = new int[numColumns];
-    this.tupLen = 0;
+  public Columnarfile(String name, int numColumns, AttrType[] types, short[] attrSizes) throws HFDiskMgrException, HFException, HFBufMgrException, IOException, FieldNumberOutOfBoundException, InvalidTupleSizeException, Exception {
+      RID rid1 = new RID();
+      boolean status = true;
+      Heapfile hdrFile = null;
+//      columnMap = new HashMap<>();
+      try {
+          _columnHeaps = new Heapfile[numColumns];
+          //hf[0] for header file by default
+          hdrFile = new Heapfile(name + ".hdr");
 
-    this._columnHeaps = new Heapfile[numColumns];
-    // Instantiating one heapfile for each column
-    for(int i = 0; i < numColumns; i++) {
-      _columnHeaps[i] = new Heapfile(name + i);
-      _asizes[i] = types[i].attrSize;
-      tupLen += types[i].attrSize;
-    }
-    // Creating the header file for the columnarfile
-    this._hdrFile = new Heapfile(name + ".hdr");
-
-    AttrType[] headerTypes = new AttrType[2 + (numColumns * 3)];
-      headerTypes[0] = new AttrType(AttrType.attrInteger);
-
-      for (int i = 1; i < headerTypes.length - 1; i = i + 3) {
-          headerTypes[i] = new AttrType(AttrType.attrInteger);
-          headerTypes[i + 1] = new AttrType(AttrType.attrInteger);
-          headerTypes[i + 2] = new AttrType(AttrType.attrString);
+      } catch (Exception e) {
+          status = false;
+          e.printStackTrace();
       }
+      if (status == true) {
+          numColumns = (short) (numColumns);
+          this._fileName = name;
+          _ctypes = new AttrType[numColumns];
+          _asizes = new short[numColumns];
+          asize = new short[numColumns];
+          int k = 0;
+          for (int i = 0; i < numColumns; i++) {
+              _ctypes[i] = new AttrType(types[i].attrType);
+              switch (types[i].attrType) {
+                  case 0:
+                      asize[i] = _asizes[i] = attrSizes[k];
+                      asize[i] += 2;
+                      k++;
+                      break;
+                  case 1:
+                  case 2:
+                      asize[i] = _asizes[i] = 4;
+                      break;
+                  case 3:
+                      asize[i] = _asizes[i] = 1;
+                      break;
+                  case 4:
+                      _asizes[i] = 0;
+                      break;
+              }
+          }
 
-      headerTypes[headerTypes.length - 1] = new AttrType(AttrType.attrInteger);
+          AttrType[] htypes = new AttrType[2 + (numColumns * 3)];
+          htypes[0] = new AttrType(AttrType.attrInteger);
+          for (int i = 1; i < htypes.length - 1; i = i + 3) {
+              htypes[i] = new AttrType(AttrType.attrInteger);
+              htypes[i + 1] = new AttrType(AttrType.attrInteger);
+              htypes[i + 2] = new AttrType(AttrType.attrString);
+          }
+          htypes[htypes.length - 1] = new AttrType(AttrType.attrInteger);
+          short[] hsizes = new short[numColumns];
+          for (int i = 0; i < numColumns; i++) {
+              hsizes[i] = 20; //column name can't be more than 20 chars
+          }
+          hdr = new Tuple();
+          hdr.setHdr((short) htypes.length, htypes, hsizes);
+          int size = hdr.size();
 
-      short[] headerSizes = new short[numColumns];
-      for (int i = 0; i < numColumns; i++) {
-          // Column size cant be more than 25 chars
-          headerSizes[i] = 25;
+          hdr = new Tuple(size);
+          hdr.setHdr((short) htypes.length, htypes, hsizes);
+          hdr.setIntFld(1, numColumns);
+          int j = 0;
+          for (int i = 0; i < numColumns; i++, j = j + 3) {
+              hdr.setIntFld(2 + j, _ctypes[i].attrType);
+              hdr.setIntFld(3 + j, _asizes[i]);
+              hdr.setStrFld(4 + j, _fileName + i);
+//              columnMap.put(colnames[i], i);
+          }
+          _hdrRid = hdrFile.insertRecord(hdr.returnTupleByteArray());
+          BTMap = new HashMap<>();
+          BMMap = new HashMap<>();
       }
-      Tuple hdr = new Tuple();
-      hdr.setHdr((short) headerTypes.length, headerTypes, headerSizes);
-      int size = hdr.size();
-
-      hdr = new Tuple(size);
-      hdr.setHdr((short) headerTypes.length, headerTypes, headerSizes);
-      hdr.setIntFld(1, numColumns);
-      int j = 0;
-      for (int i = 0; i < numColumns; i++, j = j + 3) {
-          hdr.setIntFld(2 + j, _ctypes[i].attrType);
-          hdr.setIntFld(3 + j, _asizes[i]);
-          hdr.setStrFld(4 + j, name + i);
-//          columnMap.put(colnames[i], i);
-      }
-      _hdrRid = _hdrFile.insertRecord(hdr.returnTupleByteArray());
-    //  Add BTIndex and BMIndex
   }
 
   public void deleteColumnarFile() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, FileAlreadyDeletedException, IOException {
@@ -171,22 +200,26 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
   }
 
   public TID insertTuple(byte[] tuplePtr) throws Exception {
-    int offset = 0;
-    int position = 0;
-    RID[] rids = new RID[numColumns];
+      int offset = getOffset();
+      RID[] rids = new RID[numColumns];
+      int position = 0;
+      for (int i = 0; i < numColumns; i++) {
 
-    for(int i = 0; i < this.numColumns; i++) {
-      int length = _ctypes[i].attrSize;
-      byte[] data = new byte[length];
-      System.arraycopy(tuplePtr, offset, data, 0, length);
-      rids[i] = _columnHeaps[i].insertRecord(data);
-      offset += length;
-      System.out.println(rids[i]);
-      position = _columnHeaps[i].getRIDPos(rids[i]);
-    }
-
-    return new TID(numColumns, position, rids);
+          byte[] data = new byte[asize[i]];
+          System.arraycopy(tuplePtr, offset, data, 0, asize[i]);
+          rids[i] = getColumn(i).insertRecord(data);
+          offset += asize[i];
+          if(i+1 == numColumns){
+              position = getColumn(1).getRIDPos(rids[1]);
+          }
+      }
+      TID tid = new TID(numColumns, position, rids);
+      return tid;
   }
+
+public int getOffset() {
+    return 4 + (numColumns * 2);
+}
 
   public Tuple getTuple(TID tid) throws Exception {
     RID[] rids = tid.recordIDs;
@@ -357,8 +390,19 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
    public AttrType[] getAttrtypes(){
     return _ctypes;
     }
-    public int[] getAttrSize(){
+    public short[] getAttrSize(){
       return _asizes;
+    }
+
+    public TupleScan openTupleScan() throws Exception {
+
+        TupleScan result = new TupleScan(this);
+        return result;
+    }
+
+    public TupleScan openTupleScan(short[] columns) throws Exception {
+        TupleScan result = new TupleScan(this, columns);
+        return result;
     }
    
 }
