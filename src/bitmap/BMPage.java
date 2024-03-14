@@ -63,7 +63,6 @@ public class BMPage extends HFPage {
     }
   }
 
-  @Override
   public void openBMpage(Page apage) {
     // Open an existing bitmap page
     super.openHFpage(apage); // Reuse HFPage's method as it does exactly what's needed
@@ -121,37 +120,37 @@ public class BMPage extends HFPage {
     return (targetByte >> (7 - bitOffset)) & 1; // Extract the specific bit and return its value
   }
 
-  public void setBit(int position, boolean value) throws IOException {
-    // This method sets the value of the bit at the specified position
-    int byteOffset = position / 8;
-    int bitOffset = position % 8;
-    byte[] pageData = getpage();
-
-    if (byteOffset < 0 || byteOffset >= pageData.length) {
-      throw new IOException("Position out of bounds");
-    }
-
-    if (value) {
-      // Set the bit to 1
-      pageData[byteOffset] =
-        (byte) (pageData[byteOffset] | (1 << (7 - bitOffset)));
-    } else {
-      // Set the bit to 0
-      pageData[byteOffset] =
-        (byte) (pageData[byteOffset] & ~(1 << (7 - bitOffset)));
-    }
-    markDirty();
-  }
+  //  public void setBit(int position, boolean value) throws IOException {
+  //    // This method sets the value of the bit at the specified position
+  //    int byteOffset = position / 8;
+  //    int bitOffset = position % 8;
+  //    byte[] pageData = getpage();
+  //
+  //    if (byteOffset < 0 || byteOffset >= pageData.length) {
+  //      throw new IOException("Position out of bounds");
+  //    }
+  //
+  //    if (value) {
+  //      // Set the bit to 1
+  //      pageData[byteOffset] =
+  //        (byte) (pageData[byteOffset] | (1 << (7 - bitOffset)));
+  //    } else {
+  //      // Set the bit to 0
+  //      pageData[byteOffset] =
+  //        (byte) (pageData[byteOffset] & ~(1 << (7 - bitOffset)));
+  //    }
+  //    markDirty();
+  //  }
 
   public byte[] getBMpageArray() {
     // Return the data byte array of this bitmap page
     return getpage();
   }
 
-  public void writeBMPageArray(byte[] array) throws Exception {
-    // Write the given byte array to the bitmap data portion of the page
-    super.writeBMPageArray(array); // Implement this based on actual bitmap data handling
-  }
+  //  public void writeBMPageArray(byte[] array) throws Exception {
+  //    // Write the given byte array to the bitmap data portion of the page
+  //    super.writeBMPageArray(array); // Implement this based on actual bitmap data handling
+  //  }
 
   public void setCurPage_forGivenPosition(int position) throws IOException {
     // Calculate the number of bits that can fit into a page.
@@ -184,6 +183,11 @@ public class BMPage extends HFPage {
         "Position " + position + " is outside the range of the bitmap index."
       );
     }
+  }
+
+  private int calculatePageIdFromNumber(int pageNumber) {
+    int pageId = 0;
+    return pageId;
   }
   // Note: This code assumes the existence of 'available_space', 'calculatePageIdFromNumber', and 'setCurPage' methods,
   // as well as a 'PageId' class with a 'pid' attribute, and an 'INVALID_PAGE' constant to check for invalid pages.
