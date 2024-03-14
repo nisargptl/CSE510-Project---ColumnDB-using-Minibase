@@ -1,5 +1,10 @@
 package columnar;
 
+
+import java.io.Serializable;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ByteArrayOutputStream;
 import btree.*;
 import com.sun.jdi.IntegerValue;
 import diskmgr.Page;
@@ -8,6 +13,7 @@ import heap.*;
 import org.w3c.dom.Attr;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 
 import static global.GlobalConst.INVALID_PAGE;
@@ -31,7 +37,7 @@ public class Columnarfile implements Filetype {
   // RID of header file
   RID _hdrRid;
   // TIDs of Tuples marked for deletion but not acutally deleted from the database
-  TID[] _deletedTuples;
+  Heapfile _deletedTuples;
   // Type information of each of the columns
   AttrType[] _ctypes;
   //store the attribute sizes of each column
@@ -250,14 +256,67 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
     return true;
   }
 
+  public static byte[] objectToByteArray(Serializable object) {
+    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+          ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 
-  public boolean markTupleDeleted(TID tid) {
-      return false;
+        // Serialize the object to the byte array
+        oos.writeObject(object);
+
+        // Get the byte array
+        return bos.toByteArray();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+}
+
+
+public boolean markTupleDeleted(TID tid){
+  try{
+    byte[] tidByteArray = objectToByteArray(tid);
+    _deletedTuples.insertRecord(tidByteArray);
+    return true;
+  }
+  catch (Exception e){
+    e.printStackTrace();
+    return false;
+  }
+}
+
+public boolean purgeAllDeletedTuples() throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException, Exception{
+  Scan heapFileScan = new Scan(this._deletedTuples);
+  RID rid = new RID();
+  Tuple temp = null;
+
+  try {
+    temp = heapFileScan.getNext(rid);
+  } catch (Exception e) {
+    e.printStackTrace();
   }
 
-  boolean purgeAllDeletedTuples(){
-      return true;
-  }
+  while (temp != null) {
+    byte[] data = temp.getTupleByteArray();
+    try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(data);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            TID deserializedTid = (TID) ois.readObject();
+            ois.close();
+            bis.close();
+            for(int j=0;j<numColumns;j++){
+              _columnHeaps[j].deleteRecord(deserializedTid.recordIDs[j]);
+            }
+            _deletedTuples.deleteRecord(rid);
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        heapFileScan.closescan();
+      }
+    return true;
+}
+
 
   public int getTupleCnt() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, IOException {
     if(_columnHeaps.length > 0) return _columnHeaps[0].getRecCnt();
