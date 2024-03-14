@@ -19,7 +19,7 @@ public class Index {
 
         runInterface(columnarFile, num, indexType);
 
-        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
 
         System.out.println("Reads: " + PCounter.rcounter);
@@ -27,15 +27,12 @@ public class Index {
     }
 
     private static void runInterface(String columnarFile, String num, String indexType) throws Exception {
-        System.out.println("1");
        Columnarfile cf = new Columnarfile(columnarFile);
-    //    int colno = cf.getAttributePosition(columnName);
-//
+
        if (indexType.equals("BITMAP")) {
            // cf.createAllBitMapIndexForColumn(colno);
            System.out.println("no bitmap");
        } else {
-        System.out.println("2 before create index");
            cf.createBtreeIndex(Integer.parseInt(num));
        }
 
