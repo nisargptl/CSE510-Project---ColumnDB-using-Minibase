@@ -1,12 +1,8 @@
 package columnar;
 
-import bitmap.BitMapFile;
 import btree.*;
-import com.sun.jdi.IntegerValue;
-import diskmgr.Page;
 import global.*;
 import heap.*;
-import org.w3c.dom.Attr;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -289,9 +285,9 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
     return true;
   }
 
-  public boolean createBitmapIndex(int column) throws Exception {
-    Heapfile colHeap = this.getColumn(column);
-    String indexName = colHeap.getHeapfileName() + ".btmap";
+//  public boolean createBitmapIndex(int column) throws Exception {
+//    Heapfile colHeap = this.getColumn(column);
+//    String indexName = colHeap.getHeapfileName() + ".btmap";
 //    BitMapFile bitMapFile = new BitMapFile(indexName, this, column, value);
 //    Tuple tuple;
 //    int position = 0;
@@ -316,10 +312,10 @@ public Columnarfile(java.lang.String name) throws HFException, HFBufMgrException
 //  columnScan.close();
 //  bitMapFile.close();
 
-  addIndexToColumnar(1, indexName);
-
-  return true;
-  }
+//  addIndexToColumnar(1, indexName);
+//
+//  return true;
+//  }
 
     public Heapfile getColumn(int columnNo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException {
         if (_columnHeaps[columnNo] == null)
