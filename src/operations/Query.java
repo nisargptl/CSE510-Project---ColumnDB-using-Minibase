@@ -36,7 +36,7 @@ public class Query {
 
         runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem);
 
-        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
 
         System.out.println("Reads: " + PCounter.rcounter);
