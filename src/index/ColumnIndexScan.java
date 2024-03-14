@@ -71,7 +71,7 @@ public class ColumnIndexScan extends Iterator {
             InvalidTypeException,
             InvalidTupleSizeException,
             UnknownIndexTypeException,
-            IOException, HFDiskMgrException, HFException, HFBufMgrException {
+            IOException, HFDiskMgrException, HFException, HFBufMgrException, Exception {
         _type = type;
         _s_sizes = str_sizes;
         index_only = indexOnly;
