@@ -30,7 +30,8 @@ public class ColumnarIndexScan extends Iterator {
      *
      * @throws Exception Various exceptions can occur inside database operations.
      */
-    public ColumnarIndexScan(String relName,
+    public ColumnarIndexScan(
+            String relName,
             int[] fldNum,
             IndexType[] index,
             String[] indName,

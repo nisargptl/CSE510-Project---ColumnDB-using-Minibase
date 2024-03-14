@@ -1,5 +1,7 @@
 package columnar;
 
+import btree.BTreeFile;
+import btree.KeyFactory;
 import global.*;
 import heap.*;
 import iterator.*;
@@ -409,28 +411,28 @@ public class Columnarfile {
      * @return
      * @throws Exception
      */
-//    public boolean createBTreeIndex(int columnNo) throws Exception {
-//        String indexName = getBTName(columnNo);
-//
-//        int keyType = atype[columnNo].attrType;
-//        int keySize = asize[columnNo];
-//        int deleteFashion = 0;
-//        BTreeFile bTreeFile = new BTreeFile(indexName, keyType, keySize, deleteFashion);
-//        Scan columnScan = openColumnScan(columnNo);
-//        RID rid = new RID();
-//        Tuple tuple;
-//        while (true) {
-//            tuple = columnScan.getNext(rid);
-//            if (tuple == null) {
-//                break;
-//            }
-//            int position = getColumn(columnNo).positionOfRecord(rid);
-//            bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), atype[columnNo], asize[columnNo]), position);
-//        }
-//        columnScan.closescan();
-//        addIndexToColumnar(0, indexName);
-//        return true;
-//    }
+    public boolean createBtreeIndex(int columnNo) throws Exception {
+        String indexName = getBTName(columnNo);
+
+        int keyType = atype[columnNo].attrType;
+        int keySize = asize[columnNo];
+        int deleteFashion = 0;
+        BTreeFile bTreeFile = new BTreeFile(indexName, keyType, keySize, deleteFashion);
+        Scan columnScan = openColumnScan(columnNo);
+        RID rid = new RID();
+        Tuple tuple;
+        while (true) {
+            tuple = columnScan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+            int position = getColumn(columnNo).positionOfRecord(rid);
+            bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), atype[columnNo], asize[columnNo]), rid);
+        }
+        columnScan.closescan();
+        addIndexToColumnar(0, indexName);
+        return true;
+    }
 
     /**
      *

@@ -7,6 +7,7 @@ import global.AttrType;
 import global.IndexType;
 import global.SystemDefs;
 import heap.Tuple;
+import index.ColumnarIndexScan;
 import iterator.*;
 
 public class Query {
@@ -94,7 +95,8 @@ public class Query {
 //                    else
 //                        throw new Exception("Scan type <" + scanTypes[i] + "> not recognized.");
 //                }
-//                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, scanConstraint, otherConstraint, false, targets, projectionList, sortmem);
+//
+//                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, , scanConstraint, otherConstraint, false, targets, projectionList, sortmem);
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
             System.out.println("here");
