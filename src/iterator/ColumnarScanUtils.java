@@ -11,63 +11,23 @@ import java.util.List;
 public class ColumnarScanUtils {
 
     /*
-    * Gets the attribute string sizes from the coulumar file
-    * and required for the seting the tuple header for the projection
-    * */
+     * Gets the attribute string sizes from the coulumar file
+     * and required for the seting the tuple header for the projection
+     * */
     public static short[] getTargetColumnStringSizes(Columnarfile columnarfile, short[] targetedCols) {
-        // return columnarfile.getStrSize(targetedCols);
-        return getStrSize(columnarfile,targetedCols);
-
+        return columnarfile.getStrSize(targetedCols);
     }
-    public static short[] getStrSize(Columnarfile  columnarfile, short[] targetColumns) {
 
-        int n = 0;
-        AttrType[] atype=columnarfile.getAttrtypes();
-        short[] attrsizes=columnarfile.getAttrSize();
-        // for (int i = 0; i < numColumns; i++) {
-        //     if (atype[i].attrType == AttrType.attrString)
-        //         n++;
-        // }
-
-        // short[] strSize = new short[n];
-        // int cnt = 0;
-        // for (int i = 0; i < numColumns; i++) {
-        //     if (atype[i].attrType == AttrType.attrString) {
-        //         strSize[cnt++] = (short)attrsizes[i];
-        //     }
-        // }
-
-        // return strSize;
-
-
-        // int n = 0;
-        for (int i = 0; i < targetColumns.length; i++) {
-            if (atype[targetColumns[i]].attrType == AttrType.attrString)
-                n++;
-        }
-
-        short[] strSize = new short[n];
-        int cnt = 0;
-        for (int i = 0; i < targetColumns.length; i++) {
-            if (atype[targetColumns[i]].attrType == AttrType.attrString) {
-                strSize[cnt++] = (short)attrsizes[targetColumns[i]];
-            }
-        }
-
-        return strSize;
-    }
     /*
-    * Gets the attribute types of the target columns for the columnar file
-    * Is used while setting the Tuple header for the projection
-    *
-    * */
+     * Gets the attribute types of the target columns for the columnar file
+     * Is used while setting the Tuple header for the projection
+     *
+     * */
     public static AttrType[] getTargetColumnAttributeTypes(Columnarfile columnarfile, short[] targetedCols) {
-        // AttrType[] attributes = columnarfile.getAttributes();
-        AttrType[] attributes = columnarfile.getAttrtypes();
-
+        AttrType[] attributes = columnarfile.getAttributes();
         AttrType[] targetAttrTypes = new AttrType[targetedCols.length];
         for (int i = 0; i < targetAttrTypes.length; i++) {
-            targetAttrTypes[i] = attributes[i];
+            targetAttrTypes[i] = attributes[targetedCols[i]];
         }
         return targetAttrTypes;
     }
@@ -88,14 +48,10 @@ public class ColumnarScanUtils {
         for (int i = 0; i < fldSpecs.length; i++) {
             switch (fldSpecs[i].relation.key) {
                 case RelSpec.outer:      // Field of outer (t1)
-                    // types[i] = columnarfile.getAttrtypeforcolumn(targetedCols[fldSpecs[i].offset-1]);
-                    types[i] = columnarfile.getAttrtypes()[fldSpecs[i].offset-1];
-                    
+                    types[i] = columnarfile.getAttrtypeforcolumn(targetedCols[fldSpecs[i].offset-1]);
                     if(types[i].attrType == AttrType.attrString)
-                        // sizes.add(columnarfile.getAttrsizeforcolumn(targetedCols[fldSpecs[i].offset-1]));
-                        sizes.add((short)columnarfile.getAttrSize()[(targetedCols[fldSpecs[i].offset-1])]);
-
-                        break;
+                        sizes.add(columnarfile.getAttrsizeforcolumn(targetedCols[fldSpecs[i].offset-1]));
+                    break;
                 default:
                     throw new WrongPermat("something is wrong in perm_mat");
 
@@ -121,22 +77,15 @@ public class ColumnarScanUtils {
         for (int i = 0; i < fldSpecs.length; i++) {
             switch (fldSpecs[i].relation.key) {
                 case RelSpec.outer:      // Field of outer (t1)
-                    // types[i] = outer.getAttrtypeforcolumn(fldSpecs[i].offset-1);
-                    types[i]=outer.getAttrtypes()[fldSpecs[i].offset-1];
+                    types[i] = outer.getAttrtypeforcolumn(fldSpecs[i].offset-1);
                     if(types[i].attrType == AttrType.attrString)
-                        // sizes.add(outer.getAttrsizeforcolumn(outerCols[fldSpecs[i].offset-1]));
-                        sizes.add((short)outer.getAttrSize()[outerCols[fldSpecs[i].offset-1]]);
-
+                        sizes.add(outer.getAttrsizeforcolumn(outerCols[fldSpecs[i].offset-1]));
                     break;
                 case RelSpec.innerRel:      // Field of outer (t1)
-                    // types[i] = inner.getAttrtypeforcolumn(fldSpecs[i].offset-1);
-                    types[i] = outer.getAttrtypes()[fldSpecs[i].offset-1];
-
+                    types[i] = inner.getAttrtypeforcolumn(fldSpecs[i].offset-1);
                     if(types[i].attrType == AttrType.attrString)
-                        // sizes.add(inner.getAttrsizeforcolumn(innerCols[fldSpecs[i].offset-1]));
-                        sizes.add((short)outer.getAttrSize()[(innerCols[fldSpecs[i].offset-1])]);
-                    
-                        break;
+                        sizes.add(inner.getAttrsizeforcolumn(innerCols[fldSpecs[i].offset-1]));
+                    break;
                 default:
                     throw new WrongPermat("something is wrong in perm_mat");
 

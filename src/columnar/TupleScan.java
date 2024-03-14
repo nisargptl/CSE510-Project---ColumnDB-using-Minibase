@@ -32,7 +32,7 @@ public class TupleScan implements GlobalConst {
         for(int i=0;i<numColumns;i++){
 
             short c = (short) (columns[i] - 1);
-            atype[i] = f._ctypes[c];
+            atype[i] = f.atype[c];
             asize[i] = (short) f.asize[c];
             sc[i] = f.getColumn(c).openScan();
 
@@ -47,7 +47,7 @@ public class TupleScan implements GlobalConst {
         for(int i = 0; i < numColumns; i++){
             short c = columns[i];
             if(atype[i].attrType == AttrType.attrString) {
-                strSize[cnt++] = (short) f._asizes[c];
+                strSize[cnt++] = (short) f.attrsizes[c];
             }
             tuplesize += asize[i];
         }
@@ -57,7 +57,7 @@ public class TupleScan implements GlobalConst {
 
     private void init(Columnarfile cf) throws InvalidTupleSizeException, IOException, HFDiskMgrException, HFException, HFBufMgrException {
         sc = new Scan[cf.numColumns];
-        _deletedTIDs = cf._deletedTuples;
+//        _deletedTIDs = cf._deletedTuples;
 
         // TODO: Add a hashmap for deleted TIDS
         for(int i = 0; i < cf.numColumns; i++) {

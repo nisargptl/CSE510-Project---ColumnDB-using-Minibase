@@ -8,7 +8,6 @@ import global.IndexType;
 import global.SystemDefs;
 import heap.Tuple;
 import iterator.*;
-import operations.OperationUtils;
 
 public class Query {
 
@@ -33,9 +32,8 @@ public class Query {
         Integer sortmem = Integer.parseInt(args[9]);
 
         String dbpath = OperationUtils.dbPath(columnDB);
-        System.out.println("HERE1");
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
-        System.out.println("HERE");
+
         runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem);
 
         SystemDefs.JavabaseBM.flushAllPages();
@@ -48,29 +46,29 @@ public class Query {
     private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem) throws Exception {
 
         Columnarfile cf = new Columnarfile(columnarFile);
-
+        System.out.println("here");
         AttrType[] opAttr = new AttrType[projection.length];
         FldSpec[] projectionList = new FldSpec[projection.length];
-        System.out.println("here");
         for (int i = 0; i < projection.length; i++) {
             String attribute = OperationUtils.getAttributeName(projection[i]);
             projectionList[i] = new FldSpec(new RelSpec(RelSpec.outer), OperationUtils.getColumnPositionInTargets(attribute, targetColumns) + 1);
-            opAttr[i] = new AttrType(cf.getAttrtypes()[i].attrType);
+            opAttr[i] = new AttrType(cf.getAttrtypeforcolumn(cf.getAttributePosition(attribute)).attrType);
         }
 
         int[] scanCols = new int[scanColumns.length];
         for (int i = 0; i < scanColumns.length; i++) {
             if (!scanColumns[i].equals("")) {
-                scanCols[i] = Integer.parseInt(scanColumns[i].split("\\.")[1]);
+                String attribute = OperationUtils.getAttributeName(scanColumns[i]);
+                scanCols[i] = cf.getAttributePosition(attribute);
             }
         }
-        System.out.println("here");
 
         short[] targets = new short[targetColumns.length];
         for (int i = 0; i < targetColumns.length; i++) {
             String attribute = OperationUtils.getAttributeName(targetColumns[i]);
-            targets[i] = (short) Integer.parseInt(targetColumns[i].split("\\.")[1]);
+            targets[i] = (short) cf.getAttributePosition(attribute);
         }
+
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
@@ -79,14 +77,27 @@ public class Query {
         for (int i = 0; i < scanTypes.length; i++) {
             scanConstraint[i] = OperationUtils.processRawConditionExpression(scanConstraints[i]);
         }
-//        cf.close();
+        cf.close();
         Iterator it = null;
         try {
             if (scanTypes[0].equals(FILESCAN)) {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+//            } else if (scanTypes[0].equals(COLUMNSCAN)) {
+//                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
+//            } else if (scanTypes[0].equals(BITMAPSCAN) || scanTypes[0].equals(BTREESCAN)) {
+//                IndexType[] indexType = new IndexType[scanTypes.length];
+//                for (int i = 0; i < scanTypes.length; i++) {
+//                    if (scanTypes[i].equals(BITMAPSCAN))
+//                        indexType[i] = new IndexType(IndexType.BitMapIndex);
+//                    else if (scanTypes[i].equals(BTREESCAN))
+//                        indexType[i] = new IndexType(IndexType.B_Index);
+//                    else
+//                        throw new Exception("Scan type <" + scanTypes[i] + "> not recognized.");
+//                }
+//                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, scanConstraint, otherConstraint, false, targets, projectionList, sortmem);
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
-
+            System.out.println("here");
             int cnt = 0;
             while (true) {
                 Tuple result = it.get_next();
@@ -94,7 +105,6 @@ public class Query {
                     break;
                 }
                 cnt++;
-                System.out.println(cnt);
                 result.print(opAttr);
             }
 
