@@ -9,6 +9,8 @@ import heap.*;
 
 import java.io.IOException;
 
+// public class BitMapFile extends IndexFile {
+
 public class BitMapFile extends IndexFile implements GlobalConst {
 
   private BitMapHeaderPage headerPage;
@@ -17,7 +19,7 @@ public class BitMapFile extends IndexFile implements GlobalConst {
 
 
   public BitMapFile(String filename)
-            throws Exception {
+          throws Exception {
     headerPageId = get_file_entry(filename);
     if (headerPageId == null) {
       throw new GetFileEntryException(null, "file not found");
@@ -75,7 +77,8 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   public void destroyBitMapFile() throws Exception {
     // Ensure complete traversal and deallocation of bitmap pages
     PageId currentPageId = headerPage.get_rootId();
-    while (currentPageId.pid != INVALID_PAGE) {
+    BMPage bmPage = new BMPage();
+    while (currentPageId.pid != -1) {
       BMPage currentPage = new BMPage(pinPage(currentPageId));
       PageId nextPageId = currentPage.getNextPage();
       unpinPage(currentPageId); // Unpin the current page
@@ -85,8 +88,24 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     // Unpin and free the header page
     unpinPage(headerPageId);
     freePage(headerPageId);
-    delete_file_entry(fileName);
+    delete_file_entry(dbname);
     headerPage = null;
+
+    if (headerPage != null) {
+      PageId pgId = headerPage.get_rootId();
+      BMPage bmPage = new BMPage();
+      while (pgId.pid != INVALID_PAGE) {
+        Page page = pinPage(pgId);
+        bmPage.openBMpage(page);
+        pgId = bmPage.getNextPage();
+        unpinPage(pgId);
+        freePage(pgId);
+      }
+      unpinPage(headerPageId);
+      freePage(headerPageId);
+      delete_file_entry(fileName);
+      headerPage = null;
+    }
   }
 
   public Boolean delete(int position) throws Exception {
@@ -175,5 +194,15 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   private void setValueAtPosition(boolean set, int position) throws Exception {
     // Optimized logic for updating the bitmap at a given position
     // Note: Implement the optimization and handling of new pages as discussed
+  }
+
+  @Override
+  public void insert(KeyClass data, RID rid) throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException, ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException, DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
+
+  }
+
+  @Override
+  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException, RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException, FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException, IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
+    return false;
   }
 }

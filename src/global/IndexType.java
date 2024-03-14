@@ -10,6 +10,9 @@ public class IndexType {
   public static final int None    = 0;
   public static final int B_Index = 1;
   public static final int Hash    = 2;
+// <<<<<<< abhinav-dev
+//   public static final int Bitmap = 3;
+// =======
   public static final int BitMapIndex = 3;
 
   public int indexType;

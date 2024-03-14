@@ -358,8 +358,6 @@ public class Heapfile implements Filetype,  GlobalConst {
   /** Insert record into file, return its Rid.
    *
    * @param recPtr pointer of the record
-   * @param recLen the length of the record
-   *
    * @exception InvalidSlotNumberException invalid slot number
    * @exception InvalidTupleSizeException invalid tuple size
    * @exception SpaceNotAvailableException no space left
@@ -951,7 +949,7 @@ public class Heapfile implements Filetype,  GlobalConst {
   
   /**
    * short cut to access the pinPage function in bufmgr package.
-   * @see bufmgr.pinPage
+//   * @see bufmgr.pinPage
    */
   public void pinPage(PageId pageno, Page page, boolean emptyPage)
     throws HFBufMgrException {
@@ -967,7 +965,7 @@ public class Heapfile implements Filetype,  GlobalConst {
 
   /**
    * short cut to access the unpinPage function in bufmgr package.
-   * @see bufmgr.unpinPage
+//   * @see bufmgr.unpinPage
    */
   private void unpinPage(PageId pageno, boolean dirty)
     throws HFBufMgrException {
@@ -1106,6 +1104,93 @@ public class Heapfile implements Filetype,  GlobalConst {
     return _firstDirPageId;
   }
 
+	public int positionOfRecord(RID r)
+			throws InvalidSlotNumberException,
+			InvalidTupleSizeException,
+			HFException,
+			HFDiskMgrException,
+			HFBufMgrException,
+			Exception {
 
-  
+		PageId currentDirPageId = new PageId();
+		currentDirPageId.pid = _firstDirPageId.pid;
+		PageId nextDirPageId = new PageId();
+		nextDirPageId.pid = 0;
+		HFPage currentDirPage = new HFPage();
+		Tuple atuple;
+
+		pinPage(currentDirPageId, currentDirPage, false);
+		int position = 0;
+		RID rid= null;
+		while (currentDirPageId.pid != INVALID_PAGE) {
+			for (rid = currentDirPage.firstRecord();
+				 rid != null;
+				 rid = currentDirPage.nextRecord(rid)) {
+				atuple = currentDirPage.getRecord(rid);
+				DataPageInfo dpinfo = new DataPageInfo(atuple);
+
+				if(dpinfo.pageId.pid == r.pageNo.pid){
+					unpinPage(currentDirPageId, false /*undirty*/);
+					HFPage apage = new HFPage();
+					pinPage(dpinfo.pageId, apage, false);
+					int rp = apage.relativePositionOfSlot(r);
+					unpinPage(dpinfo.pageId, false);
+					return position+rp;
+				}
+				position += dpinfo.recct;
+
+			}
+
+			nextDirPageId = currentDirPage.getNextPage();
+			unpinPage(currentDirPageId, false);
+			currentDirPageId.pid = nextDirPageId.pid;
+			if (nextDirPageId.pid != INVALID_PAGE) {
+				pinPage(currentDirPageId, currentDirPage, false);
+			}
+		}
+
+		return -1;
+
+	}
+
+	public RID recordAtPosition(int position) throws HFBufMgrException, IOException, InvalidSlotNumberException, InvalidTupleSizeException {
+
+		PageId currentDirPageId = new PageId();
+		currentDirPageId.pid = _firstDirPageId.pid;
+		PageId nextDirPageId = new PageId();
+		nextDirPageId.pid = 0;
+		HFPage currentDirPage = new HFPage();
+		Tuple atuple;
+
+		pinPage(currentDirPageId, currentDirPage, false);
+		RID rid = null;
+		int cnt = 0;
+		while (currentDirPageId.pid != INVALID_PAGE) {
+			for (rid = currentDirPage.firstRecord();
+				 rid != null;
+				 rid = currentDirPage.nextRecord(rid)) {
+				atuple = currentDirPage.getRecord(rid);
+				DataPageInfo dpinfo = new DataPageInfo(atuple);
+
+				if(cnt + dpinfo.recct > position){
+					unpinPage(currentDirPageId, false /*undirty*/);
+					HFPage apage = new HFPage();
+					pinPage(dpinfo.pageId, apage, false);
+					int slot = apage.slotAtRelativePosition(position-cnt);
+					unpinPage(dpinfo.pageId, false);
+					return new RID(dpinfo.pageId, slot);
+				}
+				cnt += dpinfo.recct;
+
+			}
+
+			nextDirPageId = currentDirPage.getNextPage();
+			unpinPage(currentDirPageId, false);
+			currentDirPageId.pid = nextDirPageId.pid;
+			if (nextDirPageId.pid != INVALID_PAGE) {
+				pinPage(currentDirPageId, currentDirPage, false);
+			}
+		}
+		return null;
+	}
 }// End of HeapFile 

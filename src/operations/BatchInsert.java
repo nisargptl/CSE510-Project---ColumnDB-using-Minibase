@@ -15,8 +15,8 @@ import java.io.InputStreamReader;
 import static global.GlobalConst.NUMBUF;
 
 public class BatchInsert{
-    public static int NUM_PAGES = 1000000;
-    public static void main(String[] args) throws IOException, HashOperationException {
+    public static int NUM_PAGES = 10000;
+    public static void main(String[] args) throws IOException, HashOperationException, PageNotFoundException, BufMgrException, PagePinnedException, PageUnpinnedException {
         String dataFileName = args[0];
         String columnDBName = args[1];
         String columnarFileName = args[2];
@@ -30,7 +30,7 @@ public class BatchInsert{
 
         runOperation(dataFileName, columnarFileName, numColumns);
 
-		// SystemDefs.JavabaseBM.flushAllPages();
+		 SystemDefs.JavabaseBM.flushAllPages();
 		SystemDefs.JavabaseDB.closeDB();
 
 		System.out.println("Reads: " + PCounter.rcounter);
@@ -69,7 +69,7 @@ public class BatchInsert{
             }
 
             // Create a columnar file for the data to be inserted using the type information parsed above
-            Columnarfile cf = new Columnarfile(columnarFile, attrTypes, numColumns);
+            Columnarfile cf = new Columnarfile(columnarFile, numColumns, attrTypes, attrSizes);
 
             int counter = 0;
 
@@ -85,6 +85,7 @@ public class BatchInsert{
                 t.setHdr((short) numColumns, attrTypes, attrSizes);
                 int j = 0;
                 for (String val : vals) {
+                    System.out.println(val);
                     switch (attrTypes[j].attrType) {
                         case 0:
                             t.setStrFld(j + 1, val);

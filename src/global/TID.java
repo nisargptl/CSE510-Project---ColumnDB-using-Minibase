@@ -6,7 +6,7 @@ public class TID implements Serializable {
     public int numRIDs;
     public int position;
     public RID[] recordIDs;
-
+    public TID(){}
     // Default constructor for class
     public TID(int numRIDs) {
         this.numRIDs = numRIDs;
