@@ -1,45 +1,67 @@
 package bitmap;
 
+import btree.*;
 import bufmgr.*;
 import columnar.Columnarfile;
 import diskmgr.*;
 import global.*;
 import heap.*;
 
-public class BitMapFile {
+import java.io.IOException;
+
+public class BitMapFile extends IndexFile implements GlobalConst {
 
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
-  private String dbname;
+  private String fileName;
+
 
   public BitMapFile(String filename)
-    throws GetFileEntryException, PinPageException, ConstructPageException {
+            throws Exception {
     headerPageId = get_file_entry(filename);
     if (headerPageId == null) {
       throw new GetFileEntryException(null, "file not found");
     }
     headerPage = new BitMapHeaderPage(headerPageId);
-    dbname = new String(filename);
+    String dbname = new String(filename);
   }
 
   public BitMapFile(
-    String filename,
-    Columnarfile columnfile,
-    int columnNo,
-    ValueClass value
+          String filename,
+          Columnarfile columnarFile,
+          int columnNo,
+          ValueClass value
   )
-    throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException {
+          throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException, Exception {
     headerPageId = get_file_entry(filename);
-    if (headerPageId == null) {
+    if (headerPageId == null) //file does not exist
+    {
       headerPage = new BitMapHeaderPage();
       headerPageId = headerPage.getPageId();
       add_file_entry(filename, headerPageId);
-      // Additional setup for new bitmap file based on columnfile and value
-      // This might involve initializing bitmap based on existing column values
-      dbname = new String(filename);
+      headerPage.set_rootId(new PageId(INVALID_PAGE));
+      headerPage.setColumnarFileName(columnarFile.getColumnarFileName());
+      headerPage.setColumnNumber(columnNo);
+      if (value instanceof ValueInt) {
+        headerPage.setValue(value.getValue().toString());
+        headerPage.setAttrType(new AttrType(AttrType.attrInteger));
+      } else {
+        headerPage.setValue(value.getValue().toString());
+        headerPage.setAttrType(new AttrType(AttrType.attrString));
+      }
     } else {
       headerPage = new BitMapHeaderPage(headerPageId);
     }
+  }
+
+  @Override
+  public void insert(KeyClass data, RID rid) throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException, ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException, DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
+
+  }
+
+  @Override
+  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException, RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException, FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException, IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
+    return false;
   }
 
   public void close()
@@ -56,12 +78,12 @@ public class BitMapFile {
     while (currentPageId.pid != INVALID_PAGE) {
       BMPage currentPage = new BMPage(pinPage(currentPageId));
       PageId nextPageId = currentPage.getNextPage();
-      unpinPage(currentPageId, false); // Unpin the current page
+      unpinPage(currentPageId); // Unpin the current page
       freePage(currentPageId); // Free the current page
       currentPageId = nextPageId; // Move to the next page
     }
     // Unpin and free the header page
-    unpinPage(headerPageId, false);
+    unpinPage(headerPageId);
     freePage(headerPageId);
     delete_file_entry(fileName);
     headerPage = null;
@@ -122,6 +144,18 @@ public class BitMapFile {
     } catch (Exception e) {
       e.printStackTrace();
       throw new FreePageException(e, "");
+    }
+  }
+
+  private Page pinPage(PageId pageno)
+          throws PinPageException {
+    try {
+      Page page = new Page();
+      SystemDefs.JavabaseBM.pinPage(pageno, page, false/*Rdisk*/);
+      return page;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new PinPageException(e, "");
     }
   }
 

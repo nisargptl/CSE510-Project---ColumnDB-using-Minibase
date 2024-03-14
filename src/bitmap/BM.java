@@ -2,16 +2,20 @@ package bitmap;
 
 import btree.PinPageException;
 import btree.UnpinPageException;
+import columnar.Columnarfile;
 import diskmgr.Page;
 import global.GlobalConst;
 import global.PageId;
 import global.SystemDefs;
+import global.TID;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.LinkedList;
 import java.util.List;
 
-public class BM {
+public class BM implements GlobalConst {
 
   public BM() {
     // Constructor
@@ -23,56 +27,41 @@ public class BM {
    * Assuming BitMapHeaderPage contains methods to access the bitmap data.
    * This example might need to be adjusted based on the actual implementation of BitMapHeaderPage.
    */
-  public void printBitMap(BitMapHeaderPage header) {
-    // Assuming BitMapHeaderPage provides a way to access the bitmap's size and individual bits.
+  public static void printBitMap(BitMapHeaderPage header) throws Exception {
     if (header == null) {
-      System.out.println("Header information is missing.");
-      return;
-    }
-
-    LinkedList<PageId> pinnedPages = new LinkedList<>();
-    PageId bmPageId = header.get_rootId();
-
-    if (bmPageId.pid == INVALID_PAGE) {
-      System.out.println("Bitmap index file is empty.");
+      System.out.println("\n Empty Header!!!");
     } else {
-      System.out.println("Column File Name: " + header.getColumnarFileName());
-      System.out.println("Column Index: " + header.getColumnNumber());
-      System.out.println("Data Type: " + header.getAttrType());
-      System.out.println("Key Value: " + header.getValue());
-
-      try {
-        int bitPosition = 0;
-        do {
-          Page currentPage = pinSpecificPage(bmPageId);
-          pinnedPages.add(bmPageId);
-
-          BMPage bitmapPage = new BMPage(currentPage);
-          BitSet bits = BitSet.valueOf(bitmapPage.getBMpageArray());
-          int bitsCount = bitmapPage.getCounter();
-
-          for (int bit = 0; bit < bitsCount; bit++) {
-            System.out.println(
-              "Bit Position: " +
-              bitPosition +
-              " - Value: " +
-              (bits.get(bit) ? 1 : 0)
-            );
-            bitPosition++;
-          }
-
-          bmPageId = bitmapPage.getNextPage();
-        } while (currentPageId.pid != INVALID_PAGE);
-      } catch (Exception e) {
-        e.printStackTrace();
-      } finally {
-        pinnedPages.forEach(pageId -> {
-          try {
-            releasePage(pageId);
-          } catch (BTreeException e) {
-            e.printStackTrace();
-          }
-        });
+      List<PageId> pinnedPages = new ArrayList<>();
+      PageId bmPageId = header.get_rootId();
+      if (bmPageId.pid == INVALID_PAGE) {
+        System.out.println("Empty Bitmap File");
+        return;
+      }
+      System.out.println("Columnar File Name: " + header.getColumnarFileName());
+      System.out.println("Column Number: " + header.getColumnNumber());
+      System.out.println("Attribute Type: " + header.getAttrType());
+      System.out.println("Attribute Value: " + header.getValue());
+      Page page = pinPage(bmPageId);
+      pinnedPages.add(bmPageId);
+      BMPage bmPage = new BMPage(page);
+      int position = 0;
+      while (Boolean.TRUE) {
+        int count = bmPage.getCounter();
+        BitSet currentBitSet = BitSet.valueOf(bmPage.getBMpageArray());
+        for (int i = 0; i < count; i++) {
+          System.out.println("Position: " + position + "   Value: " + (currentBitSet.get(i) ? 1 : 0));
+          position++;
+        }
+        if (bmPage.getNextPage().pid == INVALID_PAGE) {
+          break;
+        } else {
+          page = pinPage(bmPage.getNextPage());
+          pinnedPages.add(bmPage.getNextPage());
+          bmPage.openBMpage(page);
+        }
+      }
+      for (PageId pageId : pinnedPages) {
+        unpinPage(pageId);
       }
     }
   }
@@ -126,5 +115,37 @@ public class BM {
     }
 
     return matchingTIDs;
+  }
+
+  /***
+   * Unpin the given page
+   * @param pageno
+   * @throws UnpinPageException
+   */
+  private static void unpinPage(PageId pageno)
+          throws UnpinPageException {
+    try {
+      SystemDefs.JavabaseBM.unpinPage(pageno, false /* = not DIRTY */);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new UnpinPageException(e, "");
+    }
+  }
+
+  /***
+   * Pin the page passed as input
+   * @param pageno
+   * @return
+   * @throws PinPageException
+   */
+  private static Page pinPage(PageId pageno) throws PinPageException {
+    try {
+      Page page = new Page();
+      SystemDefs.JavabaseBM.pinPage(pageno, page, false/*Rdisk*/);
+      return page;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new PinPageException(e, "");
+    }
   }
 }

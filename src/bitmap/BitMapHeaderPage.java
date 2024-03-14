@@ -7,6 +7,8 @@ import global.PageId;
 import global.SystemDefs;
 import heap.HFPage;
 
+import java.io.IOException;
+
 public class BitMapHeaderPage extends HFPage {
 
   // Constants for the offsets and sizes of various header fields
@@ -104,5 +106,14 @@ public class BitMapHeaderPage extends HFPage {
 
   public PageId get_rootId() throws Exception {
     return getNextPage();
+  }
+
+  /***
+   * getter for page id
+   * @return
+   * @throws IOException
+   */
+  public PageId getPageId() throws IOException, IOException {
+    return getCurPage();
   }
 }
