@@ -15,7 +15,7 @@ import static tests.TestDriver.OK;
 public class Columnarfile {
     String fname;
     short numColumns;
-    AttrType[] atype;
+    AttrType[] _ctype;
     short[] attrsizes;
     short[] asize;
     private Heapfile[] hf;
@@ -48,19 +48,19 @@ public class Columnarfile {
 
             // Header file format - numColumns, AttrType[0], AttrSize[0], AttrType[1], AttrSize[1], AttrType[2], AttrSize[2],  .... AttrType[numColumns-1], AttrSize[numColumns-1]
             this.numColumns = (short) hdr.getIntFld(1);
-            atype = new AttrType[numColumns];
+            _ctype = new AttrType[numColumns];
             attrsizes = new short[numColumns];
             asize = new short[numColumns];
 
             int k = 0;
             for (int i = 0; i < numColumns; i++, k = k + 3) {
-                atype[i] = new AttrType(hdr.getIntFld(2 + k));
+                _ctype[i] = new AttrType(hdr.getIntFld(2 + k));
                 attrsizes[i] = (short) hdr.getIntFld(3 + k);
                 String colName = hdr.getStrFld(4 + k);
 
                 columnMap.put(colName, i);
                 asize[i] = attrsizes[i];
-                if (atype[i].attrType == AttrType.attrString)
+                if (_ctype[i].attrType == AttrType.attrString)
                     asize[i] += 2;
             }
             hf = new Heapfile[numColumns];
@@ -92,12 +92,12 @@ public class Columnarfile {
         if (status == true) {
             numColumns = (short) (numcols);
             this.fname = _fileName;
-            atype = new AttrType[numColumns];
+            _ctype = new AttrType[numColumns];
             attrsizes = new short[numColumns];
             asize = new short[numColumns];
             int k = 0;
             for (int i = 0; i < numColumns; i++) {
-                atype[i] = new AttrType(types[i].attrType);
+                _ctype[i] = new AttrType(types[i].attrType);
                 switch (types[i].attrType) {
                     case 0:
                         asize[i] = attrsizes[i] = attrSizes[k];
@@ -138,7 +138,7 @@ public class Columnarfile {
             hdr.setIntFld(1, numColumns);
             int j = 0;
             for (int i = 0; i < numColumns; i++, j = j + 3) {
-                hdr.setIntFld(2 + j, atype[i].attrType);
+                hdr.setIntFld(2 + j, _ctype[i].attrType);
                 hdr.setIntFld(3 + j, attrsizes[i]);
                 hdr.setStrFld(4 + j, colnames[i]);
                 columnMap.put(colnames[i], i);
@@ -198,7 +198,7 @@ public class Columnarfile {
     // The tuple represented by the TID in the columnarfile
     public Tuple getTuple(TID tid) throws Exception {
         Tuple res = new Tuple(getTupleSize());
-        res.setHdr(numColumns, atype, getStrSize());
+        res.setHdr(numColumns, _ctype, getStrSize());
 
         byte[] data = res.getTupleByteArray();
         int offset = getOffset();
@@ -287,7 +287,7 @@ public class Columnarfile {
     public boolean createBtreeIndex(int columnNo) throws Exception {
         String indexName = getBTName(columnNo);
 
-        int keyType = atype[columnNo].attrType;
+        int keyType = _ctype[columnNo].attrType;
         int keySize = asize[columnNo];
         int deleteFashion = 0;
         BTreeFile bTreeFile = new BTreeFile(indexName, keyType, keySize, deleteFashion);
@@ -300,7 +300,7 @@ public class Columnarfile {
                 break;
             }
             int position = getColumn(columnNo).positionOfRecord(rid);
-            bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), atype[columnNo], asize[columnNo]), rid);
+            bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), _ctype[columnNo], asize[columnNo]), rid);
         }
         columnScan.closescan();
         addIndexToColumnar(0, indexName);
@@ -414,14 +414,14 @@ public class Columnarfile {
     public short[] getStrSize() {
         int n = 0;
         for (int i = 0; i < numColumns; i++) {
-            if (atype[i].attrType == AttrType.attrString)
+            if (_ctype[i].attrType == AttrType.attrString)
                 n++;
         }
 
         short[] strSize = new short[n];
         int cnt = 0;
         for (int i = 0; i < numColumns; i++) {
-            if (atype[i].attrType == AttrType.attrString) {
+            if (_ctype[i].attrType == AttrType.attrString) {
                 strSize[cnt++] = attrsizes[i];
             }
         }
@@ -432,14 +432,14 @@ public class Columnarfile {
     public short[] getStrSize(short[] targetColumns) {
         int n = 0;
         for (int i = 0; i < targetColumns.length; i++) {
-            if (atype[targetColumns[i]].attrType == AttrType.attrString)
+            if (_ctype[targetColumns[i]].attrType == AttrType.attrString)
                 n++;
         }
 
         short[] strSize = new short[n];
         int cnt = 0;
         for (int i = 0; i < targetColumns.length; i++) {
-            if (atype[targetColumns[i]].attrType == AttrType.attrString) {
+            if (_ctype[targetColumns[i]].attrType == AttrType.attrString) {
                 strSize[cnt++] = attrsizes[targetColumns[i]];
             }
         }
@@ -466,7 +466,7 @@ public class Columnarfile {
 
 
     public AttrType[] getAttributes() {
-        return atype;
+        return _ctype;
     }
 
     public int getAttributePosition(String name) {
@@ -503,7 +503,7 @@ public class Columnarfile {
      */
     public AttrType getAttrtypeforcolumn(int columnNo) throws Exception {
         if (columnNo < numColumns) {
-            return atype[columnNo];
+            return _ctype[columnNo];
         } else {
             throw new Exception("Invalid Column Number");
         }
@@ -532,14 +532,14 @@ public class Columnarfile {
         }
         Tuple JTuple = new Tuple();
         // set the header which attribute types of the targeted columns
-        JTuple.setHdr((short) hf.length, atype, getStrSize());
+        JTuple.setHdr((short) hf.length, _ctype, getStrSize());
 
         JTuple = new Tuple(JTuple.size());
-        JTuple.setHdr((short) hf.length, atype, getStrSize());
+        JTuple.setHdr((short) hf.length, _ctype, getStrSize());
         for (int i = 0; i < hf.length; i++) {
             RID rid = hf[i].recordAtPosition(position);
             Tuple record = hf[i].getRecord(rid);
-            switch (atype[i].attrType) {
+            switch (_ctype[i].attrType) {
                 case AttrType.attrInteger:
                     // Assumed that col heap page will have only one entry
                     JTuple.setIntFld(i + 1,

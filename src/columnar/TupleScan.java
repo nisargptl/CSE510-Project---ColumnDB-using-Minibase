@@ -38,7 +38,7 @@ public class TupleScan {
             scans[i] = _columnarFile.getColumn(columns[i]).openScan();
 
             // Store the type and size information into the tuplescan object
-            _ctypes[i] = _columnarFile.atype[columns[i]];
+            _ctypes[i] = _columnarFile._ctype[columns[i]];
             _csize[i] = _columnarFile.asize[columns[i]];
 
             if(_ctypes[i].attrType == AttrType.attrString)
@@ -66,7 +66,7 @@ public class TupleScan {
         scans = new Scan[numColumns];
 
         _columnarFile = _file;
-        _ctypes = _file.atype;
+        _ctypes = _file._ctype;
         _csize = _file.asize;
         numColumns = _file.numColumns;
 
