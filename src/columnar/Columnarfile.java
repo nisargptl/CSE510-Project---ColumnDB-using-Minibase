@@ -7,7 +7,10 @@ import iterator.*;
 import btree.BTreeFile;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 import static tests.TestDriver.FAIL;
@@ -15,11 +18,13 @@ import static tests.TestDriver.OK;
 
 public class Columnarfile {
     String fname;
+    boolean _fileDeleted = false;
     short numColumns;
     AttrType[] _ctype;
     short[] attrsizes;
     short[] asize;
     private Heapfile[] _columnHeaps;
+    Heapfile _deletedTuples;
     Tuple _hdr;
     RID _hdrRid;
     HashMap<String, Integer> columnMap;
@@ -70,13 +75,13 @@ public class Columnarfile {
         }
     }
 
-    public Columnarfile(String _fileName, int numcols, AttrType[] types, short[] attrSizes) throws IOException, InvalidTupleSizeException, InvalidTypeException, FieldNumberOutOfBoundException, SpaceNotAvailableException, HFException, HFBufMgrException, InvalidSlotNumberException, HFDiskMgrException {
-        String[] colnames = new String[numcols];
+    public Columnarfile(String _fileName, int n, AttrType[] types, short[] attrSizes) throws IOException, InvalidTupleSizeException, InvalidTypeException, FieldNumberOutOfBoundException, SpaceNotAvailableException, HFException, HFBufMgrException, InvalidSlotNumberException, HFDiskMgrException {
+        String[] colnames = new String[n];
         boolean status = true;
         Heapfile _hdrFile = null;
         columnMap = new HashMap<>();
         try {
-            _columnHeaps = new Heapfile[numcols];
+            _columnHeaps = new Heapfile[n];
             
             _hdrFile = new Heapfile(_fileName + ".hdr");
 
@@ -85,13 +90,13 @@ public class Columnarfile {
             e.printStackTrace();
         }
 
-        for(int i = 0; i < numcols; i++) {
+        for(int i = 0; i < n; i++) {
             int cnum = i + 1;
             colnames[i] = _fileName + "." + cnum;
         }
 
         if (status == true) {
-            numColumns = (short) (numcols);
+            numColumns = (short) (n);
             this.fname = _fileName;
             _ctype = new AttrType[numColumns];
             attrsizes = new short[numColumns];
@@ -161,6 +166,7 @@ public class Columnarfile {
             _columnHeaps[i].deleteFile();
         }
         fname = null;
+        _fileDeleted = true;
         numColumns = 0;
     }
 
@@ -307,7 +313,33 @@ public class Columnarfile {
         addIndexToColumnar(0, indexName);
         return true;
     }
+    public boolean markTupleDeleted(TID tid){
+        try{
+            byte[] tidByteArray = objectToByteArray(tid);
+            _deletedTuples.insertRecord(tidByteArray);
+            return true;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 
+    public static byte[] objectToByteArray(Serializable object) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+
+            // Serialize the object to the byte array
+            oos.writeObject(object);
+
+            // Get the byte array
+            return bos.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
 
         boolean status = OK;
@@ -481,27 +513,10 @@ public class Columnarfile {
         return "BT" + "." + fname + "." + columnNo;
     }
 
-    /**
-     * return the BitMap file name by following the conventions
-     *
-     * @param columnNo
-     * @param value
-     * @return
-     */
-    public String getBMName(int columnNo, ValueClass value) {
-        return "BM" + "." + fname + "." + columnNo + "." + value.toString();
-    }
-
     public String getDeletedFileName() {
         return fname + ".del";
     }
-    /**
-     * given a column returns the AttrType
-     *
-     * @param columnNo
-     * @return
-     * @throws Exception
-     */
+
     public AttrType getAttrtypeforcolumn(int columnNo) throws Exception {
         if (columnNo < numColumns) {
             return _ctype[columnNo];
@@ -510,51 +525,11 @@ public class Columnarfile {
         }
     }
 
-    /**
-     *  given the column returns the size of AttrString
-     *
-     * @param columnNo
-     * @return
-     * @throws Exception
-     */
     public short getAttrsizeforcolumn(int columnNo) throws Exception {
         if (columnNo < numColumns) {
             return attrsizes[columnNo];
         } else {
             throw new Exception("Invalid Column Number");
         }
-    }
-
-    public Tuple getTuple(int position) throws
-            Exception {
-
-        for(int i=0; i < _columnHeaps.length; i++) {
-            _columnHeaps[i] = new Heapfile(getColumnarFileName() + i);
-        }
-        Tuple JTuple = new Tuple();
-        // set the header which attribute types of the targeted columns
-        JTuple.setHdr((short) _columnHeaps.length, _ctype, getStrSize());
-
-        JTuple = new Tuple(JTuple.size());
-        JTuple.setHdr((short) _columnHeaps.length, _ctype, getStrSize());
-        for (int i = 0; i < _columnHeaps.length; i++) {
-            RID rid = _columnHeaps[i].recordAtPosition(position);
-            Tuple record = _columnHeaps[i].getRecord(rid);
-            switch (_ctype[i].attrType) {
-                case AttrType.attrInteger:
-                    // Assumed that col heap page will have only one entry
-                    JTuple.setIntFld(i + 1,
-                            Convert.getIntValue(0, record.getTupleByteArray()));
-                    break;
-                case AttrType.attrString:
-                    JTuple.setStrFld(i + 1,
-                            Convert.getStrValue(0, record.getTupleByteArray(), attrsizes[i] + 2));
-                    break;
-                default:
-                    throw new Exception("Attribute indexAttrType not supported");
-            }
-        }
-
-        return JTuple;
     }
 }

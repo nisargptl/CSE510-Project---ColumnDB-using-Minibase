@@ -80,6 +80,17 @@ public class TupleScan {
         }
     }
 
+
+    // Functionality - Close all the scans objects opened.
+    // Parameters - None
+    // Returns - Nothing
+    public void closetuplescan(){
+        for(int i = 0; i < scans.length; i++){
+            scans[i].closescan();
+        }
+        _columnarFile.close();
+    }
+
     // Functionality - Gets the next tuple in the columnarfile
     // Parameters -
     // 1. TID tid - A TID object which is the predecessor of the tuple which we plan to get.
@@ -133,15 +144,5 @@ public class TupleScan {
             }
         }
         return true;
-    }
-
-    // Functionality - Close all the scans objects opened.
-    // Parameters - None
-    // Returns - Nothing
-    public void closetuplescan(){
-        for(int i = 0; i < scans.length; i++){
-            scans[i].closescan();
-        }
-        _columnarFile.close();
     }
 }
