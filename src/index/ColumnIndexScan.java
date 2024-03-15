@@ -108,7 +108,7 @@ public class ColumnIndexScan extends Iterator {
         _selects = selects;
         _relName = relName;
         _indName = indName;
-        columnarfile = new Columnarfile(relName);
+        // columnarfile = new Columnarfile(relName);
 
         // AttrType[] Jtypes = new AttrType[noOutFlds];
         // short[] ts_sizes;
@@ -138,9 +138,10 @@ public class ColumnIndexScan extends Iterator {
         // index_only = indexOnly; // added by bingjie miao
 
         try {
-            f = new Heapfile(relName);
+            // f = new Heapfile(relName);
+            columnarfile = new Columnarfile(relName);
         } catch (Exception e) {
-            throw new IndexException(e, "ColumnIndexScan.java: Heap file not created");
+            throw new IndexException(e, "ColumnIndexScan.java: Columnarfile not created");
         }
 
         switch (index.indexType) {
