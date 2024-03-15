@@ -4,10 +4,8 @@ package operations;
 import columnar.Columnarfile;
 import diskmgr.PCounter;
 import global.AttrType;
-import global.IndexType;
 import global.SystemDefs;
 import heap.Tuple;
-import index.ColumnarIndexScan;
 import iterator.*;
 
 public class Query {

@@ -9,7 +9,6 @@ import heap.*;
 import java.io.*;
 import java.util.Arrays;
 
-import bitmap.*;
 import columnar.*;
 
 public class ColumnarIndexScan extends Iterator {
