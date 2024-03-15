@@ -9,68 +9,78 @@ import java.util.*;
 
 public class BM implements GlobalConst {
 
+  // Adjusted constructor comment
   public BM() {
-    // Constructor
+    // BM Constructor
   }
 
+  // Updated the printBitMap method's structure
   public static void printBitMap(BitMapHeaderPage header) throws Exception {
     if (header == null) {
       System.out.println("\n Empty Header!!!");
-    } else {
-      List<PageId> pinnedPages = new ArrayList<>();
-      PageId bmPageId = header.get_rootId();
-      if (bmPageId.pid == INVALID_PAGE) {
-        System.out.println("Empty Bitmap File");
-        return;
-      }
-      System.out.println("Columnar File Name: " + header.getColumnarFileName());
-      System.out.println("Column Number: " + header.getColumnNumber());
-      System.out.println("Attribute Type: " + header.getAttrType());
-      System.out.println("Attribute Value: " + header.getValue());
+      return;
+    }
+
+    System.out.println("Bitmap File Information:");
+    PageId bmPageId = header.get_rootId();
+    if (bmPageId.pid == INVALID_PAGE) {
+      System.out.println("No Bitmap Data");
+      return;
+    }
+
+    // Printing columnar file information
+    System.out.println("Columnar File: " + header.getColumnarFileName());
+    System.out.println("Column #: " + header.getColumnNumber());
+    System.out.println("Attribute Type: " + header.getAttrType());
+    System.out.println("Value: " + header.getValue());
+
+    // Process bitmap pages
+    processBitMapPages(bmPageId);
+  }
+
+  // Process and print bitmap pages
+  private static void processBitMapPages(PageId bmPageId) throws Exception {
+    List<PageId> pinnedPages = new LinkedList<>();
+    int position = 0;
+
+    do {
       Page page = pinPage(bmPageId);
       pinnedPages.add(bmPageId);
       BMPage bmPage = new BMPage(page);
-      int position = 0;
-      while (Boolean.TRUE) {
-        int count = bmPage.getCounter();
-        BitSet currentBitSet = BitSet.valueOf(bmPage.getBMpageArray());
-        for (int i = 0; i < count; i++) {
-          System.out.println("Position: " + position + "   Value: " + (currentBitSet.get(i) ? 1 : 0));
-          position++;
-        }
-        if (bmPage.getNextPage().pid == INVALID_PAGE) {
-          break;
-        } else {
-          page = pinPage(bmPage.getNextPage());
-          pinnedPages.add(bmPage.getNextPage());
-          bmPage.openBMpage(page);
-        }
+
+      BitSet bitSet = BitSet.valueOf(bmPage.getBMpageArray());
+      for (int i = 0; i < bmPage.getCounter(); i++) {
+        System.out.println("Pos: " + position++ + " Value: " + (bitSet.get(i) ? 1 : 0));
       }
-      for (PageId pageId : pinnedPages) {
-        unpinPage(pageId);
-      }
+
+      bmPageId = bmPage.getNextPage();
+    } while (bmPageId.pid != INVALID_PAGE);
+
+    // Unpinning pages after processing
+    for (PageId pageId : pinnedPages) {
+      unpinPage(pageId);
     }
   }
 
-
-  private static void unpinPage(PageId pageno)
-          throws UnpinPageException {
+  // Unpin a page with exception handling
+  private static void unpinPage(PageId pageno) throws UnpinPageException {
     try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, false /* = not DIRTY */);
+      SystemDefs.JavabaseBM.unpinPage(pageno, false);
     } catch (Exception e) {
       e.printStackTrace();
-      throw new UnpinPageException(e, "");
+      throw new UnpinPageException(e, "UnpinPage Failed");
     }
   }
 
+  // Pin a page with exception handling
   private static Page pinPage(PageId pageno) throws PinPageException {
     try {
       Page page = new Page();
-      SystemDefs.JavabaseBM.pinPage(pageno, page, false/*Rdisk*/);
+      SystemDefs.JavabaseBM.pinPage(pageno, page, false);
       return page;
     } catch (Exception e) {
       e.printStackTrace();
-      throw new PinPageException(e, "");
+      throw new PinPageException(e, "PinPage Failed");
     }
   }
 }
