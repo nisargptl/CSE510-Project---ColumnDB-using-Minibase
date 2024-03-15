@@ -8,6 +8,8 @@ import global.*;
 import heap.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 // public class BitMapFile extends IndexFile {
 
@@ -17,6 +19,9 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   private PageId headerPageId;
   private String fileName;
 
+  public BitMapHeaderPage getHeaderPage() {
+    return headerPage;
+  }
 
   public BitMapFile(String filename)
           throws Exception {
@@ -157,6 +162,17 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     }
   }
 
+  private void unpinPage(PageId pageno, boolean dirty)
+          throws UnpinPageException {
+    try {
+      SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new UnpinPageException(e, "");
+    }
+  }
+
+
   private void freePage(PageId pageno) throws FreePageException {
     try {
       SystemDefs.JavabaseBM.freePage(pageno);
@@ -178,22 +194,79 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     }
   }
 
-  // Hypothetical helper method to locate the correct BMPage based on a global position
-  private BMPage locatePage(int globalPosition) {
-    // Implement logic to locate the correct BMPage object
-    // This might involve navigating through linked BMPage objects or a directory structure
-    return null; // Placeholder
-  }
+  private PageId getNewBMPage(PageId prevPageId) throws Exception {
+    Page apage = new Page();
+    PageId pageId = newPage(apage, 1);
+    BMPage bmPage = new BMPage();
+    bmPage.init(pageId, apage);
+    bmPage.setPrevPage(prevPageId);
 
-  // Hypothetical helper method to calculate the local position within a BMPage given a global position
-  private int calculateLocalPosition(int globalPosition) {
-    // Implement logic to calculate local position within a BMPage
-    return globalPosition; // Placeholder
+    return pageId;
   }
 
   private void setValueAtPosition(boolean set, int position) throws Exception {
-    // Optimized logic for updating the bitmap at a given position
-    // Note: Implement the optimization and handling of new pages as discussed
+    List<PageId> pinnedPages = new ArrayList<>();
+    if (headerPage == null) {
+      throw new Exception("Bitmap header page is null");
+    }
+    if (headerPage.get_rootId().pid != INVALID_PAGE) {
+      int pageCounter = 1;
+      while (position >= BMPage.NUM_POSITIONS_IN_A_PAGE) {
+        pageCounter++;
+        position -= BMPage.NUM_POSITIONS_IN_A_PAGE;
+      }
+      PageId bmPageId = headerPage.get_rootId();
+      Page page = pinPage(bmPageId);
+      pinnedPages.add(bmPageId);
+      BMPage bmPage = new BMPage(page);
+      for (int i = 1; i < pageCounter; i++) {
+        bmPageId = bmPage.getNextPage();
+        if (bmPageId.pid == BMPage.INVALID_PAGE) {
+          PageId newPageId = getNewBMPage(bmPage.getCurPage());
+          pinnedPages.add(newPageId);
+          bmPage.setNextPage(newPageId);
+          bmPageId = newPageId;
+        }
+        page = pinPage(bmPageId);
+        bmPage = new BMPage(page);
+      }
+      byte[] currData = bmPage.getBMpageArray();
+      int bytoPos = position/8;
+      int bitPos = position%8;
+      if(set)
+        currData[bytoPos] |= (1<<bitPos);
+      else
+        currData[bytoPos] &= ~(1<<bitPos);
+      bmPage.writeBMPageArray(currData);
+      if (bmPage.getCounter() < position + 1) {
+        bmPage.updateCounter((short) (position + 1));
+      }
+    } else {
+      PageId newPageId = getNewBMPage(headerPageId);
+      pinnedPages.add(newPageId);
+      headerPage.set_rootId(newPageId);
+      setValueAtPosition(set, position);
+    }
+    for (PageId pinnedPage : pinnedPages) {
+      unpinPage(pinnedPage, true);
+    }
+  }
+
+  private PageId newPage(Page page, int num) throws HFBufMgrException {
+    PageId tmpId = new PageId();
+    try {
+      tmpId = SystemDefs.JavabaseBM.newPage(page, num);
+    } catch (Exception e) {
+      throw new HFBufMgrException(e, "Heapfile.java: newPage() failed");
+    }
+    return tmpId;
+  }
+
+  public void scanClose() throws Exception {
+    if (headerPage != null) {
+      SystemDefs.JavabaseBM.unpinPage(headerPageId, false);
+      headerPage = null;
+    }
   }
 
   @Override

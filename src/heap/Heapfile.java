@@ -946,6 +946,53 @@ public class Heapfile implements Filetype,  GlobalConst {
       
       delete_file_entry( _fileName );
     }
+
+	public PageId setCurPage_forGivenPosition(int position) throws Exception {
+		RID rid = recordAtPosition(position);
+
+		return rid.pageNo;
+	}
+
+	public RID recordAtPosition(int position) throws HFBufMgrException, IOException, InvalidSlotNumberException, InvalidTupleSizeException {
+
+		PageId currentDirPageId = new PageId();
+		currentDirPageId.pid = _firstDirPageId.pid;
+		PageId nextDirPageId = new PageId();
+		nextDirPageId.pid = 0;
+		HFPage currentDirPage = new HFPage();
+		Tuple atuple;
+
+		pinPage(currentDirPageId, currentDirPage, false);
+		RID rid = null;
+		int cnt = 0;
+		while (currentDirPageId.pid != INVALID_PAGE) {
+			for (rid = currentDirPage.firstRecord();
+				 rid != null;
+				 rid = currentDirPage.nextRecord(rid)) {
+				atuple = currentDirPage.getRecord(rid);
+				DataPageInfo dpinfo = new DataPageInfo(atuple);
+
+				if(cnt + dpinfo.recct > position){
+					unpinPage(currentDirPageId, false /*undirty*/);
+					HFPage apage = new HFPage();
+					pinPage(dpinfo.pageId, apage, false);
+					int slot = apage.slotAtRelativePosition(position-cnt);
+					unpinPage(dpinfo.pageId, false);
+					return new RID(dpinfo.pageId, slot);
+				}
+				cnt += dpinfo.recct;
+
+			}
+
+			nextDirPageId = currentDirPage.getNextPage();
+			unpinPage(currentDirPageId, false);
+			currentDirPageId.pid = nextDirPageId.pid;
+			if (nextDirPageId.pid != INVALID_PAGE) {
+				pinPage(currentDirPageId, currentDirPage, false);
+			}
+		}
+		return null;
+	}
   
   /**
    * short cut to access the pinPage function in bufmgr package.

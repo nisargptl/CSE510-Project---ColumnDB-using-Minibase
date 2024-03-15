@@ -5,7 +5,23 @@ import global.*;
 import heap.*;
 import java.io.IOException;
 
-public class BMPage extends HFPage {
+public class BMPage extends HFPage implements GlobalConst {
+
+  public static final int DPFIXED = 2 * 2 + 3 * 4;
+  public static final int NUM_POSITIONS_IN_A_PAGE = (MAX_SPACE - DPFIXED)*8;
+
+  public static final int COUNTER = 0;
+  public static final int FREE_SPACE = 2;
+  public static final int PREV_PAGE = 4;
+  public static final int NEXT_PAGE = 8;
+  public static final int CUR_PAGE = 12;
+
+
+  private PageId curPage = new PageId();
+  private short counter;
+  private short freeSpace;
+  private PageId prevPage = new PageId();
+  private PageId nextPage = new PageId();
 
   public BMPage() {
     super(); // Call HFPage constructor
@@ -52,58 +68,64 @@ public class BMPage extends HFPage {
     }
   }
 
-  @Override
   public void init(PageId pageNo, Page apage) throws IOException {
-    // Initialize a new bitmap page
-    try {
-      super.init(pageNo, apage);
-      // Additional initialization specific to bitmap pages can go here
-    } catch (IOException e) {
-      System.err.println("BMPage initialization failed: " + e.getMessage());
+    data = apage.getpage();
+
+    counter = (short) 0;
+    Convert.setShortValue(counter, COUNTER, data);
+
+    curPage.pid = pageNo.pid;
+    Convert.setIntValue(curPage.pid, CUR_PAGE, data);
+    nextPage.pid = prevPage.pid = INVALID_PAGE;
+    Convert.setIntValue(prevPage.pid, PREV_PAGE, data);
+    Convert.setIntValue(nextPage.pid, NEXT_PAGE, data);
+
+    freeSpace = (short) NUM_POSITIONS_IN_A_PAGE;    // amount of space available
+    Convert.setShortValue(freeSpace, FREE_SPACE, data);
+
+    for (int i = DPFIXED; i < MAX_SPACE; i++) {
+      Convert.setByteValue((byte) 0, i, data);
     }
   }
 
   public void openBMpage(Page apage) {
-    // Open an existing bitmap page
-    super.openHFpage(apage); // Reuse HFPage's method as it does exactly what's needed
+    data = apage.getpage();
   }
 
-  // The methods getCurPage, getNextPage, getPrevPage, setCurPage, setNextPage, setPrevPage
-  // can directly use the implementations from HFPage as they are general enough for any type of page management
-  @Override
-  public PageId getCurPage() throws IOException {
-    // Utilizes HFPage's method to get the current page ID
-    return super.getCurPage();
+  public PageId getCurPage()
+          throws IOException {
+    curPage.pid = Convert.getIntValue(CUR_PAGE, data);
+    return curPage;
   }
 
-  @Override
-  public PageId getNextPage() throws IOException {
-    // Utilizes HFPage's method to get the next page ID
-    return super.getNextPage();
+  public void setCurPage(PageId pageNo)
+          throws IOException {
+    curPage.pid = pageNo.pid;
+    Convert.setIntValue(curPage.pid, CUR_PAGE, data);
   }
 
-  @Override
-  public PageId getPrevPage() throws IOException {
-    // Utilizes HFPage's method to get the previous page ID
-    return super.getPrevPage();
+  public PageId getNextPage()
+          throws IOException {
+    nextPage.pid = Convert.getIntValue(NEXT_PAGE, data);
+    return nextPage;
   }
 
-  @Override
-  public void setCurPage(PageId pageNo) throws IOException {
-    // Sets the current page to the specified page ID
-    super.setCurPage(pageNo);
+  public void setNextPage(PageId pageNo)
+          throws IOException {
+    nextPage.pid = pageNo.pid;
+    Convert.setIntValue(nextPage.pid, NEXT_PAGE, data);
   }
 
-  @Override
-  public void setNextPage(PageId pageNo) throws IOException {
-    // Sets the next page to the specified page ID
-    super.setNextPage(pageNo);
+  public PageId getPrevPage()
+          throws IOException {
+    prevPage.pid = Convert.getIntValue(PREV_PAGE, data);
+    return prevPage;
   }
 
-  @Override
-  public void setPrevPage(PageId pageNo) throws IOException {
-    // Sets the previous page to the specified page ID
-    super.setPrevPage(pageNo);
+  public void setPrevPage(PageId pageNo)
+          throws IOException {
+    prevPage.pid = pageNo.pid;
+    Convert.setIntValue(prevPage.pid, PREV_PAGE, data);
   }
 
   public int getBit(int position) {
@@ -120,76 +142,30 @@ public class BMPage extends HFPage {
     return (targetByte >> (7 - bitOffset)) & 1; // Extract the specific bit and return its value
   }
 
-  //  public void setBit(int position, boolean value) throws IOException {
-  //    // This method sets the value of the bit at the specified position
-  //    int byteOffset = position / 8;
-  //    int bitOffset = position % 8;
-  //    byte[] pageData = getpage();
-  //
-  //    if (byteOffset < 0 || byteOffset >= pageData.length) {
-  //      throw new IOException("Position out of bounds");
-  //    }
-  //
-  //    if (value) {
-  //      // Set the bit to 1
-  //      pageData[byteOffset] =
-  //        (byte) (pageData[byteOffset] | (1 << (7 - bitOffset)));
-  //    } else {
-  //      // Set the bit to 0
-  //      pageData[byteOffset] =
-  //        (byte) (pageData[byteOffset] & ~(1 << (7 - bitOffset)));
-  //    }
-  //    markDirty();
-  //  }
 
-  public byte[] getBMpageArray() {
-    // Return the data byte array of this bitmap page
-    return getpage();
+  public byte[] getBMpageArray() throws Exception {
+    int numBytesInPage = NUM_POSITIONS_IN_A_PAGE /8;
+    byte[] bitMapArray = new byte[numBytesInPage];
+    for (int i = 0; i < numBytesInPage; i++) {
+      bitMapArray[i] = Convert.getByteValue(DPFIXED + i, data);
+    }
+    return bitMapArray;
   }
 
-  //  public void writeBMPageArray(byte[] array) throws Exception {
-  //    // Write the given byte array to the bitmap data portion of the page
-  //    super.writeBMPageArray(array); // Implement this based on actual bitmap data handling
-  //  }
-
-  public void setCurPage_forGivenPosition(int position) throws IOException {
-    // Calculate the number of bits that can fit into a page.
-    // In a real scenario, the conversion between bytes and bits should be handled properly.
-    // Here, it's simplified with the assumption of 1 byte = 1 bit.
-    int bitsPerPage = available_space(); // This method needs to be defined to return available space per page.
-
-    // Calculate the page number by dividing the position by the number of bits per page.
-    // This will determine on which page the bit at 'position' is located.
-    int pageNumber = position / bitsPerPage;
-
-    // Create a PageId instance. Assuming a PageId class exists with a pid attribute.
-    PageId calculatedPageId = new PageId();
-
-    // Calculate the physical PageId from the logical page number.
-    // You need to implement this method based on your bitmap index's organization.
-    calculatedPageId.pid = calculatePageIdFromNumber(pageNumber);
-
-    // Check if the calculated page ID is valid.
-    if (calculatedPageId.pid != INVALID_PAGE) {
-      // Fetch the page from disk into memory, which involves:
-      // 1. Pinning the page in the buffer manager (assuming this happens within 'setCurPage')
-      // 2. Setting the current page context to the fetched page
-      // This method must handle the actual setting of the current page in memory.
-      setCurPage(calculatedPageId);
-    } else {
-      // Handle the case where the position is invalid or outside the bitmap's range.
-      // This could log an error, throw an exception, or any other error handling mechanism.
-      System.err.println(
-        "Position " + position + " is outside the range of the bitmap index."
-      );
+  void writeBMPageArray(byte[] givenData) throws Exception {
+    int count = givenData.length;
+    for (int i = 0; i < count; i++) {
+      Convert.setByteValue(givenData[i], DPFIXED + i, data);
     }
   }
 
-  private int calculatePageIdFromNumber(int pageNumber) {
-    int pageId = 0;
-    return pageId;
+  public Integer getCounter() throws Exception {
+    return (int) Convert.getShortValue(COUNTER, data);
   }
-  // Note: This code assumes the existence of 'available_space', 'calculatePageIdFromNumber', and 'setCurPage' methods,
-  // as well as a 'PageId' class with a 'pid' attribute, and an 'INVALID_PAGE' constant to check for invalid pages.
+
+  public void updateCounter(Short value) throws Exception {
+    Convert.setShortValue(value, COUNTER, data);
+    Convert.setShortValue((short) (NUM_POSITIONS_IN_A_PAGE - value), FREE_SPACE, data);
+  }
 
 }

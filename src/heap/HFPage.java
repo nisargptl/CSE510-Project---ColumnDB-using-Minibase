@@ -457,6 +457,23 @@ public class HFPage extends Page
 	throw new InvalidSlotNumberException (null, "HEAPFILE: INVALID_SLOTNO");
       }
     }
+
+    public int slotAtRelativePosition(int position)
+            throws IOException {
+
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+        int i;
+        short length;
+        for (i = 0; i < slotCnt; i++) {
+            length = getSlotLength(i);
+            if (length != EMPTY_SLOT)
+                position--;
+            if (position == -1)
+                break;
+        }
+
+        return i;
+    }
   
   /**
    * @return RID of first record on page, null if page contains no records.  
