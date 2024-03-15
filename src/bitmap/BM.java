@@ -9,12 +9,10 @@ import java.util.*;
 
 public class BM implements GlobalConst {
 
-  // Adjusted constructor comment
   public BM() {
     // BM Constructor
   }
 
-  // Updated the printBitMap method's structure
   public static void printBitMap(BitMapHeaderPage header) throws Exception {
     if (header == null) {
       System.out.println("\n Empty Header!!!");
