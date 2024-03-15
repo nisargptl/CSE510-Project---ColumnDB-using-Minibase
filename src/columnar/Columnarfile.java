@@ -13,21 +13,14 @@ import static tests.TestDriver.FAIL;
 import static tests.TestDriver.OK;
 
 public class Columnarfile {
+    String fname;
     short numColumns;
-    // field to store all the types of the columns
-    AttrType[] atype = null;
-    // Stores sizes of the Attributes
+    AttrType[] atype;
     short[] attrsizes;
-
-    //Best way handle +2 bytes for strings instead of multiple ifs
     short[] asize;
-    // The column files for the c-store
-    private Heapfile[] hf = null;
-    String fname = null;
-    //int tupleCnt = 0;
-    Tuple hdr = null;
-    RID hdrRid = null;
-    // Maps Attributes to position
+    private Heapfile[] hf;
+    Tuple hdr;
+    RID hdrRid;
     HashMap<String, Integer> columnMap;
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
