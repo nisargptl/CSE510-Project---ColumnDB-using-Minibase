@@ -56,7 +56,7 @@ public class ColumnIndexScan extends Iterator {
     private final CondExpr[] _selects;
     private int _noInFlds;
     private int _noOutFlds;
-    private final Heapfile f;
+    // private final Heapfile f;
     private Tuple tuple1;
     private Tuple Jtuple;
     private int t1_size;
