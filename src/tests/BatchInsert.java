@@ -1,4 +1,4 @@
-package operations;
+package tests;
 
 import bufmgr.*;
 import columnar.Columnarfile;

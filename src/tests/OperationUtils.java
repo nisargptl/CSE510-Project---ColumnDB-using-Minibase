@@ -1,4 +1,4 @@
-package operations;
+package tests;
 
 import global.AttrOperator;
 import global.AttrType;
