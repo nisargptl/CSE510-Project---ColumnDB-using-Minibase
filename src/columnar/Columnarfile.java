@@ -18,9 +18,9 @@ public class Columnarfile {
     AttrType[] _ctype;
     short[] attrsizes;
     short[] asize;
-    private Heapfile[] hf;
-    Tuple hdr;
-    RID hdrRid;
+    private Heapfile[] _columnHeaps;
+    Tuple _hdr;
+    RID _hdrRid;
     HashMap<String, Integer> columnMap;
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -40,14 +40,14 @@ public class Columnarfile {
             f = new Heapfile(_fileName + ".hdr");
 
             scan = f.openScan();
-            hdrRid = new RID();
+            _hdrRid = new RID();
 
             // Fetching the header tuple from the disk
-            Tuple hdr = scan.getNext(hdrRid);
-            hdr.setHeaderMetaData();
+            Tuple _hdr = scan.getNext(hdrRid);
+            _hdr.setHeaderMetaData();
 
             // Header file format - numColumns, AttrType[0], AttrSize[0], AttrType[1], AttrSize[1], AttrType[2], AttrSize[2],  .... AttrType[numColumns-1], AttrSize[numColumns-1]
-            this.numColumns = (short) hdr.getIntFld(1);
+            this.numColumns = (short) _hdr.getIntFld(1);
             _ctype = new AttrType[numColumns];
             attrsizes = new short[numColumns];
             asize = new short[numColumns];
@@ -55,15 +55,15 @@ public class Columnarfile {
             int k = 0;
             for (int i = 0; i < numColumns; i++, k = k + 3) {
                 _ctype[i] = new AttrType(hdr.getIntFld(2 + k));
-                attrsizes[i] = (short) hdr.getIntFld(3 + k);
-                String colName = hdr.getStrFld(4 + k);
+                attrsizes[i] = (short) _hdr.getIntFld(3 + k);
+                String colName = _hdr.getStrFld(4 + k);
 
                 columnMap.put(colName, i);
                 asize[i] = attrsizes[i];
                 if (_ctype[i].attrType == AttrType.attrString)
                     asize[i] += 2;
             }
-            hf = new Heapfile[numColumns];
+            _columnHeaps = new Heapfile[numColumns];
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -72,12 +72,12 @@ public class Columnarfile {
     public Columnarfile(String _fileName, int numcols, AttrType[] types, short[] attrSizes) throws IOException, InvalidTupleSizeException, InvalidTypeException, FieldNumberOutOfBoundException, SpaceNotAvailableException, HFException, HFBufMgrException, InvalidSlotNumberException, HFDiskMgrException {
         String[] colnames = new String[numcols];
         boolean status = true;
-        Heapfile hdrFile = null;
+        Heapfile _hdrFile = null;
         columnMap = new HashMap<>();
         try {
-            hf = new Heapfile[numcols];
-            //hf[0] for header file by default
-            hdrFile = new Heapfile(_fileName + ".hdr");
+            _columnHeaps = new Heapfile[numcols];
+            
+            _hdrFile = new Heapfile(_fileName + ".hdr");
 
         } catch (Exception e) {
             status = false;
@@ -129,21 +129,21 @@ public class Columnarfile {
             for (int i = 0; i < numColumns; i++) {
                 hsizes[i] = 20; //column name can't be more than 20 chars
             }
-            hdr = new Tuple();
-            hdr.setHdr((short) htypes.length, htypes, hsizes);
-            int size = hdr.size();
+            _hdr = new Tuple();
+            _hdr.setHdr((short) htypes.length, htypes, hsizes);
+            int size = _hdr.size();
 
-            hdr = new Tuple(size);
-            hdr.setHdr((short) htypes.length, htypes, hsizes);
-            hdr.setIntFld(1, numColumns);
+            _hdr = new Tuple(size);
+            _hdr.setHdr((short) htypes.length, htypes, hsizes);
+            _hdr.setIntFld(1, numColumns);
             int j = 0;
             for (int i = 0; i < numColumns; i++, j = j + 3) {
-                hdr.setIntFld(2 + j, _ctype[i].attrType);
-                hdr.setIntFld(3 + j, attrsizes[i]);
-                hdr.setStrFld(4 + j, colnames[i]);
+                _hdr.setIntFld(2 + j, _ctype[i].attrType);
+                _hdr.setIntFld(3 + j, attrsizes[i]);
+                _hdr.setStrFld(4 + j, colnames[i]);
                 columnMap.put(colnames[i], i);
             }
-            hdrRid = hdrFile.insertRecord(hdr.returnTupleByteArray());
+            _hdrRid = _hdrFile.insertRecord(hdr.returnTupleByteArray());
         }
     }
 
@@ -151,13 +151,13 @@ public class Columnarfile {
     // Parameters - Nothing
     // Returns - Nothing
     public void deleteColumnarFile() throws InvalidSlotNumberException, FileAlreadyDeletedException, InvalidTupleSizeException, HFBufMgrException, HFDiskMgrException, IOException, HFException {
-        Heapfile hdr = new Heapfile(fname + "hdr");
-        hdr.deleteFile();
+        Heapfile _hdr = new Heapfile(fname + "hdr");
+        _hdr.deleteFile();
         Heapfile idx = new Heapfile(fname + "idx");
         idx.deleteFile();
 
         for (int i = 0; i < numColumns; i++) {
-            hf[i].deleteFile();
+            _columnHeaps[i].deleteFile();
         }
         fname = null;
         numColumns = 0;
@@ -238,7 +238,7 @@ public class Columnarfile {
     // 1. int colNum - The number of the column for which the scan object has to be returned
     // Returns - returns the scan object of the given column number
     public Scan openColumnScan(int colNum) throws Exception {
-        if (colNum >= hf.length) {
+        if (colNum >= _columnHeaps.length) {
             throw new Exception("Invalid Column number");
         }
         return new Scan(getColumn(colNum));
@@ -391,15 +391,15 @@ public class Columnarfile {
     }
 
     public Heapfile getColumn(int columnNo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException {
-        if (hf[columnNo] == null)
-            hf[columnNo] = new Heapfile(fname + columnNo);
-        return hf[columnNo];
+        if (_columnHeaps[columnNo] == null)
+            _columnHeaps[columnNo] = new Heapfile(fname + columnNo);
+        return _columnHeaps[columnNo];
     }
 
     public void close() {
-        if (hf != null) {
-            for (int i = 0; i < hf.length; i++)
-                hf[i] = null;
+        if (_columnHeaps != null) {
+            for (int i = 0; i < _columnHeaps.length; i++)
+                _columnHeaps[i] = null;
         }
     }
 
@@ -527,18 +527,18 @@ public class Columnarfile {
     public Tuple getTuple(int position) throws
             Exception {
 
-        for(int i=0; i < hf.length; i++) {
-            hf[i] = new Heapfile(getColumnarFileName() + i);
+        for(int i=0; i < _columnHeaps.length; i++) {
+            _columnHeaps[i] = new Heapfile(getColumnarFileName() + i);
         }
         Tuple JTuple = new Tuple();
         // set the header which attribute types of the targeted columns
-        JTuple.setHdr((short) hf.length, _ctype, getStrSize());
+        JTuple.setHdr((short) _columnHeaps.length, _ctype, getStrSize());
 
         JTuple = new Tuple(JTuple.size());
-        JTuple.setHdr((short) hf.length, _ctype, getStrSize());
-        for (int i = 0; i < hf.length; i++) {
-            RID rid = hf[i].recordAtPosition(position);
-            Tuple record = hf[i].getRecord(rid);
+        JTuple.setHdr((short) _columnHeaps.length, _ctype, getStrSize());
+        for (int i = 0; i < _columnHeaps.length; i++) {
+            RID rid = _columnHeaps[i].recordAtPosition(position);
+            Tuple record = _columnHeaps[i].getRecord(rid);
             switch (_ctype[i].attrType) {
                 case AttrType.attrInteger:
                     // Assumed that col heap page will have only one entry
