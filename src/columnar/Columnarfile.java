@@ -1,10 +1,11 @@
 package columnar;
 
-import btree.BTreeFile;
-import btree.KeyFactory;
-import global.*;
 import heap.*;
+import global.*;
+import btree.KeyFactory;
 import iterator.*;
+import btree.BTreeFile;
+
 
 import java.io.IOException;
 import java.util.*;
@@ -24,7 +25,7 @@ public class Columnarfile {
     HashMap<String, Integer> columnMap;
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
-        Heapfile f;
+        Heapfile hf;
         Scan scan;
         fname = _fileName;
         columnMap = new HashMap<>();
@@ -34,16 +35,16 @@ public class Columnarfile {
             PageId pid = SystemDefs.JavabaseDB.get_file_entry(_fileName + ".hdr");
 
             if (pid == null) {
-                throw new Exception("Columnar with the name: " + _fileName + ".hdr doesn't exists");
+                throw new Exception("Columnar file " + _fileName + "does not exist! Please try again with a different CF name");
             }
 
-            f = new Heapfile(_fileName + ".hdr");
+            hf = new Heapfile(_fileName + ".hdr");
 
-            scan = f.openScan();
+            scan = hf.openScan();
             _hdrRid = new RID();
 
             // Fetching the header tuple from the disk
-            Tuple _hdr = scan.getNext(hdrRid);
+            Tuple _hdr = scan.getNext(_hdrRid);
             _hdr.setHeaderMetaData();
 
             // Header file format - numColumns, AttrType[0], AttrSize[0], AttrType[1], AttrSize[1], AttrType[2], AttrSize[2],  .... AttrType[numColumns-1], AttrSize[numColumns-1]
@@ -54,7 +55,7 @@ public class Columnarfile {
 
             int k = 0;
             for (int i = 0; i < numColumns; i++, k = k + 3) {
-                _ctype[i] = new AttrType(hdr.getIntFld(2 + k));
+                _ctype[i] = new AttrType(_hdr.getIntFld(2 + k));
                 attrsizes[i] = (short) _hdr.getIntFld(3 + k);
                 String colName = _hdr.getStrFld(4 + k);
 
@@ -143,7 +144,7 @@ public class Columnarfile {
                 _hdr.setStrFld(4 + j, colnames[i]);
                 columnMap.put(colnames[i], i);
             }
-            _hdrRid = _hdrFile.insertRecord(hdr.returnTupleByteArray());
+            _hdrRid = _hdrFile.insertRecord(_hdr.returnTupleByteArray());
         }
     }
 
