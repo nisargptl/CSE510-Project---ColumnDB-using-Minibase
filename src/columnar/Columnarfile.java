@@ -218,12 +218,6 @@ public class Columnarfile {
         return res;
     }
 
-//    public ValueClass getValue(TID tidarg, int column) throws Exception {
-//
-//        Tuple t = getColumn(column).getRecord(tidarg.recordIDs[column]);
-//        return ValueFactory.getValueClass(t.getTupleByteArray(), atype[column], asize[column]);
-//    }
-
     // Functionality - Gets the number of tuples in the columnarfile
     // Parameters - None
     // Returns - an integer which is the number of tuples in the columnarfile
@@ -281,13 +275,6 @@ public class Columnarfile {
         return true;
     }
 
-    /**
-     *
-     * @param tidarg
-     * @param newtuple
-     * @param column
-     * @return
-     */
     public boolean updateColumnofTuple(TID tidarg, Tuple newtuple, int column) {
         try {
             int offset = getOffset(column);
@@ -304,12 +291,6 @@ public class Columnarfile {
         return true;
     }
 
-    /**
-     *
-     * @param columnNo
-     * @return
-     * @throws Exception
-     */
     public boolean createBtreeIndex(int columnNo) throws Exception {
         String indexName = getBTName(columnNo);
 
@@ -333,18 +314,6 @@ public class Columnarfile {
         return true;
     }
 
-    /**
-     * Purges all tuples marked for deletion. Removes keys/positions from indexes too
-     *
-     * @return
-     * @throws HFDiskMgrException
-     * @throws InvalidTupleSizeException
-     * @throws IOException
-     * @throws InvalidSlotNumberException
-     * @throws FileAlreadyDeletedException
-     * @throws HFBufMgrException
-     * @throws SortException
-     */
     public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
 
         boolean status = OK;
@@ -404,13 +373,6 @@ public class Columnarfile {
         return true;
     }
 
-    /**
-     * Write the indexes created on each column to the .idx file
-     *
-     * @param indexType
-     * @param indexName
-     * @return
-     */
     private boolean addIndexToColumnar(int indexType, String indexName) {
 
         try {
@@ -435,26 +397,12 @@ public class Columnarfile {
         return true;
     }
 
-    /**
-     * Return the respective column heap file
-     *
-     * @param columnNo
-     * @return
-     * @throws IOException
-     * @throws HFException
-     * @throws HFBufMgrException
-     * @throws HFDiskMgrException
-     */
     public Heapfile getColumn(int columnNo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException {
         if (hf[columnNo] == null)
             hf[columnNo] = new Heapfile(fname + columnNo);
         return hf[columnNo];
     }
 
-
-    /**
-     * remove all the dangling files for the store
-     */
     public void close() {
         if (hf != null) {
             for (int i = 0; i < hf.length; i++)
@@ -507,6 +455,7 @@ public class Columnarfile {
     }
 
     public int getOffset() {
+        // 4 = int for num of cols
         return 4 + (numColumns * 2);
     }
 
@@ -534,12 +483,6 @@ public class Columnarfile {
         return columnMap.get(name);
     }
 
-    /**
-     * return the BT Name
-     *
-     * @param columnNo
-     * @return
-     */
     public String getBTName(int columnNo) {
         return "BT" + "." + fname + "." + columnNo;
     }
