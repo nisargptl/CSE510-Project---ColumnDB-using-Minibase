@@ -1,4 +1,4 @@
-package operations;
+package tests;
 
 import columnar.Columnarfile;
 import diskmgr.PCounter;

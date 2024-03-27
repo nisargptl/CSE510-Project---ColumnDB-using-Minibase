@@ -744,5 +744,39 @@ public class HFPage extends Page
 
       return position;
       }
-  
+
+    public int relativePositionOfSlot(RID rid)
+            throws IOException {
+
+        int position = -1;
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+        int i;
+        short length;
+        for (i = 0; i < slotCnt; i++) {
+            length = getSlotLength(i);
+            if (length != EMPTY_SLOT)
+                position++;
+            if (i == rid.slotNo)
+                break;
+        }
+
+        return position;
+    }
+
+    public int slotAtRelativePosition(int position)
+            throws IOException {
+
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+        int i;
+        short length;
+        for (i = 0; i < slotCnt; i++) {
+            length = getSlotLength(i);
+            if (length != EMPTY_SLOT)
+                position--;
+            if (position == -1)
+                break;
+        }
+
+        return i;
+    }
 }

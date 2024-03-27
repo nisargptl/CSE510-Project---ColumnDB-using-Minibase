@@ -650,6 +650,8 @@ public class Scan implements GlobalConst{
     }
 
   } // end of unpinPage
-
+    public int positionOfRecord(RID rid) throws Exception {
+        return _hf.positionOfRecord(rid);
+    }
 
 }
