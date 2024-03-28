@@ -1,5 +1,6 @@
 package columnar;
 
+import bitmap.BitMapFile;
 import heap.*;
 import global.*;
 import btree.KeyFactory;
@@ -313,6 +314,139 @@ public class Columnarfile {
         addIndexToColumnar(0, indexName);
         return true;
     }
+
+    public String getBMName(int columnNo, ValueClass value) {
+        return "BM" + "." + fname + "." + columnNo + "." + value.toString();
+    }
+
+    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
+        // Define the name for the bitmap file based on the column number and the specific value
+        String indexName = getBMName(columnNo, value);
+
+        // Instantiate the bitmap file
+        BitMapFile bitMapFile = new BitMapFile(indexName, this, columnNo, value);
+
+        // Open a scan on the specific column
+        Scan columnScan = openColumnScan(columnNo);
+        RID rid = new RID();
+        Tuple tuple;
+        int position = 0;
+
+        while (true) {
+            tuple = columnScan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+
+            // Directly extract and compare the value from the tuple based on the column's attribute type
+            boolean matchesValue = false;
+            switch (_ctype[columnNo].attrType) {
+                case AttrType.attrInteger:
+                    int intValue = tuple.getIntFld(1);
+                    if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
+                        matchesValue = true;
+                    }
+                    break;
+                case AttrType.attrString:
+                    String stringValue = tuple.getStrFld(1);
+                    if (value instanceof ValueString && ((ValueString) value).getValue().equals(stringValue)) {
+                        matchesValue = true;
+                    }
+                    break;
+                case AttrType.attrReal:
+                    float floatValue = tuple.getFloFld(1);
+                    if (value instanceof ValueFloat && ((ValueFloat) value).getValue() == floatValue) {
+                        matchesValue = true;
+                    }
+                    break;
+                // Include other types as necessary
+            }
+
+            if (matchesValue) {
+                bitMapFile.insert(position);
+            } else {
+                bitMapFile.delete(position);
+            }
+            position++;
+        }
+
+        columnScan.closescan();
+        bitMapFile.close();
+
+        addIndexToColumnar(1, indexName);
+
+        return true;
+    }
+
+    public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
+        // Initialize a map to keep track of bitmap files created during this operation
+        HashMap<String, BitMapFile> BMMap = new HashMap<>();
+
+        // Open a scan on the specified column
+        Scan columnScan = openColumnScan(columnNo);
+        RID rid = new RID();
+        Tuple tuple;
+        int position = 0;
+
+        while (true) {
+            tuple = columnScan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+
+            // Dynamically determine the value class based on the attribute type
+            ValueClass valueClass = getValueClassForTuple(tuple, _ctype[columnNo]);
+
+            // Generate a bitmap file name based on the column number and the value
+            String bitMapFileName = getBMName(columnNo, valueClass);
+
+            // Create or retrieve a BitMapFile for the current value
+            BitMapFile bitMapFile = BMMap.computeIfAbsent(bitMapFileName, k -> {
+                try {
+                    BitMapFile newBitMapFile = new BitMapFile(bitMapFileName, this, columnNo, valueClass);
+                    addIndexToColumnar(1, bitMapFileName); // Register the new bitmap index
+                    return newBitMapFile;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+
+            // Insert the position into the bitmap file
+            if (bitMapFile != null) {
+                bitMapFile.insert(position);
+            }
+
+            position++;
+        }
+
+        columnScan.closescan();
+
+        // Close all the bitmap files
+        for (BitMapFile bitMapFile : BMMap.values()) {
+            if (bitMapFile != null) {
+                bitMapFile.close();
+            }
+        }
+
+        return true;
+    }
+
+    private ValueClass getValueClassForTuple(Tuple tuple, AttrType attrType) throws Exception {
+        switch (attrType.attrType) {
+            case AttrType.attrInteger:
+                return new ValueInt(tuple.getIntFld(1));
+            case AttrType.attrString:
+                return new ValueString(tuple.getStrFld(1));
+            case AttrType.attrReal:
+                return new ValueFloat(tuple.getFloFld(1));
+            default:
+                throw new Exception("Unsupported attribute type");
+        }
+    }
+
+
+
     public boolean markTupleDeleted(TID tid){
         try{
             byte[] tidByteArray = objectToByteArray(tid);
