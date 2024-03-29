@@ -30,7 +30,7 @@ public class Index {
        Columnarfile cf = new Columnarfile(columnarFile);
 
        if (indexType.equals("BITMAP")) {
-           //cf.createAllBitMapIndexForColumn(colno);
+           cf.createAllBitMapIndexForColumn(Integer.parseInt(num));
            System.out.println("no bitmap");
        } else {
            cf.createBtreeIndex(Integer.parseInt(num));
