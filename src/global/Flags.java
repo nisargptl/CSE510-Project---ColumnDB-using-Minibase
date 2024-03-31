@@ -8,7 +8,7 @@ package global;
 
 public interface Flags {
 
-    public static final boolean TEST  = false;
-    public static final boolean DEBUG  = false;
+    boolean TEST  = false;
+    boolean DEBUG  = false;
 
 }

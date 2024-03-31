@@ -21,7 +21,7 @@ public class Convert{
       InputStream in;
       DataInputStream instr;
       int value;
-      byte tmp[] = new byte[4];
+      byte[] tmp = new byte[4];
       
       // copy the value from data array out to a tmp byte array
       System.arraycopy (data, position, tmp, 0, 4);
@@ -50,7 +50,7 @@ public class Convert{
       InputStream in;
       DataInputStream instr;
       float value;
-      byte tmp[] = new byte[4];
+      byte[] tmp = new byte[4];
       
       // copy the value from data array out to a tmp byte array
       System.arraycopy (data, position, tmp, 0, 4);
@@ -80,7 +80,7 @@ public class Convert{
       InputStream in;
       DataInputStream instr;
       short value;
-      byte tmp[] = new byte[2];
+      byte[] tmp = new byte[2];
       
       // copy the value from data array out to a tmp byte array
       System.arraycopy (data, position, tmp, 0, 2);
@@ -111,7 +111,7 @@ public class Convert{
       InputStream in;
       DataInputStream instr;
       String value;
-      byte tmp[] = new byte[length];  
+      byte[] tmp = new byte[length];
       
       // copy the value from data array out to a tmp byte array
       System.arraycopy (data, position, tmp, 0, length);
@@ -139,7 +139,7 @@ public class Convert{
       InputStream in;
       DataInputStream instr;
       char value;
-      byte tmp[] = new byte[2];
+      byte[] tmp = new byte[2];
       // copy the value from data array out to a tmp byte array  
       System.arraycopy (data, position, tmp, 0, 2);
       
@@ -330,7 +330,7 @@ public class Convert{
         InputStream in;
         DataInputStream instr;
         byte value;
-        byte tmp[] = new byte[1];
+        byte[] tmp = new byte[1];
 
         // copy the value from data array out to a tmp byte array
         System.arraycopy(data, position, tmp, 0, 1);

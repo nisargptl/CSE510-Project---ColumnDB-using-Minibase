@@ -97,11 +97,8 @@ public class ColumnIndexScan extends Iterator {
             short str_sizes,
             CondExpr[] selects,
             final boolean indexOnly)
-            throws IndexException,
-            InvalidTypeException,
-            InvalidTupleSizeException,
-            UnknownIndexTypeException,
-            IOException, HFDiskMgrException, HFException, HFBufMgrException, Exception {
+            throws
+            Exception {
         _type = type;
         _s_sizes = str_sizes;
         index_only = indexOnly;

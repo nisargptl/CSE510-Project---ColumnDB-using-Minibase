@@ -16,16 +16,16 @@ import java.io.*;
  */
 public class FileScan extends  Iterator
 {
-  private AttrType[] _in1;
-  private short in1_len;
-  private short[] s_sizes; 
-  private Heapfile f;
-  private Scan scan;
+  private final AttrType[] _in1;
+  private final short in1_len;
+  private final short[] s_sizes;
+  private final Heapfile f;
+  private final Scan scan;
   private Tuple     tuple1;
-  private Tuple    Jtuple;
-  private int        t1_size;
-  private int nOutFlds;
-  private CondExpr[]  OutputFilter;
+  private final Tuple    Jtuple;
+  private final int        t1_size;
+  private final int nOutFlds;
+  private final CondExpr[]  OutputFilter;
   public FldSpec[] perm_mat;
 
  
@@ -45,12 +45,12 @@ public class FileScan extends  Iterator
    *@exception InvalidRelation invalid relation 
    */
   public  FileScan (String  file_name,
-		    AttrType in1[],                
-		    short s1_sizes[], 
-		    short     len_in1,              
-		    int n_out_flds,
-		    FldSpec[] proj_list,
-		    CondExpr[]  outFilter        		    
+                    AttrType[] in1,
+                    short[] s1_sizes,
+                    short     len_in1,
+                    int n_out_flds,
+                    FldSpec[] proj_list,
+                    CondExpr[]  outFilter
 		    )
     throws IOException,
 	   FileScanException,
@@ -125,15 +125,15 @@ public class FileScan extends  Iterator
 	   FieldNumberOutOfBoundException,
 	   WrongPermat
     {     
-      RID rid = new RID();;
-      
-      while(true) {
+      RID rid = new RID();
+
+        while(true) {
 	if((tuple1 =  scan.getNext(rid)) == null) {
 	  return null;
 	}
 	
 	tuple1.setHdr(in1_len, _in1, s_sizes);
-	if (PredEval.Eval(OutputFilter, tuple1, null, _in1, null) == true){
+	if (PredEval.Eval(OutputFilter, tuple1, null, _in1, null)){
 	  Projection.Project(tuple1, _in1,  Jtuple, perm_mat, nOutFlds); 
 	  return  Jtuple;
 	}        

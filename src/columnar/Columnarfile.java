@@ -96,7 +96,7 @@ public class Columnarfile {
             colnames[i] = _fileName + "." + cnum;
         }
 
-        if (status == true) {
+        if (status) {
             numColumns = (short) (n);
             this.fname = _fileName;
             _ctype = new AttrType[numColumns];

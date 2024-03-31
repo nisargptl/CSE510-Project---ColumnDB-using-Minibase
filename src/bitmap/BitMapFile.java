@@ -14,7 +14,7 @@ public class BitMapFile implements GlobalConst {
 
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
-  private String fileName;
+  private final String fileName;
 
   public BitMapFile(String filename) throws Exception {
     this.fileName = filename;

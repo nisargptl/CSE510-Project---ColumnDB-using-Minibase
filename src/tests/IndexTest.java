@@ -14,7 +14,7 @@ import java.util.Random;
 class IndexDriver extends TestDriver 
   implements GlobalConst {
 
-  private static String   data1[] = {
+  private static final String[] data1 = {
 	"raghu", "xbao", "cychan", "leela", "ketola", "soma", "ulloa", 
 	"dhanoa", "dsilva", "kurniawa", "dissoswa", "waic", "susanc", "kinc", 
 	"marc", "scottc", "yuc", "ireland", "rathgebe", "joyce", "daode", 
@@ -30,7 +30,7 @@ class IndexDriver extends TestDriver
 	"honghu", "guangshu", "chingju", "bradw", "andyw", "gray", "vharvey", 
 	"awny", "savoy", "meltz"}; 
       
-  private static String   data2[] = {
+  private static final String[] data2 = {
 	"andyw", "awny", "azat", "barthel", "binh", "bloch", "bradw", 
 	"chingju", "chui", "chung-pi", "cychan", "dai", "daode", "dhanoa", 
 	"dissoswa", "djensen", "dsilva", "dwiyono", "edwards", "evgueni", 
@@ -46,10 +46,10 @@ class IndexDriver extends TestDriver
 	"wan", "wawrzon", "wenchao", "wlau", "xbao", "xiaoming", "xin", 
 	"yi-chun", "yiching", "yuc", "yung", "yuvadee", "zmudzin" };
 
-  private static int   NUM_RECORDS = data2.length; 
-  private static int   LARGE = 1000; 
-  private static short REC_LEN1 = 32; 
-  private static short REC_LEN2 = 160; 
+  private static final int   NUM_RECORDS = data2.length;
+  private static final int   LARGE = 1000;
+  private static final short REC_LEN1 = 32;
+  private static final short REC_LEN2 = 160;
 
 
   public IndexDriver() {
@@ -842,14 +842,14 @@ class IndexDriver extends TestDriver
 
 public class IndexTest
 {
-  public static void main(String argv[])
+  public static void main(String[] argv)
   {
     boolean indexstatus;
 
     IndexDriver indext = new IndexDriver();
 
     indexstatus = indext.runTests();
-    if (indexstatus != true) {
+    if (!indexstatus) {
       System.out.println("Error ocurred during index tests");
     }
     else {

@@ -143,8 +143,7 @@ public class pnodeSplayPQ extends pnodePQ
     if ((t.rt = pnodeSplayNode.dummy.lt) != null) t.rt.par = t;
     t.par = null;
     root = t;
-	    
-    return; 
+
   }
   
   /**

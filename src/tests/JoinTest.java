@@ -64,11 +64,11 @@ class Reserves {
 
 class JoinsDriver implements GlobalConst {
   
-  private boolean OK = true;
-  private boolean FAIL = false;
-  private Vector sailors;
-  private Vector boats;
-  private Vector reserves;
+  private final boolean OK = true;
+  private final boolean FAIL = false;
+  private final Vector sailors;
+  private final Vector boats;
+  private final Vector reserves;
   /** Constructor
    */
   public JoinsDriver() {
@@ -953,7 +953,7 @@ class JoinsDriver implements GlobalConst {
     Sort sort_names = null;
     try {
       sort_names = new Sort (JJtype,(short)1, JJsize,
-			     (iterator.Iterator) nlj2, 1, ascending, JJsize[0], 10);
+              nlj2, 1, ascending, JJsize[0], 10);
     }
     catch (Exception e) {
       System.err.println ("*** Error preparing for nested_loop_join");
@@ -1019,7 +1019,7 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
  
-    AttrType Stypes[] = {
+    AttrType[] Stypes = {
       new AttrType(AttrType.attrInteger),
       new AttrType(AttrType.attrString),
       new AttrType(AttrType.attrInteger),
@@ -1175,7 +1175,7 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
  
-    AttrType Stypes[] = {
+    AttrType[] Stypes = {
       new AttrType(AttrType.attrInteger),
       new AttrType(AttrType.attrString),
       new AttrType(AttrType.attrInteger),
@@ -1340,7 +1340,7 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
  
-    AttrType Stypes[] = {
+    AttrType[] Stypes = {
       new AttrType(AttrType.attrInteger),
       new AttrType(AttrType.attrString),
       new AttrType(AttrType.attrInteger),
@@ -1630,7 +1630,7 @@ class JoinsDriver implements GlobalConst {
       Sort sort_names = null;
       try {
 	sort_names = new Sort (JJtype,(short)1, JJsize,
-			       (iterator.Iterator) nlj, 1, ascending, JJsize[0], 10);
+            nlj, 1, ascending, JJsize[0], 10);
       }
       catch (Exception e) {
 	System.err.println ("*** Error preparing for sorting");
@@ -1686,7 +1686,7 @@ class JoinsDriver implements GlobalConst {
 
 public class JoinTest
 {
-  public static void main(String argv[])
+  public static void main(String[] argv)
   {
     boolean sortstatus;
     //SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
@@ -1695,7 +1695,7 @@ public class JoinTest
     JoinsDriver jjoin = new JoinsDriver();
 
     sortstatus = jjoin.runTests();
-    if (sortstatus != true) {
+    if (!sortstatus) {
       System.out.println("Error ocurred during join tests");
     }
     else {

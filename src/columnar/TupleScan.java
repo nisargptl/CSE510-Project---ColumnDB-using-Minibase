@@ -12,13 +12,13 @@ import java.io.IOException;
 
 public class TupleScan {
     Scan[] scans;
-    private Columnarfile _columnarFile;
+    private final Columnarfile _columnarFile;
 
-    private AttrType[] _ctypes;
-    private short[] _csize;
-    private short[] _stringSizes;
+    private final AttrType[] _ctypes;
+    private final short[] _csize;
+    private final short[] _stringSizes;
     private short numColumns;
-    private int tupOffset;
+    private final int tupOffset;
     private int tupSize;
 
     // Functionality - Scans only the columns mentioned in the columns array

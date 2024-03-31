@@ -51,11 +51,11 @@ public class BatchInsert{
 
             // First line in the data file has attr type info. Read it and split it on tab spaces to get individual columns
             String attrType = b.readLine();
-            String parts[] = attrType.split("\t");
+            String[] parts = attrType.split("\t");
 
             int i = 0;
             for (String s : parts) {
-                String t[] = s.split(":");
+                String[] t = s.split(":");
                 names[i] = t[0];
                 if (t[1].contains("char")) {
                     attrTypes[i] = new AttrType(AttrType.attrString);
@@ -75,7 +75,7 @@ public class BatchInsert{
 
             //  Start inserting the data
             while ((record = b.readLine()) != null) {
-                String vals[] = record.split("\t");
+                String[] vals = record.split("\t");
 
                 Tuple t = new Tuple();
                 t.setHdr((short) numColumns, attrTypes, attrSizes);

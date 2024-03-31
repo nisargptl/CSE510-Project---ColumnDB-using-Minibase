@@ -113,7 +113,7 @@ public class BitMapHeaderPage extends HFPage {
    * @return
    * @throws IOException
    */
-  public PageId getPageId() throws IOException, IOException {
+  public PageId getPageId() throws IOException {
     return getCurPage();
   }
 }

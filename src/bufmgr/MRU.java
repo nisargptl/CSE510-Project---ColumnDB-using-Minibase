@@ -17,7 +17,7 @@ class MRU extends Replacer {
    * private field
    * An array to hold number of frames in the buffer pool
    */
- private int frames[];
+ private int[] frames;
 
 
 /**

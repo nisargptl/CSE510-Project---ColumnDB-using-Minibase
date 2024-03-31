@@ -8,26 +8,26 @@ public class IndexData extends DataClass {
   private PageId pageId;
 
   public String toString() {
-     return (new Integer(pageId.pid)).toString();
+     return (Integer.valueOf(pageId.pid)).toString();
   }
 
   /** Class constructor
    *  @param     pageNo  the page number
    */
-  IndexData(PageId  pageNo) { pageId = new PageId(pageNo.pid);};  
+  IndexData(PageId  pageNo) { pageId = new PageId(pageNo.pid);}
 
-  /** Class constructor
+    /** Class constructor
    *  @param     pageNo  the page number
    */
-  IndexData(int  pageNo) { pageId = new PageId(pageNo);};  
+  IndexData(int  pageNo) { pageId = new PageId(pageNo);}
 
 
-  /** get a copy of the pageNo
+    /** get a copy of the pageNo
   *  @return the reference of the copy 
   */
-  protected PageId getData() {return new PageId(pageId.pid); };
+  protected PageId getData() {return new PageId(pageId.pid); }
 
-  /** set the pageNo 
+    /** set the pageNo
    */ 
-  protected void setData(PageId pageNo) {pageId= new PageId(pageNo.pid);};
+  protected void setData(PageId pageNo) {pageId= new PageId(pageNo.pid);}
 }   

@@ -20,10 +20,8 @@ public class IndexCatalog extends Heapfile
   
   // OPEN INDEX CATALOG
   IndexCatalog(String filename)
-    throws IOException, 
-	   BufMgrException,
-	   DiskMgrException,
-	   Exception
+    throws
+          Exception
     {
       super(filename);
       
@@ -55,9 +53,9 @@ public class IndexCatalog extends Heapfile
       catch (Exception e) {
 	throw new IndexCatalogException(e, "setHdr() failed");
       }
-    };
-  
-  // GET ALL INDEXES FOR A RELATION
+    }
+
+    // GET ALL INDEXES FOR A RELATION
   // Return indexCnt.
   public int getRelInfo(String relation, int indexCnt, IndexDesc [] indexes)
     throws Catalogmissparam, 
@@ -139,7 +137,7 @@ public class IndexCatalog extends Heapfile
 	    throw new IndexCatalogException(e4," read_tuple() failed");
 	  }
 	  
-	  if(indexes[count].relName.equalsIgnoreCase(relation)==true)
+	  if(indexes[count].relName.equalsIgnoreCase(relation))
 	    count++;
 	  
 	  if(count == indexCnt)  // IF ALL INDEXES FOUND
@@ -148,17 +146,13 @@ public class IndexCatalog extends Heapfile
       
       return indexCnt;
       
-    };
-  
-  // RETURN INFO ON AN INDEX
+    }
+
+    // RETURN INFO ON AN INDEX
   public void getInfo(String relation, String attrName,
 		      IndexType accessType, IndexDesc record)
-    throws Catalogmissparam, 
-	   Catalogioerror, 
-	   Cataloghferror,
-	   IOException, 
-	   Catalogattrnotfound, 
-	   Exception
+    throws
+          Exception
     {
       int recSize;
       RID rid = null;
@@ -195,15 +189,14 @@ public class IndexCatalog extends Heapfile
 	    throw new IndexCatalogException(e4, "read_tuple failed");
 	  }
 	  
-	  if(record.relName.equalsIgnoreCase(relation)==true 
-	     && record.attrName.equalsIgnoreCase(attrName)==true 
+	  if(record.relName.equalsIgnoreCase(relation)
+	     && record.attrName.equalsIgnoreCase(attrName)
 	     && (accessType == record.accessType))
 	    break;  // FOUND
 	}
-      return;
-    };
-  
-  // GET ALL INDEXES INLUDING A SPECIFIED ATTRIBUTE
+    }
+
+    // GET ALL INDEXES INLUDING A SPECIFIED ATTRIBUTE
   public int getAttrIndexes(String relation,
 			    String attrName, int indexCnt, IndexDesc [] indexes)
     throws Catalogmissparam, 
@@ -280,8 +273,8 @@ public class IndexCatalog extends Heapfile
 	    throw new IndexCatalogException(e4, "pascan.getNext() failed");
 	  }
 	  
-	  if(indexes[count].relName.equalsIgnoreCase(relation)==true 
-	     && indexes[count].attrName.equalsIgnoreCase(attrName)==true)
+	  if(indexes[count].relName.equalsIgnoreCase(relation)
+	     && indexes[count].attrName.equalsIgnoreCase(attrName))
 	    count++;
 	  
 	  if(count == indexCnt)  // if all indexes found
@@ -289,9 +282,9 @@ public class IndexCatalog extends Heapfile
 	}
       
       return indexCnt;    
-    };
-  
-  // CREATES A FILE NAME FOR AN INDEX 
+    }
+
+    // CREATES A FILE NAME FOR AN INDEX
   public String buildIndexName(String relation, String attrName,
 			       IndexType accessType)
     {
@@ -303,9 +296,9 @@ public class IndexCatalog extends Heapfile
       // DETERMINE INDEX TYPE
       
       if(accessType.indexType == IndexType.B_Index)
-	accessName = new String("B_Index");
+	accessName = "B_Index";
       else if(accessType.indexType == IndexType.Hash)
-	accessName = new String("Hash");
+	accessName = "Hash";
       
       // CHECK FOR LEGIT NAME SIZE
       
@@ -317,16 +310,16 @@ public class IndexCatalog extends Heapfile
       
       // CREATE NAME
       
-      indexName = new String(relation);
+      indexName = relation;
       indexName = indexName.concat("-");
       indexName = indexName.concat(accessName);
       indexName = indexName.concat("-");
       indexName = indexName.concat(attrName);
       
       return indexName;    
-    };
-  
-  // ADD INDEX ENTRY TO CATALOG
+    }
+
+    // ADD INDEX ENTRY TO CATALOG
   public void addInfo(IndexDesc record)
     throws IOException,
 	   IndexCatalogException
@@ -346,9 +339,9 @@ public class IndexCatalog extends Heapfile
       catch (Exception e) {
 	throw new IndexCatalogException(e, "insertRecord() failed");
       }
-    };
-  
-  // REMOVE INDEX ENTRY FROM CATALOG
+    }
+
+    // REMOVE INDEX ENTRY FROM CATALOG
   public void removeInfo(String relation, String attrName,
 			 IndexType accessType)
     throws IOException, 
@@ -387,8 +380,8 @@ public class IndexCatalog extends Heapfile
 	    throw new IndexCatalogException(e4, "read_tuple failed");
 	  }
 	  
-	  if(record.relName.equalsIgnoreCase(relation)==true 
-	     && record.attrName.equalsIgnoreCase(attrName)==true
+	  if(record.relName.equalsIgnoreCase(relation)
+	     && record.attrName.equalsIgnoreCase(attrName)
 	     && (record.accessType == accessType))
 	    {
 	      try {
@@ -400,23 +393,14 @@ public class IndexCatalog extends Heapfile
 	      break; 
 	    }
 	}
-      
-      return;    
-    };
-  
-  // ADD INDEX TO A RELATION
+
+    }
+
+    // ADD INDEX TO A RELATION
   public void addIndex(String relation, String attrName,
 		       IndexType accessType, int buckets )
-    throws IOException,
-	   Catalogioerror, 
-	   Cataloghferror, 
-	   Catalogmissparam,
-	   Catalogattrnotfound, 
-	   Catalogbadtype, 
-	   Catalognomem,
-	   Catalogindexnotfound, 
-	   IndexCatalogException,
-	   java.lang.Exception
+    throws
+          java.lang.Exception
     {
       RID    	rid = null;
       IndexDesc indexRec = null;
@@ -509,8 +493,8 @@ public class IndexCatalog extends Heapfile
       // ADD ENTRY IN INDEXCAT
       
       
-      indexRec.relName = new String(relation);
-      indexRec.attrName = new String(attrName);
+      indexRec.relName = relation;
+      indexRec.attrName = attrName;
       indexRec.accessType = accessType;
       
       if (accessType.indexType == IndexType.B_Index)
@@ -599,7 +583,7 @@ public class IndexCatalog extends Heapfile
 	  }
 	else if (attrRec.attrType.attrType == AttrType.attrString)
 	  {
-	    charKey = new String(tuple.getStrFld(attrRec.attrPos));
+	    charKey = tuple.getStrFld(attrRec.attrPos);
 	    key = new StringKey(charKey);
 	  }
 	
@@ -615,17 +599,17 @@ public class IndexCatalog extends Heapfile
 	}
       }
       
-    };
-  
-  // DROP INDEX FROM A RELATION
+    }
+
+    // DROP INDEX FROM A RELATION
   void dropIndex(String relation, String attrName,
-		 IndexType accessType){};
-  
-  // DROP ALL INDEXES FOR A RELATION
-  void dropRelation(String relation){};
-  
-  
-  void make_tuple(Tuple tuple, IndexDesc record)
+		 IndexType accessType){}
+
+    // DROP ALL INDEXES FOR A RELATION
+  void dropRelation(String relation){}
+
+
+    void make_tuple(Tuple tuple, IndexDesc record)
     throws IOException,
 	   IndexCatalogException
     {
@@ -662,11 +646,10 @@ public class IndexCatalog extends Heapfile
       catch (Exception e) {
 	throw new IndexCatalogException(e,"make_tuple failed");
       }
-      
-      return;
-    };
-  
-  void read_tuple(Tuple tuple, IndexDesc record)
+
+    }
+
+    void read_tuple(Tuple tuple, IndexDesc record)
     throws IOException,
 	   IndexCatalogException
     {
@@ -706,15 +689,13 @@ public class IndexCatalog extends Heapfile
       catch (Exception e) {
 	throw new IndexCatalogException(e,"read_tuple failed");
       }
-      
-      return ; 
-      
-    };
-  
-  
-  Tuple tuple;
+
+    }
+
+
+    Tuple tuple;
   short [] str_sizes;
   AttrType [] attrs;
   
-};
+}
 

@@ -165,8 +165,7 @@ public class BT  implements GlobalConst{
 	else throw new NodeNotMatchException(null, "node types do not match"); 
 	
 	if ( keyType== AttrType.attrInteger) {
-	  key= new IntegerKey( new Integer 
-			       (Convert.getIntValue(offset, from)));
+	  key= new IntegerKey(Integer.valueOf(Convert.getIntValue(offset, from)));
 	}
 	else if (keyType== AttrType.attrString) {
 	  //System.out.println(" offset  "+ offset + "  " + length + "  "+n);
@@ -266,8 +265,8 @@ public class BT  implements GlobalConst{
       int i;
       i=0;
       if ( sortedPage.getType()==NodeType.INDEX ) {
-        BTIndexPage indexPage=new BTIndexPage((Page)sortedPage, keyType);
-        System.out.println("");
+        BTIndexPage indexPage=new BTIndexPage(sortedPage, keyType);
+        System.out.println();
         System.out.println("**************To Print an Index Page ********");
         System.out.println("Current Page ID: "+ indexPage.getCurPage().pid);
         System.out.println("Left Link      : "+ indexPage.getLeftLink().pid);
@@ -277,21 +276,21 @@ public class BT  implements GlobalConst{
         for(KeyDataEntry entry=indexPage.getFirst(rid); entry!=null; 
 	    entry=indexPage.getNext(rid)){
 	  if( keyType==AttrType.attrInteger) 
-	    System.out.println(i+" (key, pageId):   ("+ 
-			       (IntegerKey)entry.key + ",  "+(IndexData)entry.data+ " )");
+	    System.out.println(i+" (key, pageId):   ("+
+                entry.key + ",  "+ entry.data + " )");
 	  if( keyType==AttrType.attrString) 
-	    System.out.println(i+" (key, pageId):   ("+ 
-			       (StringKey)entry.key + ",  "+(IndexData)entry.data+ " )");
+	    System.out.println(i+" (key, pageId):   ("+
+                entry.key + ",  "+ entry.data + " )");
 	  
 	  i++;    
         }
 	
         System.out.println("************** END ********");
-        System.out.println("");
+        System.out.println();
       }
       else if ( sortedPage.getType()==NodeType.LEAF ) {
-        BTLeafPage leafPage=new BTLeafPage((Page)sortedPage, keyType);
-        System.out.println("");
+        BTLeafPage leafPage=new BTLeafPage(sortedPage, keyType);
+        System.out.println();
         System.out.println("**************To Print an Leaf Page ********");
         System.out.println("Current Page ID: "+ leafPage.getCurPage().pid);
         System.out.println("Left Link      : "+ leafPage.getPrevPage().pid);
@@ -302,17 +301,17 @@ public class BT  implements GlobalConst{
         for(KeyDataEntry entry=leafPage.getFirst(rid); entry!=null; 
 	    entry=leafPage.getNext(rid)){
 	  if( keyType==AttrType.attrInteger) 
-	    System.out.println(i+" (key, [pageNo, slotNo]):   ("+ 
-			       (IntegerKey)entry.key+ ",  "+(LeafData)entry.data+ " )");
+	    System.out.println(i+" (key, [pageNo, slotNo]):   ("+
+                entry.key + ",  "+ entry.data + " )");
 	  if( keyType==AttrType.attrString) 
-	    System.out.println(i+" (key, [pageNo, slotNo]):   ("+ 
-			       (StringKey)entry.key + ",  "+(LeafData)entry.data); 
+	    System.out.println(i+" (key, [pageNo, slotNo]):   ("+
+                entry.key + ",  "+ entry.data);
 	  
 	  i++;
         }
 	
 	System.out.println("************** END ********");
-	System.out.println("");
+	System.out.println();
       }
       else {
 	System.out.println("Sorry!!! This page is neither Index nor Leaf page.");
@@ -346,9 +345,9 @@ public class BT  implements GlobalConst{
 	return;
       }
       
-      System.out.println("");
-      System.out.println("");
-      System.out.println("");
+      System.out.println();
+      System.out.println();
+      System.out.println();
       System.out.println("---------------The B+ Tree Structure---------------");
       
       
@@ -357,8 +356,8 @@ public class BT  implements GlobalConst{
       _printTree(header.get_rootId(), "     ", 1, header.get_keyType());
       
       System.out.println("--------------- End ---------------");
-      System.out.println("");
-      System.out.println("");
+      System.out.println();
+      System.out.println();
     }
   
   private static void _printTree(PageId currentPageId, String prefix, int i, 
@@ -376,7 +375,7 @@ public class BT  implements GlobalConst{
       prefix=prefix+"       ";
       i++;
       if( sortedPage.getType()==NodeType.INDEX) {  
-	BTIndexPage indexPage=new BTIndexPage((Page)sortedPage, keyType);
+	BTIndexPage indexPage=new BTIndexPage(sortedPage, keyType);
 	
 	System.out.println(i+prefix+ indexPage.getPrevPage());
 	_printTree( indexPage.getPrevPage(), prefix, i, keyType);
@@ -384,7 +383,7 @@ public class BT  implements GlobalConst{
 	RID rid=new RID();
 	for( KeyDataEntry entry=indexPage.getFirst(rid); entry!=null; 
 	     entry=indexPage.getNext(rid)) {
-	  System.out.println(i+prefix+(IndexData)entry.data);
+	  System.out.println(i+prefix+ entry.data);
 	  _printTree( ((IndexData)entry.data).getData(), prefix, i, keyType);
 	}
       }
@@ -417,19 +416,19 @@ public class BT  implements GlobalConst{
 	return;
       }
       
-      System.out.println("");
-      System.out.println("");
-      System.out.println("");
+      System.out.println();
+      System.out.println();
+      System.out.println();
       System.out.println("---------------The B+ Tree Leaf Pages---------------");
       
       
       _printAllLeafPages(header.get_rootId(), header.get_keyType());
       
-      System.out.println("");
-      System.out.println("");
+      System.out.println();
+      System.out.println();
       System.out.println("------------- All Leaf Pages Have Been Printed --------");
-      System.out.println("");
-      System.out.println("");
+      System.out.println();
+      System.out.println();
     }
   
   private static void _printAllLeafPages(PageId currentPageId,  int keyType) 
@@ -445,7 +444,7 @@ public class BT  implements GlobalConst{
       BTSortedPage sortedPage=new BTSortedPage(currentPageId, keyType);
       
       if( sortedPage.getType()==NodeType.INDEX) {  
-	BTIndexPage indexPage=new BTIndexPage((Page)sortedPage, keyType);
+	BTIndexPage indexPage=new BTIndexPage(sortedPage, keyType);
 	
 	_printAllLeafPages( indexPage.getPrevPage(),  keyType);
 	

@@ -13,7 +13,7 @@ import java.util.Random;
 class SORTDriver extends TestDriver 
   implements GlobalConst {
 
-  private static String   data1[] = {
+  private static final String[] data1 = {
 	"raghu", "xbao", "cychan", "leela", "ketola", "soma", "ulloa", 
 	"dhanoa", "dsilva", "kurniawa", "dissoswa", "waic", "susanc", "kinc", 
 	"marc", "scottc", "yuc", "ireland", "rathgebe", "joyce", "daode", 
@@ -29,7 +29,7 @@ class SORTDriver extends TestDriver
 	"honghu", "guangshu", "chingju", "bradw", "andyw", "gray", "vharvey", 
 	"awny", "savoy", "meltz"}; 
       
-  private static String   data2[] = {
+  private static final String[] data2 = {
 	"andyw", "awny", "azat", "barthel", "binh", "bloch", "bradw", 
 	"chingju", "chui", "chung-pi", "cychan", "dai", "daode", "dhanoa", 
 	"dissoswa", "djensen", "dsilva", "dwiyono", "edwards", "evgueni", 
@@ -45,11 +45,11 @@ class SORTDriver extends TestDriver
 	"wan", "wawrzon", "wenchao", "wlau", "xbao", "xiaoming", "xin", 
 	"yi-chun", "yiching", "yuc", "yung", "yuvadee", "zmudzin" };
 
-  private static int   NUM_RECORDS = data2.length; 
-  private static int   LARGE = 1000; 
-  private static short REC_LEN1 = 32; 
-  private static short REC_LEN2 = 160; 
-  private static int   SORTPGNUM = 12; 
+  private static final int   NUM_RECORDS = data2.length;
+  private static final int   LARGE = 1000;
+  private static final short REC_LEN1 = 32;
+  private static final short REC_LEN2 = 160;
+  private static final int   SORTPGNUM = 12;
 
 
   public SORTDriver() {
@@ -442,8 +442,8 @@ class SORTDriver extends TestDriver
     
     boolean status = OK;
 
-    Random random1 = new Random((long) 1000);
-    Random random2 = new Random((long) 1000);
+    Random random1 = new Random(1000);
+    Random random2 = new Random(1000);
     
     AttrType[] attrType = new AttrType[4];
     attrType[0] = new AttrType(AttrType.attrString);
@@ -942,14 +942,14 @@ class SORTDriver extends TestDriver
 
 public class SortTest
 {
-  public static void main(String argv[])
+  public static void main(String[] argv)
   {
     boolean sortstatus;
 
     SORTDriver sortt = new SORTDriver();
 
     sortstatus = sortt.runTests();
-    if (sortstatus != true) {
+    if (!sortstatus) {
       System.out.println("Error ocurred during sorting tests");
     }
     else {

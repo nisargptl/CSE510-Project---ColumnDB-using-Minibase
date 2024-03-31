@@ -20,7 +20,7 @@ class HFDriver extends TestDriver implements GlobalConst
   private final static boolean OK = true;
   private final static boolean FAIL = false;
   
-  private int choice;
+  private final int choice;
   private final static int reclen = 32;
   
   public HFDriver () {
@@ -895,14 +895,14 @@ class DummyRecord  {
 
 public class HFTest {
 
-   public static void main (String argv[]) {
+   public static void main (String[] argv) {
 
      HFDriver hd = new HFDriver();
      boolean dbstatus;
 
      dbstatus = hd.runTests();
 
-     if (dbstatus != true) {
+     if (!dbstatus) {
        System.err.println ("Error encountered during buffer manager tests:\n");
        Runtime.getRuntime().exit(1);
      }

@@ -30,10 +30,10 @@ public class SpoofIbuf implements GlobalConst  {
    *@exception IOException some I/O fault
    *@exception Exception other exceptions
    */
-  public  void init(Heapfile fd, byte bufs[][], int n_pages,
-		    int tSize, int Ntuples)
-    throws IOException,
-	   Exception
+  public  void init(Heapfile fd, byte[][] bufs, int n_pages,
+                    int tSize, int Ntuples)
+    throws
+          Exception
     {
       _fd       = fd;       _bufs        = bufs;
       _n_pages  = n_pages;  t_size       = tSize;
@@ -67,11 +67,11 @@ public class SpoofIbuf implements GlobalConst  {
    *@exception IOException some I/O fault
    *@exception Exception other exceptions
    */
-  public  Tuple Get(Tuple  buf)throws IOException, Exception
+  public  Tuple Get(Tuple  buf)throws Exception
     {
       if (tot_t_proc == n_tuples) done = true;
       
-      if (done == true){buf = null; return null;}
+      if (done){buf = null; return null;}
       if (t_proc == t_in_buf)
 	{
 	  try {

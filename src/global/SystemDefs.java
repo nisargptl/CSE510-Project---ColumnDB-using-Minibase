@@ -14,15 +14,15 @@ public class SystemDefs {
   public static boolean MINIBASE_RESTART_FLAG = false;
   public static String	MINIBASE_DBNAME;
   
-  public SystemDefs (){};
-  
-  public SystemDefs(String dbname, int num_pgs, int bufpoolsize,
+  public SystemDefs (){}
+
+    public SystemDefs(String dbname, int num_pgs, int bufpoolsize,
 		    String replacement_policy )
     {
       int logsize;
       
-      String real_logname = new String(dbname);
-      String real_dbname = new String(dbname);
+      String real_logname = dbname;
+      String real_dbname = dbname;
       
       if (num_pgs == 0) {
 	logsize = 500;
@@ -32,7 +32,7 @@ public class SystemDefs {
       }
       
       if (replacement_policy == null) {
-	replacement_policy = new String("Clock");
+	replacement_policy = "Clock";
       }
       
       init(real_dbname,real_logname, num_pgs, logsize,
@@ -65,9 +65,9 @@ public class SystemDefs {
 	Runtime.getRuntime().exit(1);
       }
       
-      JavabaseDBName = new String(dbname);
-      JavabaseLogName = new String(logname);
-      MINIBASE_DBNAME = new String(JavabaseDBName);
+      JavabaseDBName = dbname;
+      JavabaseLogName = logname;
+      MINIBASE_DBNAME = JavabaseDBName;
       
       // create or open the DB
       

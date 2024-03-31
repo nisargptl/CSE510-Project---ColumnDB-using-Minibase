@@ -28,9 +28,9 @@ class DataPageInfo implements GlobalConst{
 
   public static final int size = 12;// size of DataPageInfo object in bytes
 
-  private byte [] data;  // a data buffer
+  private final byte [] data;  // a data buffer
   
-  private int offset;
+  private final int offset;
 
 
 /**

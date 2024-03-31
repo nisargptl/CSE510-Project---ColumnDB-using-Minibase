@@ -22,8 +22,8 @@ public class PredEval
    *@exception FieldNumberOutOfBoundException field number exceeds limit
    *@exception PredEvalException exception from this method
    */
-  public static boolean Eval(CondExpr p[], Tuple t1, Tuple t2, AttrType in1[], 
-			     AttrType in2[])
+  public static boolean Eval(CondExpr[] p, Tuple t1, Tuple t2, AttrType[] in1,
+                             AttrType[] in2)
     throws IOException,
 	   UnknowAttrType,
 	   InvalidTupleSizeException,
@@ -160,14 +160,14 @@ public class PredEval
 		}
 	      
 	      row_res = row_res || op_res;
-	      if (row_res == true)
+	      if (row_res)
 		break;                        // OR predicates satisfied.
 	      temp_ptr = temp_ptr.next;
 	    }
 	  i++;
 	  
 	  col_res = col_res && row_res;
-	  if (col_res == false)
+	  if (!col_res)
 	    {
 	      
 	      return false;

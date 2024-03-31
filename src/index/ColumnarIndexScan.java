@@ -12,17 +12,17 @@ import java.util.Arrays;
 import columnar.*;
 
 public class ColumnarIndexScan extends Iterator {
-    private ColumnIndexScan[] indexScans;
-    private AttrType[] types;
-    private short[] str_sizes;
-    private int noInFlds;
-    private int noOutFlds;
-    private FldSpec[] outFlds;
-    private CondExpr[] selects;
-    private boolean indexOnly;
+    private final ColumnIndexScan[] indexScans;
+    private final AttrType[] types;
+    private final short[] str_sizes;
+    private final int noInFlds;
+    private final int noOutFlds;
+    private final FldSpec[] outFlds;
+    private final CondExpr[] selects;
+    private final boolean indexOnly;
 
-    private Tuple Jtuple; // To hold projected tuples.
-    private Columnarfile columnarfile;
+    private final Tuple Jtuple; // To hold projected tuples.
+    private final Columnarfile columnarfile;
 
     /**
      * ColumnarIndexScan constructor.

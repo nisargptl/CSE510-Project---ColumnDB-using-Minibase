@@ -44,6 +44,6 @@ public class PageId{
     }
   
   public String toString() {
-    return (new Integer(pid)).toString();
+    return (Integer.valueOf(pid)).toString();
   } 
 }

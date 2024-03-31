@@ -16,7 +16,7 @@ class LRU extends  Replacer {
    * An array to hold number of frames in the buffer pool
    */
 
-    private int  frames[];
+    private int[] frames;
  
   /**
    * private field

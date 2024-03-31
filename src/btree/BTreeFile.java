@@ -59,7 +59,7 @@ public class BTreeFile extends IndexFile
   
   private BTreeHeaderPage headerPage;
   private  PageId  headerPageId;
-  private String  dbname;  
+  private final String  dbname;
   
   /**
    * Access method to data member.
@@ -178,7 +178,7 @@ public class BTreeFile extends IndexFile
       headerPageId=get_file_entry(filename);   
       
       headerPage= new  BTreeHeaderPage( headerPageId);       
-      dbname = new String(filename);
+      dbname = filename;
       /*
        *
        * - headerPageId is the PageId of this BTreeFile's header page;
@@ -227,7 +227,7 @@ public class BTreeFile extends IndexFile
 	headerPage = new BTreeHeaderPage( headerPageId );  
       }
       
-      dbname=new String(filename);
+      dbname= filename;
       
     }
   
@@ -524,9 +524,8 @@ public class BTreeFile extends IndexFile
 	  trace.writeBytes("DONE"+lineSep);
 	  trace.flush();
 	}
-      
-      
-      return;
+
+
     }
   
   
@@ -536,8 +535,7 @@ public class BTreeFile extends IndexFile
 				PageId currentPageId) 
     throws  PinPageException,  
 	    IOException,
-	    ConstructPageException, 
-	    LeafDeleteException,  
+          LeafDeleteException,
 	    ConstructPageException,
 	    DeleteRecException, 
 	    IndexSearchException,
@@ -1152,9 +1150,8 @@ public class BTreeFile extends IndexFile
   
   private boolean NaiveDelete ( KeyClass key, RID rid)
     throws LeafDeleteException,  
-	   KeyNotMatchException,  
-	   PinPageException,
-	   ConstructPageException, 
+	   KeyNotMatchException,
+          ConstructPageException,
 	   IOException,
 	   UnpinPageException,  
 	   PinPageException, 
@@ -1201,7 +1198,7 @@ public class BTreeFile extends IndexFile
 	if ( BT.keyCompare(key, entry.key) > 0 )
 	  break;
 	
-	if( leafPage.delEntry(new KeyDataEntry(key, rid)) ==true) {
+	if(leafPage.delEntry(new KeyDataEntry(key, rid))) {
 	  
           // successfully found <key, rid> on this page and deleted it.
           // unpin dirty page and return OK.
@@ -1268,9 +1265,8 @@ public class BTreeFile extends IndexFile
 	   LeafDeleteException, 
 	   KeyNotMatchException, 
 	   ConstructPageException, 
-	   IOException, 
-	   IteratorException,
-	   PinPageException, 
+	   IOException,
+          PinPageException,
 	   UnpinPageException, 
 	   IteratorException
     {

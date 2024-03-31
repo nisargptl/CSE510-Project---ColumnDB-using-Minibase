@@ -35,7 +35,7 @@ abstract class Replacer implements GlobalConst
   public void pin( int frameNo ) throws InvalidFrameNumberException 
   {
     
-    if ((frameNo < 0) || (frameNo >= (int)mgr.getNumBuffers())) {
+    if ((frameNo < 0) || (frameNo >= mgr.getNumBuffers())) {
    
       throw new InvalidFrameNumberException (null, "BUFMGR: BAD_BUFFRAMENO.");
     }
@@ -55,7 +55,7 @@ abstract class Replacer implements GlobalConst
    */
   public boolean unpin( int frameNo ) throws InvalidFrameNumberException, PageUnpinnedException
   {
-    if ((frameNo < 0) || (frameNo >= (int)mgr.getNumBuffers())) {
+    if ((frameNo < 0) || (frameNo >= mgr.getNumBuffers())) {
       
       throw new InvalidFrameNumberException (null, "BUFMGR: BAD_BUFFRAMENO.");
       
@@ -196,7 +196,7 @@ abstract class Replacer implements GlobalConst
   protected int head;            
   
   /** The state of a frame. */
-  protected STATE state_bit[];
+  protected STATE[] state_bit;
   
   public static final int Available = 12;
   public static final int Referenced = 13;

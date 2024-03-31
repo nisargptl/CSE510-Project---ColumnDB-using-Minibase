@@ -59,12 +59,9 @@ public class RID implements Serializable {
    *         false if not.
    */
   public boolean equals(RID rid) {
-    
-    if ((this.pageNo.pid==rid.pageNo.pid)
-	&&(this.slotNo==rid.slotNo))
-      return true;
-    else
-      return false;
+
+      return (this.pageNo.pid == rid.pageNo.pid)
+              && (this.slotNo == rid.slotNo);
   }
   
 }

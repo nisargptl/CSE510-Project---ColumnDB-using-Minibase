@@ -11,11 +11,11 @@ import java.io.IOException;
 
 public class ColumnarFileScan extends Iterator{
 
-    private Columnarfile columnarfile;
-    private TupleScan scan;
+    private final Columnarfile columnarfile;
+    private final TupleScan scan;
     private Tuple     tuple1;
-    private Tuple    Jtuple;
-    private CondExpr[]  OutputFilter;
+    private final Tuple    Jtuple;
+    private final CondExpr[]  OutputFilter;
     public FldSpec[] perm_mat;
     Sort deletedTuples;
     private int currDeletePos = -1;
@@ -123,7 +123,7 @@ public class ColumnarFileScan extends Iterator{
             }
 
             //tuple1.setHdr(in1_len, _in1, s_sizes);
-            if (PredEval.Eval(OutputFilter, tuple1, null, targetAttrTypes, null) == true){
+            if (PredEval.Eval(OutputFilter, tuple1, null, targetAttrTypes, null)){
                 return position;
             }
         }

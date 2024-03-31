@@ -10,12 +10,12 @@ import iterator.*;
 
 public class Query {
 
-    private static String FILESCAN = "FILE";
-    private static String COLUMNSCAN = "COLUMN";
-    private static String BITMAPSCAN = "BITMAP";
-    private static String BTREESCAN = "BTREE";
+    private static final String FILESCAN = "FILE";
+    private static final String COLUMNSCAN = "COLUMN";
+    private static final String BITMAPSCAN = "BITMAP";
+    private static final String BTREESCAN = "BTREE";
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         // Query Skeleton: COLUMNDB COLUMNFILE PROJECTION OTHERCONST SCANCOLS [SCANTYPE] [SCANCONST] TARGETCOLUMNS NUMBUF SORTMEM
         // Example Query: testColumnDB columnarTable A,B,C "C = 5" A,B [BTREE,BITMAP] "(A = 5 v A = 6),(B > 7)" A,B,C 100 0
         // In case no constraints need to be applied, pass "" as input.

@@ -38,19 +38,8 @@ public abstract class Iterator implements Flags {
    *@exception Exception other exceptions
    */
   public abstract Tuple get_next() 
-    throws IOException,
-	   JoinsException ,
-	   IndexException,
-	   InvalidTupleSizeException,
-	   InvalidTypeException, 
-	   PageNotReadException,
-	   TupleUtilsException, 
-	   PredEvalException,
-	   SortException,
-	   LowMemException,
-	   UnknowAttrType,
-	   UnknownKeyTypeException,
-	   Exception;
+    throws
+          Exception;
 
   /**
    *@exception IOException I/O errors
