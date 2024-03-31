@@ -1,13 +1,12 @@
 package bitmap;
 
 import btree.*;
-import bufmgr.*;
 import columnar.Columnarfile;
+import columnar.ValueClass;
 import diskmgr.*;
 import global.*;
 import heap.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +37,7 @@ public class BitMapFile implements GlobalConst {
       headerPage.setColumnarFileName(columnarFile.getColumnarFileName());
       headerPage.setColumnNumber(columnNo);
       headerPage.setValue(value.getValue().toString());
-      headerPage.setAttrType(value instanceof ValueInt ? new AttrType(AttrType.attrInteger) : new AttrType(AttrType.attrString));
+      headerPage.setAttrType(new AttrType(AttrType.attrString));
     } else {
       headerPage = new BitMapHeaderPage(headerPageId);
     }
@@ -180,6 +179,16 @@ public class BitMapFile implements GlobalConst {
     }
   }
 
+  private PageId getNewBMPage(PageId prevPageId) throws Exception {
+    Page apage = new Page();
+    PageId pageId = newPage(apage, 1);
+    BMPage bmPage = new BMPage();
+    bmPage.init(pageId, apage);
+    bmPage.setPrevPage(prevPageId);
+
+    return pageId;
+  }
+
   private PageId newPage(Page page, int num) throws HFBufMgrException {
     PageId tmpId = new PageId();
     try {
@@ -195,15 +204,5 @@ public class BitMapFile implements GlobalConst {
       SystemDefs.JavabaseBM.unpinPage(headerPageId, false);
       headerPage = null;
     }
-  }
-
-  @Override
-  public void insert(KeyClass data, RID rid) throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException, ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException, DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
-
-  }
-
-  @Override
-  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException, RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException, FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException, IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
-    return false;
   }
 }

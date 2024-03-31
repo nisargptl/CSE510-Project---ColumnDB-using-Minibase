@@ -6,7 +6,7 @@
 JARFILES=bufmgr/*.class diskmgr/*.class global/*.class iterator/*.class\
          heap/*.class chainexception/*.class  btree/*.class index/*.class tests/*.class columnar/*.class
 
-JDKPATH = /usr/java/jdk1.3.1_02
+JDKPATH = /Users/sovinirs/Library/Java/JavaVirtualMachines/openjdk-21.0.2/Contents/Home
 LIBPATH = .:..
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
