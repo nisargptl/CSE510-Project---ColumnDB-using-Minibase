@@ -4,8 +4,10 @@ package tests;
 import columnar.Columnarfile;
 import diskmgr.PCounter;
 import global.AttrType;
+import global.IndexType;
 import global.SystemDefs;
 import heap.Tuple;
+import index.ColumnarIndexScan;
 import iterator.*;
 
 public class Query {
@@ -81,6 +83,22 @@ public class Query {
         try {
             if (scanTypes[0].equals(FILESCAN)) {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+            } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
+                IndexType[] indexType = new IndexType[scanTypes.length];
+                String[] indexName = new String[scanTypes.length];
+                for(int i = 0; i < scanTypes.length; i++) {
+                    if(scanTypes[i].equals(BITMAPSCAN)) {
+                        indexType[i] = new IndexType(IndexType.BitMapIndex);
+//                        indexName[i] = cf.getBMName();
+                    } else if(scanTypes[i].equals(BTREESCAN)) {
+                        indexType[i] = new IndexType(IndexType.B_Index);
+                        indexName[i] = cf.getBTName(i);
+                    } else {
+                        indexType[i] = new IndexType(IndexType.None);
+                    }
+                }
+
+                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, )
 //            } else if (scanTypes[0].equals(COLUMNSCAN)) {
 //                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
 //            } else if (scanTypes[0].equals(BITMAPSCAN) || scanTypes[0].equals(BTREESCAN)) {
