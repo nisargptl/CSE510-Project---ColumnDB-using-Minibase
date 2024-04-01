@@ -1,6 +1,8 @@
 package columnar;
 
 import bitmap.BitMapFile;
+import btree.IntegerKey;
+import btree.KeyDataEntry;
 import heap.*;
 import global.*;
 import btree.KeyFactory;
@@ -71,6 +73,7 @@ public class Columnarfile {
                     asize[i] += 2;
             }
             _columnHeaps = new Heapfile[numColumns];
+            scan.closescan();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -311,7 +314,8 @@ public class Columnarfile {
             bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), _ctype[columnNo], asize[columnNo]), rid);
         }
         columnScan.closescan();
-        addIndexToColumnar(0, indexName);
+        bTreeFile.close();
+//        addIndexToColumnar(0, indexName);
         return true;
     }
 

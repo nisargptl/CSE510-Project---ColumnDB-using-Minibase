@@ -15,11 +15,11 @@ public class Index {
         String indexType = args[3];
 
         String dbpath = OperationUtils.dbPath(columnDB);
-        SystemDefs sysdef = new SystemDefs(dbpath, 0, 1000000, "Clock");
+        SystemDefs sysdef = new SystemDefs(dbpath, 0, 50, "Clock");
 
         runInterface(columnarFile, num, indexType);
 
-//        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
 
         System.out.println("Reads: " + PCounter.rcounter);
@@ -30,11 +30,12 @@ public class Index {
        Columnarfile cf = new Columnarfile(columnarFile);
 
        if (indexType.equals("BITMAP")) {
-           cf.createAllBitMapIndexForColumn(Integer.parseInt(num));
+//           cf.createAllBitMapIndexForColumn(Integer.parseInt(num));
            System.out.println("no bitmap");
        } else {
            cf.createBtreeIndex(Integer.parseInt(num));
        }
+       cf.close();
 
         System.out.println(indexType + " created successfully on "+columnarFile+"."+num);
     }
