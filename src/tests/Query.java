@@ -48,8 +48,11 @@ public class Query {
 
         Columnarfile cf = new Columnarfile(columnarFile);
         System.out.println("here");
-        AttrType[] opAttr = new AttrType[projection.length];
+        AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
+        short[] str_sizes = cf.getStrSize();
+        String[] indName = new String[scanColumns.length];
+
         for (int i = 0; i < projection.length; i++) {
             String attribute = OperationUtils.getAttributeName(projection[i]);
             projectionList[i] = new FldSpec(new RelSpec(RelSpec.outer), OperationUtils.getColumnPositionInTargets(attribute, targetColumns) + 1);
@@ -57,11 +60,18 @@ public class Query {
         }
 
         int[] scanCols = new int[scanColumns.length];
+
         for (int i = 0; i < scanColumns.length; i++) {
+            System.out.println(scanColumns[i]);
             if (!scanColumns[i].equals("")) {
                 String attribute = OperationUtils.getAttributeName(scanColumns[i]);
                 scanCols[i] = cf.getAttributePosition(attribute);
+                indName[i] = cf.getBTName(scanCols[i]);
             }
+        }
+
+        for(int i = 0; i < scanCols.length; i++) {
+            System.out.println("ScanCols[" + i + "]: " + scanCols[i]);
         }
 
         short[] targets = new short[targetColumns.length];
@@ -73,11 +83,11 @@ public class Query {
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
-        CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
-
-        for (int i = 0; i < scanTypes.length; i++) {
-            scanConstraint[i] = OperationUtils.processRawConditionExpression(scanConstraints[i]);
-        }
+//        CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
+//
+//        for (int i = 0; i < scanTypes.length; i++) {
+//            scanConstraint[i] = OperationUtils.processRawConditionExpression(scanConstraints[i]);
+//        }
         cf.close();
         Iterator it = null;
         try {
@@ -98,7 +108,13 @@ public class Query {
                     }
                 }
 
-                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, )
+                System.out.println("Index Type len: " + indexType.length);
+                System.out.println("Index Name len: " + indexName.length);
+                System.out.println("Fldnum len: " + scanCols.length);
+                System.out.println("str sizes len: " + str_sizes.length);
+
+                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
+
 //            } else if (scanTypes[0].equals(COLUMNSCAN)) {
 //                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
 //            } else if (scanTypes[0].equals(BITMAPSCAN) || scanTypes[0].equals(BTREESCAN)) {
@@ -118,7 +134,9 @@ public class Query {
             System.out.println("here");
             int cnt = 0;
             while (true) {
+                System.out.println(cnt);
                 Tuple result = it.get_next();
+                System.out.println("Count");
                 if (result == null) {
                     break;
                 }

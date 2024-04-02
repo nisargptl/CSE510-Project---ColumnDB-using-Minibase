@@ -77,7 +77,9 @@ public class ColumnarIndexScan extends Iterator {
         Tuple resultTuple = null;
 
         for (ColumnIndexScan scan : indexScans) {
+            System.out.println("here1");
             Tuple tempTuple = scan.get_next();
+            System.out.println("columnar");
 
             if (tempTuple == null)
                 continue;

@@ -27,7 +27,7 @@ public class testQuery {
         BTFileScan scan = f.new_scan(new IntegerKey(2), new IntegerKey(10));
         while(true) {
             KeyDataEntry entry = scan.get_next();
-            if(entry != null)
+            if (entry != null)
                 System.out.println(entry.key + " " + entry.data);
         }
     }

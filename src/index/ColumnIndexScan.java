@@ -105,11 +105,10 @@ public class ColumnIndexScan extends Iterator {
         _selects = selects;
         _relName = relName;
         _indName = indName;
+        this.index = index;
         columnarfile = new Columnarfile(relName);
 
-        // AttrType[] Jtypes = new AttrType[noOutFlds];
-        // short[] ts_sizes;
-        // Jtuple = new Tuple();
+         Jtuple = new Tuple();
 
         // try {
         // ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,
@@ -147,6 +146,9 @@ public class ColumnIndexScan extends Iterator {
                 // must be of the type: value op symbol || symbol op value
                 // but not symbol op symbol || value op value
                 try {
+                    System.out.println("");
+                    System.out.println(indName);
+                    System.out.println("");
                     indFile = new BTreeFile(indName);
                 } catch (Exception e) {
                     throw new IndexException(e,
