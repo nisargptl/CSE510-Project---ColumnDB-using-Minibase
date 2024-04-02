@@ -67,7 +67,7 @@ public class Query {
             String attribute = OperationUtils.getAttributeName(targetColumns[i]);
             targets[i] = (short) cf.getAttributePosition(attribute);
         }
-
+       
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
@@ -79,10 +79,10 @@ public class Query {
         cf.close();
         Iterator it = null;
         try {
-            if (scanTypes[0].equals(FILESCAN)) {
+            if (scanTypes[0].equals(FILESCAN)) {               
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
-//            } else if (scanTypes[0].equals(COLUMNSCAN)) {
-//                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
+           } else if (scanTypes[0].equals(COLUMNSCAN)) {
+               it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
 //            } else if (scanTypes[0].equals(BITMAPSCAN) || scanTypes[0].equals(BTREESCAN)) {
 //                IndexType[] indexType = new IndexType[scanTypes.length];
 //                for (int i = 0; i < scanTypes.length; i++) {
