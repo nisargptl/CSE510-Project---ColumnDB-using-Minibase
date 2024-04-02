@@ -86,7 +86,7 @@ public class Columnarfile {
         columnMap = new HashMap<>();
         try {
             _columnHeaps = new Heapfile[n];
-            
+
             _hdrFile = new Heapfile(_fileName + ".hdr");
 
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class Columnarfile {
             e.printStackTrace();
         }
 
-        for(int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
             int cnum = i + 1;
             colnames[i] = _fileName + "." + cnum;
         }
@@ -194,7 +194,7 @@ public class Columnarfile {
 
             // Updating the offset after insertion of the record
             offset += asize[i];
-            if(i+1 == numColumns){
+            if (i + 1 == numColumns) {
                 position = getColumn(1).positionOfRecord(rids[1]);
             }
         }
@@ -450,34 +450,68 @@ public class Columnarfile {
     }
 
 
+    public boolean markTupleDeleted(int position) {
+        String name = getDeletedFileName();
+        try {
+            Heapfile f = new Heapfile(name);
+            Integer pos = position;
+            AttrType[] types = new AttrType[1];
+            types[0] = new AttrType(AttrType.attrInteger);
+            short[] sizes = new short[0];
+            Tuple t = new Tuple(10);
+            t.setHdr((short) 1, types, sizes);
+            t.setIntFld(1, pos);
+            f.insertRecord(t.getTupleByteArray());
 
-    public boolean markTupleDeleted(TID tid){
-        try{
-            byte[] tidByteArray = objectToByteArray(tid);
-            _deletedTuples.insertRecord(tidByteArray);
-            return true;
-        }
-        catch (Exception e){
+//            for (int i = 0; i < numColumns; i++) {
+//                Tuple tuple = getColumn(i).getRecord(position);
+//                ValueClass valueClass;
+//                KeyClass keyClass;
+//                valueClass = ValueFactory.getValueClass(tuple.getTupleByteArray(),
+//                        atype[i],
+//                        asize[i]);
+//                keyClass = KeyFactory.getKeyClass(tuple.getTupleByteArray(),
+//                        atype[i],
+//                        asize[i]);
+//
+//                String bTreeFileName = getBTName(i);
+//                String bitMapFileName = getBMName(i, valueClass);
+//                if (BTMap.containsKey(bTreeFileName)) {
+//                    BTreeFile bTreeFile = getBTIndex(bTreeFileName);
+//                    bTreeFile.Delete(keyClass, position);
+//                }
+//                if (BMMap.containsKey(bitMapFileName)) {
+//                    BitMapFile bitMapFile = getBMIndex(bitMapFileName);
+//                    bitMapFile.delete(position);
+//                }
+//            }
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+        return true;
     }
 
-    public static byte[] objectToByteArray(Serializable object) {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-
-            // Serialize the object to the byte array
-            oos.writeObject(object);
-
-            // Get the byte array
-            return bos.toByteArray();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    /**
+     * @param tidarg
+     * @return
+     */
+    public boolean markTupleDeleted(TID tidarg) {
+        return markTupleDeleted(tidarg.position);
     }
+
+    /**
+     * Purges all tuples marked for deletion. Removes keys/positions from indexes too
+     *
+     * @return
+     * @throws HFDiskMgrException
+     * @throws InvalidTupleSizeException
+     * @throws IOException
+     * @throws InvalidSlotNumberException
+     * @throws FileAlreadyDeletedException
+     * @throws HFBufMgrException
+     * @throws SortException
+     */
     public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
 
         boolean status = OK;
@@ -523,9 +557,23 @@ public class Columnarfile {
                         done = true;
                         break;
                     }
+                    pos_marked = Convert.getIntValue(6, tuple.getTupleByteArray());
+                    for (int j = 0; j < numColumns; j++) {
+                        rid = getColumn(j).recordAtPosition(pos_marked);
+                        getColumn(j).deleteRecord(rid);
+
+//                        for (String fileName : BMMap.keySet()) {
+//                            int columnNo = Integer.parseInt(fileName.split("\\.")[2]);
+//                            if (columnNo == i) {
+//                                BitMapFile bitMapFile = getBMIndex(fileName);
+//                                bitMapFile.fullDelete(pos_marked);
+//                            }
+//                        }
+                    }
+
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if(deletedTuples != null)
+                    if (deletedTuples != null)
                         deletedTuples.close();
                     f.deleteFile();
                     return false;
@@ -535,6 +583,22 @@ public class Columnarfile {
         f.deleteFile();
 
         return true;
+    }
+
+    public static byte[] objectToByteArray(Serializable object) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+
+            // Serialize the object to the byte array
+            oos.writeObject(object);
+
+            // Get the byte array
+            return bos.toByteArray();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private boolean addIndexToColumnar(int indexType, String indexName) {

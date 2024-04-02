@@ -45,6 +45,16 @@ public class ColumnarFileScan extends Iterator{
             targetAttrTypes = ColumnarScanUtils.getTargetColumnAttributeTypes(columnarfile, targetedCols);
             Jtuple = ColumnarScanUtils.getProjectionTuple(columnarfile, perm_mat, targetedCols);
             scan = columnarfile.openTupleScan(targetedCols);
+            PageId pid = SystemDefs.JavabaseDB.get_file_entry(columnarfile.getDeletedFileName());
+            if (pid != null) {
+                AttrType[] types = new AttrType[1];
+                types[0] = new AttrType(AttrType.attrInteger);
+                short[] sizes = new	short[0];
+                FldSpec[] projlist = new FldSpec[1];
+                projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
+                FileScan fs = new FileScan(columnarfile.getDeletedFileName(), types, sizes, (short)1, 1, projlist, null);
+                deletedTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Ascending), 4, 10);
+            }
         }
         catch(Exception e){
             throw new FileScanException(e, "openScan() failed");
@@ -82,17 +92,6 @@ public class ColumnarFileScan extends Iterator{
         Projection.Project(tuple1, targetAttrTypes, Jtuple, perm_mat, perm_mat.length);
         return Jtuple;
     }
-
-//    public boolean delete_next()
-//            throws Exception {
-//
-//        int position = getNextPosition();
-//
-//        if (position < 0)
-//            return false;
-//
-//        return columnarfile.markTupleDeleted(position);
-//    }
 
     private int getNextPosition()
             throws Exception {
@@ -142,6 +141,16 @@ public class ColumnarFileScan extends Iterator{
                 deletedTuples.close();
             closeFlag = true;
         }
+    }
+
+    public boolean delete_next() throws Exception {
+        int position = getNextPosition();
+
+        if(position < 0) {
+            return false;
+        }
+
+        return columnarfile.markTupleDeleted(position);
     }
 }
 
