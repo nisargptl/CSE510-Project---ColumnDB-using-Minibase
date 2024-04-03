@@ -93,7 +93,11 @@ public class Query {
         try {
             if (scanTypes[0].equals(FILESCAN)) {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
-            } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
+            } 
+           else if (scanTypes[0].equals(COLUMNSCAN)) {
+                it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+            }
+            else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
                 for(int i = 0; i < scanTypes.length; i++) {
