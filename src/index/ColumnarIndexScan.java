@@ -74,7 +74,10 @@ public class ColumnarIndexScan extends Iterator {
     @Override
     public Tuple get_next() throws Exception {
         int minPosition = Integer.MAX_VALUE;
-        Tuple resultTuple = null;
+        // Tuple resultTuple = null;
+        Tuple resultTuple = new Tuple(Jtuple);
+        int resultFldNo = 0;
+        boolean isResultTuplePopulated = false;
 
         for (ColumnIndexScan scan : indexScans) {
             System.out.println("here1");
@@ -87,11 +90,16 @@ public class ColumnarIndexScan extends Iterator {
 
             if (position < minPosition) {
                 minPosition = position;
-                resultTuple = tempTuple;
+                // resultTuple = tempTuple;
+                for (int i = 0; i < tempTuple.fldCnt; i++) {
+                    resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
+                }
+                resultFldNo++;
+                isResultTuplePopulated = true;
             }
         }
 
-        if (resultTuple == null)
+        if (isResultTuplePopulated == false)
             return null;
 
         Tuple outputTuple = new Tuple(Jtuple.size());
@@ -99,6 +107,7 @@ public class ColumnarIndexScan extends Iterator {
 
         // Applying projection
         Projection.Project(resultTuple, types, outputTuple, outFlds, noOutFlds);
+        // Projection.Project(resultTuple, types, outputTuple, outFlds, 1);
 
         // if (PredEval.Eval(selects, resultTuple, null, types, null)) {
         // Projection.Project(resultTuple, types, outputTuple, outFlds, noOutFlds);

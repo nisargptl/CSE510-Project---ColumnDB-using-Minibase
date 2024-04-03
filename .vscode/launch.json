@@ -1,0 +1,116 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Query with Arguments",
+            "request": "launch",
+            "mainClass": "tests.Query",
+            "args": [
+                "name",
+                "name",
+                "name.3,name.4",
+                "name.3 = 4",
+                "name.3,name.4",
+                "BTREE,BTREE",
+                "name.3 = 4",
+                "name.3,name.4",
+                "100",
+                "0"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "BMTest",
+            "request": "launch",
+            "mainClass": "tests.BMTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "BTTest",
+            "request": "launch",
+            "mainClass": "tests.BTTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "BatchInsert",
+            "request": "launch",
+            "mainClass": "tests.BatchInsert",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "DBTest",
+            "request": "launch",
+            "mainClass": "tests.DBTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "Delete",
+            "request": "launch",
+            "mainClass": "tests.Delete",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "HFTest",
+            "request": "launch",
+            "mainClass": "tests.HFTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "Index",
+            "request": "launch",
+            "mainClass": "tests.Index",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "IndexTest",
+            "request": "launch",
+            "mainClass": "tests.IndexTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "JoinTest",
+            "request": "launch",
+            "mainClass": "tests.JoinTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "Query",
+            "request": "launch",
+            "mainClass": "tests.Query",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "SortTest",
+            "request": "launch",
+            "mainClass": "tests.SortTest",
+            "projectName": "new-github_25f49f5e"
+        },
+        {
+            "type": "java",
+            "name": "testQuery",
+            "request": "launch",
+            "mainClass": "tests.testQuery",
+            "projectName": "new-github_25f49f5e"
+        }
+    ]
+}

@@ -97,8 +97,7 @@ public class ColumnIndexScan extends Iterator {
             short str_sizes,
             CondExpr[] selects,
             final boolean indexOnly)
-            throws
-            Exception {
+            throws Exception {
         _type = type;
         _s_sizes = str_sizes;
         index_only = indexOnly;
@@ -108,7 +107,7 @@ public class ColumnIndexScan extends Iterator {
         this.index = index;
         columnarfile = new Columnarfile(relName);
 
-         Jtuple = new Tuple();
+        Jtuple = new Tuple();
 
         // try {
         // ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,

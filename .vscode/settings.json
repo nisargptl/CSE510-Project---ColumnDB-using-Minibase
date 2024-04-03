@@ -1,0 +1,9 @@
+{
+    "workbench.editorAssociations": {
+        "*.jpg": "luna.editor",
+        "*.png": "luna.editor",
+        "*.ipynb": "jupyter-notebook",
+        "*.pdf": "latex-workshop-pdf-hook",
+        "file:/**/*.csv": "jupyter-data-wrangler"
+    }
+}
