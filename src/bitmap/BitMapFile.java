@@ -14,7 +14,7 @@ public class BitMapFile implements GlobalConst {
 
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
-  private String fileName;
+  private final String fileName;
 
   public BitMapFile(String filename) throws Exception {
     this.fileName = filename;
@@ -25,7 +25,7 @@ public class BitMapFile implements GlobalConst {
     headerPage = new BitMapHeaderPage(headerPageId);
   }
 
-  public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, ValueClass value)
+  public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, AttrType attrType)
           throws Exception {
     this.fileName = filename;
     headerPageId = get_file_entry(filename);
@@ -36,12 +36,14 @@ public class BitMapFile implements GlobalConst {
       headerPage.set_rootId(new PageId(INVALID_PAGE));
       headerPage.setColumnarFileName(columnarFile.getColumnarFileName());
       headerPage.setColumnNumber(columnNo);
-      headerPage.setValue(value.getValue().toString());
-      headerPage.setAttrType(new AttrType(AttrType.attrString));
+      // Use the attribute type's toString method or equivalent representation
+      headerPage.setValue(attrType.toString());
+      headerPage.setAttrType(attrType); // Now directly setting the AttrType
     } else {
       headerPage = new BitMapHeaderPage(headerPageId);
     }
   }
+
 
   public void close() throws Exception {
     if (headerPage != null) {
