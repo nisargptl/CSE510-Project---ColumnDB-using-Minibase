@@ -72,9 +72,6 @@ public class Delete {
             String attribute = OperationUtils.getAttributeName(targetColumns[i]);
             targets[i] = (short) cf.getAttributePosition(attribute);
         }
-//        for(int i=0;i< otherConstraints.length;i++){
-        System.out.println(otherConstraints);
-//        }
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
