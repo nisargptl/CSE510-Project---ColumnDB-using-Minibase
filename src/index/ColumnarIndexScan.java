@@ -54,7 +54,7 @@ public class ColumnarIndexScan extends Iterator {
 
         indexScans = new ColumnIndexScan[fldNum.length];
         for (int i = 0; i < fldNum.length; i++) {
-            indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i] - 1],
+            indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i] - 1],
                     str_sizes[i], selects, indexOnly);
         }
 

@@ -207,4 +207,8 @@ public class BitMapFile implements GlobalConst {
       headerPage = null;
     }
   }
+
+  public BitmapFileScan new_scan() throws Exception {
+    return new BitmapFileScan(this);
+  }
 }

@@ -31,6 +31,8 @@ public class Columnarfile {
     Tuple _hdr;
     RID _hdrRid;
     HashMap<String, Integer> columnMap;
+    HashMap<String, BitMapFile> BMMap = new HashMap<>();
+
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
         Heapfile hf;
@@ -323,6 +325,19 @@ public class Columnarfile {
         return "BM" + "." + fname + "." + columnNo + "." + attrType.toString();
     }
 
+    public String[] getAvailableBM(int columnNo) {
+        List<String> bmName = new ArrayList<>();
+        AttrType attrType = _ctype[columnNo];
+
+        String prefix = getBMName(columnNo, attrType);
+
+        for(String s : BMMap.keySet()){
+            if(s.substring(0,prefix.length()).equals(prefix)){
+                bmName.add(s);
+            }
+        }
+        return  bmName.toArray(new String[bmName.size()]);
+    }
 
     public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
         // Initialize a map to keep track of bitmap files created during this operation
