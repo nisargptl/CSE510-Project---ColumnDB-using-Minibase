@@ -51,9 +51,8 @@ public class ColumnarIndexScan extends Iterator {
 
         // Assuming columnarfile provides access to the columnar storage.
         this.columnarfile = new Columnarfile(relName);
-
-        indexScans = new ColumnIndexScan[fldNum.length];
         int c = 0;
+        indexScans = new ColumnIndexScan[fldNum.length];
 
         for (int i = 0; i < fldNum.length; i++) {
             if(types[fldNum[i]].attrType == AttrType.attrString) {
@@ -68,6 +67,7 @@ public class ColumnarIndexScan extends Iterator {
         try {
             Jtuple = new Tuple();
             AttrType[] Jtypes = new AttrType[noOutFlds];
+            System.out.println("num out: " + noOutFlds);
             short[] ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,
                     new AttrType[0], 0,
                     str_sizes, new short[0],

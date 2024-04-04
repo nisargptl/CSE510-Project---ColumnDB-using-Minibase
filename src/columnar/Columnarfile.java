@@ -298,11 +298,11 @@ public class Columnarfile {
     public boolean createBtreeIndex(int columnNo) throws Exception {
         String indexName = getBTName(columnNo + 1);
 
-        int keyType = _ctype[columnNo].attrType;
-        int keySize = asize[columnNo];
+        int keyType = _ctype[columnNo - 1].attrType;
+        int keySize = asize[columnNo - 1];
         int deleteFashion = 0;
         BTreeFile bTreeFile = new BTreeFile(indexName, keyType, keySize, deleteFashion);
-        Scan columnScan = openColumnScan(columnNo);
+        Scan columnScan = openColumnScan(columnNo - 1);
         RID rid = new RID();
         Tuple tuple;
         while (true) {
@@ -310,12 +310,11 @@ public class Columnarfile {
             if (tuple == null) {
                 break;
             }
-            int position = getColumn(columnNo).positionOfRecord(rid);
+
             bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), _ctype[columnNo], asize[columnNo]), rid);
         }
         columnScan.closescan();
         bTreeFile.close();
-//        addIndexToColumnar(0, indexName);
         return true;
     }
 

@@ -65,7 +65,7 @@ public class Query {
             System.out.println(scanColumns[i]);
             if (!scanColumns[i].equals("")) {
                 String attribute = OperationUtils.getAttributeName(scanColumns[i]);
-                scanCols[i] = cf.getAttributePosition(attribute);
+                scanCols[i] = cf.getAttributePosition(attribute) + 1;
                 indName[i] = cf.getBTName(scanCols[i]);
             }
         }
@@ -112,8 +112,9 @@ public class Query {
                 System.out.println("Index Name len: " + indexName.length);
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
+                System.out.println("Projection len: " + projection.length);
 
-                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
+                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length + 1, projectionList, otherConstraint, true);
 
 //            } else if (scanTypes[0].equals(COLUMNSCAN)) {
 //                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
