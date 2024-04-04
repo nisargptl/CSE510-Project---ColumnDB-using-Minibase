@@ -53,9 +53,15 @@ public class ColumnarIndexScan extends Iterator {
         this.columnarfile = new Columnarfile(relName);
 
         indexScans = new ColumnIndexScan[fldNum.length];
+        int c = 0;
+
         for (int i = 0; i < fldNum.length; i++) {
-            indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i] - 1],
-                    str_sizes[i], selects, indexOnly);
+            if(types[fldNum[i]].attrType == AttrType.attrString) {
+                indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i]], str_sizes[i - c], selects, indexOnly);
+            } else {
+                c += 1;
+                indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i]], (short) 0, selects, indexOnly);
+            }
         }
 
         // Prepare a tuple template for projections.

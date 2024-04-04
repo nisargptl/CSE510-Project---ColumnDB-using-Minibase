@@ -296,7 +296,7 @@ public class Columnarfile {
     }
 
     public boolean createBtreeIndex(int columnNo) throws Exception {
-        String indexName = getBTName(columnNo);
+        String indexName = getBTName(columnNo + 1);
 
         int keyType = _ctype[columnNo].attrType;
         int keySize = asize[columnNo];
@@ -712,6 +712,7 @@ public class Columnarfile {
     }
 
     public String getBTName(int columnNo) {
+        columnNo += 1;
         return "BT" + "." + fname + "." + columnNo;
     }
 
