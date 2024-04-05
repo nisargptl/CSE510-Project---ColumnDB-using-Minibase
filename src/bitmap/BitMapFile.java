@@ -7,10 +7,11 @@ import diskmgr.*;
 import global.*;
 import heap.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BitMapFile implements GlobalConst {
+public class BitMapFile extends IndexFile implements GlobalConst {
 
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
@@ -210,5 +211,15 @@ public class BitMapFile implements GlobalConst {
 
   public BitmapFileScan new_scan() throws Exception {
     return new BitmapFileScan(this);
+  }
+
+  @Override
+  public void insert(KeyClass data, RID rid) throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException, ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException, DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
+    System.out.println("Insert function");
+  }
+
+  @Override
+  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException, RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException, FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException, IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
+    return false;
   }
 }
