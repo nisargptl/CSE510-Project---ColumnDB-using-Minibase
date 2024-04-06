@@ -5,14 +5,14 @@ public class FloatKey extends KeyClass {
     private Float key;
 
     public FloatKey(Float value) {
-        key = new Float(value);
+        key = value;
     }
 
     public String toString() {
         return key.toString();
     }
     public Float getKey() {
-        return new Float(key);
+        return key;
     }
 
     public void setKey(Float value) {

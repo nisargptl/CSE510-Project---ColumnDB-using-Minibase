@@ -197,7 +197,7 @@ public class BTSortedPage  extends HFPage{
     {
       return getSlotCnt();
     }
-};
+}
 
 
 

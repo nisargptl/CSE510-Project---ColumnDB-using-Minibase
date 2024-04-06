@@ -20,6 +20,6 @@ public class AttrDesc
 	int      indexCnt = 0;                    // number of indexes
 	attrData minVal;                      // min max key values
 	attrData maxVal;
-};
+}
 
 

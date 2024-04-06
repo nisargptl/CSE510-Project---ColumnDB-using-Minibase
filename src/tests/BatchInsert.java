@@ -14,27 +14,28 @@ import java.io.InputStreamReader;
 
 import static global.GlobalConst.NUMBUF;
 
-public class BatchInsert{
+public class BatchInsert {
     public static int NUM_PAGES = 10000;
+
     public static void main(String[] args) throws IOException, HashOperationException, PageNotFoundException, BufMgrException, PagePinnedException, PageUnpinnedException {
         String dataFileName = args[0];
         String columnDBName = args[1];
         String columnarFileName = args[2];
         Integer numColumns = Integer.parseInt(args[3]);
         Integer isNewDb = Integer.parseInt(args[4]);
-        
+
         int numPages = isNewDb == 1 ? NUM_PAGES : 0;
 
         String dbpath = OperationUtils.dbPath(columnDBName);
-		SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "Clock");
+        SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "Clock");
 
         runOperation(dataFileName, columnarFileName, numColumns);
 
-		 SystemDefs.JavabaseBM.flushAllPages();
-		SystemDefs.JavabaseDB.closeDB();
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
 
-		System.out.println("Reads: " + PCounter.rcounter);
-		System.out.println("Writes: " + PCounter.wcounter);
+        System.out.println("Reads: " + PCounter.rcounter);
+        System.out.println("Writes: " + PCounter.wcounter);
     }
 
     private static void runOperation(String dataFileName, String columnarFile, int numColumns) throws IOException {
@@ -51,11 +52,11 @@ public class BatchInsert{
 
             // First line in the data file has attr type info. Read it and split it on tab spaces to get individual columns
             String attrType = b.readLine();
-            String parts[] = attrType.split("\t");
+            String[] parts = attrType.split("\t");
 
             int i = 0;
             for (String s : parts) {
-                String t[] = s.split(":");
+                String[] t = s.split(":");
                 names[i] = t[0];
                 if (t[1].contains("char")) {
                     attrTypes[i] = new AttrType(AttrType.attrString);
@@ -75,7 +76,7 @@ public class BatchInsert{
 
             //  Start inserting the data
             while ((record = b.readLine()) != null) {
-                String vals[] = record.split("\t");
+                String[] vals = record.split("\t");
 
                 Tuple t = new Tuple();
                 t.setHdr((short) numColumns, attrTypes, attrSizes);

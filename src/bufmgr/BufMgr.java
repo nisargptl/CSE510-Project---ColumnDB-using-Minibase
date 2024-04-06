@@ -102,7 +102,7 @@ class BufHashTbl implements GlobalConst{
   /** Each slot holds a linked list of BufHTEntrys, NULL means 
    * none. 
    */
-  private BufHTEntry ht[] = new BufHTEntry[HTSIZE];       
+  private final BufHTEntry[] ht = new BufHTEntry[HTSIZE];
   
   
   /** Returns the number of hash bucket used, value between 0 and HTSIZE-1
@@ -225,7 +225,7 @@ class BufHashTbl implements GlobalConst{
 	System.out.println("NONE\t");
       }
     }
-    System.out.println("");
+    System.out.println();
     
   }
   
@@ -317,19 +317,19 @@ class Clock extends Replacer {
 public class BufMgr implements GlobalConst{
   
   /** The hash table, only allocated once. */
-  private BufHashTbl hashTable = new BufHashTbl(); 
+  private final BufHashTbl hashTable = new BufHashTbl();
   
   /** Total number of buffer frames in the buffer pool. */
-  private int  numBuffers;	
+  private final int  numBuffers;
   
   /** physical buffer pool. */
-  private byte[][] bufPool;  // default = byte[NUMBUF][MAX_SPACE];
+  private final byte[][] bufPool;  // default = byte[NUMBUF][MAX_SPACE];
                          
   /** An array of Descriptors one per frame. */
   private FrameDesc[] frmeTable;  // default = new FrameDesc[NUMBUF];
   
   /** The replacer object, which is only used in this class. */
-  private Replacer replacer;
+  private final Replacer replacer;
   
   
   /** Factor out the common code for the two versions of Flush 
@@ -363,7 +363,7 @@ public class BufMgr implements GlobalConst{
 	  if ( frmeTable[i].pin_count() != 0 )
 	    unpinned++;
 	  
-	  if ( frmeTable[i].dirty != false ) {
+	  if (frmeTable[i].dirty) {
 	    
 	    if(frmeTable[i].pageNo.pid == INVALID_PAGE)
 	      
@@ -508,13 +508,13 @@ public class BufMgr implements GlobalConst{
 	}
 	
 	if ((frmeTable[frameNo].pageNo.pid != INVALID_PAGE)
-	    && (frmeTable[frameNo].dirty == true) ) {
+	    && (frmeTable[frameNo].dirty) ) {
 	  needwrite = 1;
 	  oldpageNo.pid = frmeTable[frameNo].pageNo.pid;
 	}
 	
 	bst = hashTable.remove(frmeTable[frameNo].pageNo);
-	if (bst != true) {
+	if (!bst) {
 	  throw new HashOperationException (null, "BUFMGR: HASH_TABLE_ERROR.");
 	}
 	
@@ -526,7 +526,7 @@ public class BufMgr implements GlobalConst{
 	(frmeTable[frameNo].pageNo).pid = pin_pgid.pid;
 	frmeTable[frameNo].dirty = false;
 	
-	if (bst2 != true){	
+	if (!bst2){
 	  throw new HashOperationException (null, "BUFMGR: HASH_TABLE_ERROR.");
 	}
 	
@@ -536,7 +536,7 @@ public class BufMgr implements GlobalConst{
 	} // end of needwrite..
 	
 	// read in the page if not empty
-	if (emptyPage == false){
+	if (!emptyPage){
 	  try {
 	    apage.setpage(bufPool[frameNo]);
 	    
@@ -546,7 +546,7 @@ public class BufMgr implements GlobalConst{
 	    
 
 	    bst = hashTable.remove(frmeTable[frameNo].pageNo);
-	    if (bst != true)
+	    if (!bst)
 	      throw new HashOperationException (e, "BUFMGR: HASH_TABLE_ERROR.");
 	    
 	    frmeTable[frameNo].pageNo.pid = INVALID_PAGE; // frame is empty
@@ -554,7 +554,7 @@ public class BufMgr implements GlobalConst{
 	    
 	    bst = replacer.unpin(frameNo);
 	    
-	    if (bst != true)
+	    if (!bst)
 	      throw new ReplacerException (e, "BUFMGR: REPLACER_ERROR.");
 	    
 	    throw new PageNotReadException (e, "BUFMGR: DB_READ_PAGE_ERROR.");
@@ -608,11 +608,11 @@ public class BufMgr implements GlobalConst{
 	
       }
       
-      if ((replacer.unpin(frameNo)) != true) {
+      if (!(replacer.unpin(frameNo))) {
 	throw new ReplacerException (null, "BUFMGR: REPLACER_ERROR.");
       }
       
-      if (dirty == true)
+      if (dirty)
 	frmeTable[frameNo].dirty = dirty;
       
     }
@@ -722,7 +722,7 @@ public class BufMgr implements GlobalConst{
 	
 	return;
       }
-      if (frameNo >= (int)numBuffers){
+      if (frameNo >= numBuffers){
 	throw new InvalidBufferException(null, "BUFMGR, BAD_BUFFER"); 
 	
       }

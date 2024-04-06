@@ -20,10 +20,8 @@ public class RelCatalog extends Heapfile
   
   // CONSTRUCTOR
   RelCatalog(String filename)
-    throws IOException, 
-	   BufMgrException,
-	   DiskMgrException,
-	   Exception
+    throws
+          Exception
     {
         super(filename);
       
@@ -46,10 +44,10 @@ public class RelCatalog extends Heapfile
 	System.err.println ("tuple.setHdr"+e);
 	throw new RelCatalogException(e, "setHdr() failed");
       }
-    };
-  
-  
-  // GET RELATION DESCRIPTION FOR A RELATION
+    }
+
+
+    // GET RELATION DESCRIPTION FOR A RELATION
   public void getInfo(String relation, RelDesc record)
     throws Catalogmissparam, 
 	   Catalogioerror, 
@@ -85,12 +83,12 @@ public class RelCatalog extends Heapfile
 	  throw new RelCatalogException(e4, "read_tuple failed");
 	}
 	
-	if (record.relName.equalsIgnoreCase(relation) == true)
+	if (record.relName.equalsIgnoreCase(relation))
 	  return;
       }
-    };
-  
-  // CREATE A NEW RELATION
+    }
+
+    // CREATE A NEW RELATION
   public void createRel(String relation, int attrCnt, attrInfo [] attrList)
     throws Catalogmissparam, 
 	   Catalogrelexists, 
@@ -133,7 +131,7 @@ public class RelCatalog extends Heapfile
 	status = false;
       }
       
-      if (status == true)
+      if (status)
 	throw new Catalogrelexists(null, "Relation Exists!");
       
       // MAKE SURE THERE ARE NO DUPLICATE ATTRIBUTE NAMES
@@ -149,11 +147,11 @@ public class RelCatalog extends Heapfile
 	
 	/* Duplicate attributes.*/
 	for(j = 0; j < i; j++)
-	  if (attrList[i].attrName.equalsIgnoreCase(attrList[j].attrName) == true)
+	  if (attrList[i].attrName.equalsIgnoreCase(attrList[j].attrName))
 	    throw new Catalogdupattrs(null, "Duplicate Attributes!");
       }
       
-      rd.relName = new String(relation);
+      rd.relName = relation;
       rd.attrCnt = attrCnt;
       rd.indexCnt = 0;
       rd.numTuples = NUMTUPLESFILE;
@@ -167,10 +165,10 @@ public class RelCatalog extends Heapfile
 	throw new RelCatalogException(e2, "addInfo failed");
       }
       
-      ad.relName = new String(relation);
+      ad.relName = relation;
       
       for (int i=0; i< attrCnt; i++) {
-	ad.attrName = new String(attrList[i].attrName);
+	ad.attrName = attrList[i].attrName;
 	ad.attrOffset = offset;
 	ad.attrType = new AttrType(attrList[i].attrType.attrType);
 	ad.indexCnt = 0;
@@ -178,8 +176,8 @@ public class RelCatalog extends Heapfile
 	
 	if(attrList[i].attrType.attrType == AttrType.attrString) {
 	  ad.attrLen = attrList[i].attrLen;
-	  ad.maxVal.strVal = new String("Z");
-	  ad.minVal.strVal = new String("A");
+	  ad.maxVal.strVal = "Z";
+	  ad.minVal.strVal = "A";
 	}
 	else if(attrList[i].attrType.attrType == AttrType.attrInteger) {
 	  ad.attrLen = 4;
@@ -215,22 +213,13 @@ public class RelCatalog extends Heapfile
 	throw new RelCatalogException(e2, "create heapfile failed");
       }
       
-    };
-  
-  // ADD AN INDEX TO A RELATION
+    }
+
+    // ADD AN INDEX TO A RELATION
   public void addIndex(String relation, String attrName,
 		       IndexType accessType, int buckets)
-    throws RelCatalogException,
-	   IOException,
-	   Catalogioerror, 
-	   Cataloghferror, 
-	   Catalogmissparam,
-	   java.lang.Exception, 
-	   Catalogindexnotfound, 
-	   Catalognomem,
-	   Catalogbadtype, 
-	   Catalogattrnotfound,
-	   Exception
+    throws
+          Exception
 	   
     {
       RelDesc rd = null;
@@ -279,11 +268,10 @@ public class RelCatalog extends Heapfile
 	throw new RelCatalogException(e2, "add/remove info failed");
       }
       
-    };
-  
-  
-  
-  // ADD INFORMATION ON A RELATION TO  CATALOG
+    }
+
+
+    // ADD INFORMATION ON A RELATION TO  CATALOG
   public void addInfo(RelDesc record)
     throws RelCatalogException, 
 	   IOException
@@ -305,9 +293,9 @@ public class RelCatalog extends Heapfile
 	System.err.println ("insertRecord"+e2);
 	throw new RelCatalogException(e2, "insertRecord failed");
       }
-    };
-  
-  // REMOVE INFORMATION ON A RELATION FROM CATALOG
+    }
+
+    // REMOVE INFORMATION ON A RELATION FROM CATALOG
   public void removeInfo(String relation)
     throws RelCatalogException, 
 	   IOException, 
@@ -343,7 +331,7 @@ public class RelCatalog extends Heapfile
 	  throw new RelCatalogException(e4, "read_tuple failed");
 	}
 	
-	if (record.relName.equalsIgnoreCase(relation)==true) {
+	if (record.relName.equalsIgnoreCase(relation)) {
 	  try {
 	    deleteRecord(rid);
 	  }
@@ -354,9 +342,9 @@ public class RelCatalog extends Heapfile
 	  return;
 	}
       }
-    };
-  
-  // Converts AttrDesc to tuple.
+    }
+
+    // Converts AttrDesc to tuple.
   public void make_tuple(Tuple tuple, RelDesc record)
     throws IOException, 
 	   RelCatalogException
@@ -373,9 +361,9 @@ public class RelCatalog extends Heapfile
 	throw new RelCatalogException(e1, "setFld failed");
       }
       
-    };
-  
-  public void read_tuple(Tuple tuple, RelDesc record)
+    }
+
+    public void read_tuple(Tuple tuple, RelDesc record)
     throws IOException, 
 	   RelCatalogException
     {
@@ -391,24 +379,24 @@ public class RelCatalog extends Heapfile
 	throw new RelCatalogException(e1, "getFld failed");
       }
       
-    };
-  
-  // Methods have not been implemented.
+    }
+
+    // Methods have not been implemented.
   
   // DESTROY A RELATION
-  void destroyRel(String relation){};
-  
-  // DROP AN INDEX FROM A RELATION
+  void destroyRel(String relation){}
+
+    // DROP AN INDEX FROM A RELATION
   void dropIndex(String relation, String attrname, 
-		 IndexType accessType){};
-  
-  // DUMPS A CATALOG TO A DISK FILE (FOR OPTIMIZER)
-  void dumpCatalog(String filename){};
-  
-  // Collects stats from all the tables of the database.
-  void runStats(String filename){};
-  
-  // OUTPUTS A RELATION TO DISK FOR OPTIMIZER
+		 IndexType accessType){}
+
+    // DUMPS A CATALOG TO A DISK FILE (FOR OPTIMIZER)
+  void dumpCatalog(String filename){}
+
+    // Collects stats from all the tables of the database.
+  void runStats(String filename){}
+
+    // OUTPUTS A RELATION TO DISK FOR OPTIMIZER
   // void dumpRelation(fstream outFile, RelDesc relRec, int tupleSize){}; 
   
   // OUTPUTS ATTRIBUTES TO DISK FOR OPTIMIZER (used by runstats)
@@ -428,5 +416,5 @@ public class RelCatalog extends Heapfile
   short [] str_sizes;
   AttrType [] attrs;
   
-};
+}
 

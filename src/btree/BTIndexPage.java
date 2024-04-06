@@ -455,7 +455,7 @@ public class BTIndexPage extends BTSortedPage{
             delRid.pageNo = getCurPage();
             delRid.slotNo = getSlotCnt()-1;
 
-            if ( deleteSortedRecord(delRid) ==false )
+            if (!deleteSortedRecord(delRid))
                    throw new RedistributeException(null, "Delete record failed");
 
             // adjust the entry pointing to sibling in its parent
@@ -464,7 +464,7 @@ public class BTIndexPage extends BTSortedPage{
 	    
             else 
 	      st = parentIndexPage.adjustKey( lastEntry.key, splitKey);
-            if (st==false)
+            if (!st)
 	      throw new RedistributeException(null, "adjust key failed");
             return true;
 	  }
@@ -500,11 +500,11 @@ public class BTIndexPage extends BTSortedPage{
             RID delRid=new RID();
             delRid.pageNo = getCurPage();
             delRid.slotNo = 0;
-            if (deleteSortedRecord(delRid) == false )
+            if (!deleteSortedRecord(delRid))
 	      throw new RedistributeException(null, "delete record failed");
 	    
             // adjust the entry pointing to itself in its parent
-            if ( parentIndexPage.adjustKey(firstEntry.key, splitKey) ==false )
+            if (!parentIndexPage.adjustKey(firstEntry.key, splitKey))
 	      throw new RedistributeException(null, "adjust key failed");  
             return true;
 	  }
@@ -514,4 +514,4 @@ public class BTIndexPage extends BTSortedPage{
 	throw new RedistributeException(e, "redistribute failed");
       } 
     } // end of redistribute  
-};
+}

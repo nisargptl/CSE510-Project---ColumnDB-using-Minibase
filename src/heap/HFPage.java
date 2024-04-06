@@ -67,12 +67,12 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
     /**
      * backward pointer to data page
      */
-    private PageId prevPage = new PageId();
+    private final PageId prevPage = new PageId();
 
     /**
      * forward pointer to data page
      */
-    private PageId nextPage = new PageId();
+    private final PageId nextPage = new PageId();
 
     /**
      * page number of this page
@@ -623,10 +623,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         while (current_scan_posn < slotCnt) {
             length = getSlotLength(current_scan_posn);
 
-            if ((length == EMPTY_SLOT) && (move == false)) {
+            if ((length == EMPTY_SLOT) && (!move)) {
                 move = true;
                 first_free_slot = current_scan_posn;
-            } else if ((length != EMPTY_SLOT) && (move == true)) {
+            } else if ((length != EMPTY_SLOT) && (move)) {
                 offset = getSlotOffset(current_scan_posn);
 
                 // slot[first_free_slot].length = slot[current_scan_posn].length;
@@ -649,7 +649,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
             current_scan_posn++;
         }
 
-        if (move == true) {
+        if (move) {
             // Adjust amount of free space on page and slotCnt
             freeSpace += SIZE_OF_SLOT * (slotCnt - first_free_slot);
             slotCnt = (short) first_free_slot;

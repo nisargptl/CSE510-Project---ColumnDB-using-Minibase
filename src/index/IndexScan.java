@@ -36,17 +36,17 @@ public class IndexScan extends Iterator {
    * @exception IOException from the lower layer
    */
   public IndexScan(
-	   IndexType     index,        
-	   final String  relName,  
-	   final String  indName,  
-	   AttrType      types[],      
-	   short         str_sizes[],     
-	   int           noInFlds,          
-	   int           noOutFlds,         
-	   FldSpec       outFlds[],     
-	   CondExpr      selects[],  
-	   final int     fldNum,
-	   final boolean indexOnly
+          IndexType     index,
+          final String  relName,
+          final String  indName,
+          AttrType[] types,
+          short[] str_sizes,
+          int           noInFlds,
+          int           noOutFlds,
+          FldSpec[] outFlds,
+          CondExpr[] selects,
+          final int     fldNum,
+          final boolean indexOnly
 	   ) 
     throws IndexException, 
 	   InvalidTypeException,
@@ -108,7 +108,7 @@ public class IndexScan extends Iterator {
       }
       
       try {
-	indScan = (BTFileScan) IndexUtils.BTree_scan(selects, indFile);
+	indScan = IndexUtils.BTree_scan(selects, indFile);
       }
       catch (Exception e) {
 	throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
@@ -274,19 +274,19 @@ public class IndexScan extends Iterator {
   }
   
   public FldSpec[]      perm_mat;
-  private IndexFile     indFile;
-  private IndexFileScan indScan;
-  private AttrType[]    _types;
-  private short[]       _s_sizes; 
-  private CondExpr[]    _selects;
-  private int           _noInFlds;
-  private int           _noOutFlds;
-  private Heapfile      f;
+  private final IndexFile     indFile;
+  private final IndexFileScan indScan;
+  private final AttrType[]    _types;
+  private final short[]       _s_sizes;
+  private final CondExpr[]    _selects;
+  private final int           _noInFlds;
+  private final int           _noOutFlds;
+  private final Heapfile      f;
   private Tuple         tuple1;
-  private Tuple         Jtuple;
-  private int           t1_size;
-  private int           _fldNum;       
-  private boolean       index_only;    
+  private final Tuple         Jtuple;
+  private final int           t1_size;
+  private final int           _fldNum;
+  private final boolean       index_only;
 
 }
 

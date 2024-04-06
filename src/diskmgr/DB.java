@@ -71,7 +71,7 @@ public class DB implements GlobalConst {
 	   FileIOException,
 	   DiskMgrException {
     
-    name = new String(fname);
+    name = fname;
     num_pages = (num_pgs > 2) ? num_pgs : 2;
     
     File DBfile = new File(name);
@@ -82,7 +82,7 @@ public class DB implements GlobalConst {
     fp = new RandomAccessFile(fname, "rw");
     
     // Make the file num_pages pages long, filled with zeroes.
-    fp.seek((long)(num_pages*MINIBASE_PAGESIZE-1));
+    fp.seek((long) num_pages *MINIBASE_PAGESIZE-1);
     fp.writeByte(0);
     
     // Initialize space map and directory pages.
@@ -143,7 +143,7 @@ public class DB implements GlobalConst {
       throw new InvalidPageNumberException(null, "BAD_PAGE_NUMBER");
     
     // Seek to the correct page
-    fp.seek((long)(pageno.pid *MINIBASE_PAGESIZE));
+    fp.seek((long) pageno.pid *MINIBASE_PAGESIZE);
     
     // Read the appropriate number of bytes.
     byte [] buffer = apage.getpage();  //new byte[MINIBASE_PAGESIZE];
@@ -175,7 +175,7 @@ public class DB implements GlobalConst {
       throw new InvalidPageNumberException(null, "INVALID_PAGE_NUMBER");
     
     // Seek to the correct page
-    fp.seek((long)(pageno.pid *MINIBASE_PAGESIZE));
+    fp.seek((long) pageno.pid *MINIBASE_PAGESIZE);
     
     // Write the appropriate number of bytes.
     try{
@@ -268,8 +268,8 @@ public class DB implements GlobalConst {
 	    && current_run_length < run_size; ++byteptr) {// start forloop02
 	  
 	
-	Integer intmask = new Integer(1);
-	Byte mask = new Byte(intmask.byteValue());
+	Integer intmask = Integer.valueOf(1);
+	Byte mask = Byte.valueOf(intmask.byteValue());
 	byte tmpmask = mask.byteValue();
 	
 	while (mask.intValue()!=0 && (num_bits_this_page>0)
@@ -285,7 +285,7 @@ public class DB implements GlobalConst {
 	    
 	    
 	    tmpmask <<=1;
-	    mask = new Byte(tmpmask);
+	    mask = Byte.valueOf(tmpmask);
 	    --num_bits_this_page;
 	  }
 	
@@ -780,21 +780,21 @@ public class DB implements GlobalConst {
             int imask =1;
 	    int temp;
 	    imask = ((imask << num_bits_this_byte) -1)<<first_bit_offset;
-	    Integer intmask = new Integer(imask);
-	    Byte mask = new Byte(intmask.byteValue());
+	    Integer intmask = Integer.valueOf(imask);
+	    Byte mask = Byte.valueOf(intmask.byteValue());
 	    byte bytemask = mask.byteValue();
 	    
 	    if(bit==1)
 	      {
 	        temp = (pgbuf[cur_posi] | bytemask);
-	        intmask = new Integer(temp);
+	        intmask = Integer.valueOf(temp);
 		pgbuf[cur_posi] = intmask.byteValue();
 	      }
 	    else
 	      {
 		
 		temp = pgbuf[cur_posi] & (255^bytemask);
-	        intmask = new Integer(temp);
+	        intmask = Integer.valueOf(temp);
 		pgbuf[cur_posi] = intmask.byteValue();
 	      }
 	    run_size -= num_bits_this_byte;

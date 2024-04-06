@@ -129,7 +129,7 @@ public class TupleUtils
    *@exception TupleUtilsException exception from this class
    */            
   
-  public static boolean Equal(Tuple t1, Tuple t2, AttrType types[], int len)
+  public static boolean Equal(Tuple t1, Tuple t2, AttrType[] types, int len)
     throws IOException,UnknowAttrType,TupleUtilsException
     {
       int i;
@@ -205,8 +205,7 @@ public class TupleUtils
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
 	  
 	}
-      
-      return;
+
     }
   
   
@@ -226,10 +225,10 @@ public class TupleUtils
    *@exception TupleUtilsException exception from this class
    */
   public static short[] setup_op_tuple(Tuple Jtuple, AttrType[] res_attrs,
-				       AttrType in1[], int len_in1, AttrType in2[], 
-				       int len_in2, short t1_str_sizes[], 
-				       short t2_str_sizes[], 
-				       FldSpec proj_list[], int nOutFlds)
+                                       AttrType[] in1, int len_in1, AttrType[] in2,
+                                       int len_in2, short[] t1_str_sizes,
+                                       short[] t2_str_sizes,
+                                       FldSpec[] proj_list, int nOutFlds)
     throws IOException,
 	   TupleUtilsException
     {
@@ -295,10 +294,10 @@ public class TupleUtils
    *@exception InvalidRelation invalid relation 
    */
 
-  public static short[] setup_op_tuple(Tuple Jtuple, AttrType res_attrs[],
-				       AttrType in1[], int len_in1,
-				       short t1_str_sizes[], 
-				       FldSpec proj_list[], int nOutFlds)
+  public static short[] setup_op_tuple(Tuple Jtuple, AttrType[] res_attrs,
+                                       AttrType[] in1, int len_in1,
+                                       short[] t1_str_sizes,
+                                       FldSpec[] proj_list, int nOutFlds)
     throws IOException,
 	   TupleUtilsException, 
 	   InvalidRelation

@@ -190,8 +190,8 @@ public class IndexUtils {
       if (choice == 1) return new StringKey(cd.operand1.string);
       else return new StringKey(cd.operand2.string);
     case AttrType.attrInteger:
-      if (choice == 1) return new IntegerKey(new Integer(cd.operand1.integer));
-      else return new IntegerKey(new Integer(cd.operand2.integer));
+      if (choice == 1) return new IntegerKey(Integer.valueOf(cd.operand1.integer));
+      else return new IntegerKey(Integer.valueOf(cd.operand2.integer));
     case AttrType.attrReal:
       /*
       // need FloatKey class in bt.java

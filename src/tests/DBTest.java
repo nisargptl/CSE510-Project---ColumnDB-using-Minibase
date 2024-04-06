@@ -14,9 +14,9 @@ import global.*;
 
 class DBDriver extends TestDriver implements GlobalConst {
 
-  private PageId runStart = new PageId();
-  private boolean OK = true;
-  private boolean FAIL = false;
+  private final PageId runStart = new PageId();
+  private final boolean OK = true;
+  private final boolean FAIL = false;
 
   public DBDriver () {
     super("dbtest");
@@ -255,7 +255,7 @@ class DBDriver extends TestDriver implements GlobalConst {
 	}
 
 	String testStr = "A" + i;
-	String readStr = new String();
+	String readStr = "";
 	try {
 	  readStr = Convert.getStrValue(0,pg.getpage(),2*testStr.length()); 
 	}
@@ -265,7 +265,7 @@ class DBDriver extends TestDriver implements GlobalConst {
 	  e.printStackTrace();
 	}
 
-	if (readStr.equals(testStr) != true) {
+	if (!readStr.equals(testStr)) {
 	  status = FAIL;
 	  System.err.print ("*** Data read does not match what " +
 			      "was written on page " +
@@ -899,14 +899,14 @@ class DBDriver extends TestDriver implements GlobalConst {
 
 public class DBTest {
 
-   public static void main (String argv[]) {
+   public static void main (String[] argv) {
 
      DBDriver dbt = new DBDriver();
      boolean dbstatus;
 
      dbstatus = dbt.runTests();
 
-     if (dbstatus != true) {
+     if (!dbstatus) {
        System.err.println ("Error encountered during buffer manager tests:\n");
        Runtime.getRuntime().exit(1);
      }

@@ -331,7 +331,7 @@ class BTDriver  implements GlobalConst
       try {
 	System.out.println(" ***************** The file name is: "+ "AAA"+postfix +"  **********");  
 	file=new BTreeFile("AAA"+postfix, keyType, 4, deleteFashion); 
-	file.traceFilename("TRACE");
+	BTreeFile.traceFilename("TRACE");
 	
 	KeyClass key;
 	RID rid=new RID();
@@ -362,7 +362,7 @@ class BTDriver  implements GlobalConst
 
        System.out.println(" ***************** The file name is: "+ "AAA"+postfix +"  **********");  
        file=new BTreeFile("AAA"+postfix, keyType, 4, deleteFashion); 
-       file.traceFilename("TRACE");
+       BTreeFile.traceFilename("TRACE");
 
        KeyClass key;
        RID rid=new RID();
@@ -390,7 +390,7 @@ class BTDriver  implements GlobalConst
     try {
        System.out.println(" ***************** The file name is: "+ "AAA"+postfix +"  **********"); 
        file=new BTreeFile("AAA"+postfix, keyType, 4, deleteFashion); 
-       file.traceFilename("TRACE");
+       BTreeFile.traceFilename("TRACE");
 
        int[] k=new int[n];
        for(int i=0;i<n;i++) {
@@ -442,7 +442,7 @@ class BTDriver  implements GlobalConst
     try {
        System.out.println(" ***************** The file name is: "+ "AAA"+postfix +"  **********"); 
        file=new BTreeFile("AAA"+postfix, keyType, 4, deleteFashion); 
-       file.traceFilename("TRACE");
+       BTreeFile.traceFilename("TRACE");
 
        int[] k=new int[n];
        for(int i=0;i<n;i++) {
@@ -499,7 +499,7 @@ class BTDriver  implements GlobalConst
           pageno.pid=k[i];
           rid=new RID(pageno, k[i]);
  
-          if ( file.Delete(key, rid)==false) {
+          if (!file.Delete(key, rid)) {
              System.out.println("*********************************************************");
              System.out.println("*     Your delete method has bug!!!                     *");
              System.out.println("*     You insert a record, But you failed to delete it. *");
@@ -524,7 +524,7 @@ class BTDriver  implements GlobalConst
 
        System.out.println(" ***************** The file name is: "+ "AAA"+postfix +"  **********"); 
        file=new BTreeFile("AAA"+postfix, keyType, 20, deleteFashion); 
-       file.traceFilename("TRACE");
+       BTreeFile.traceFilename("TRACE");
 
        int[] k=new int[n];
        for(int i=0;i<n;i++) {
@@ -582,7 +582,7 @@ class BTDriver  implements GlobalConst
           pageno.pid=k[i];
           rid=new RID(pageno, k[i]);
  
-          if ( file.Delete(key, rid)==false) {
+          if (!file.Delete(key, rid)) {
              System.out.println("*********************************************************");
              System.out.println("*     Your delete method has bug!!!                     *");
              System.out.println("*     You insert a record, But you failed to delete it. *");

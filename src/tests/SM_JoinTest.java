@@ -63,11 +63,11 @@ class Reserves {
 
 class JoinsDriver implements GlobalConst {
   
-  private boolean OK = true;
-  private boolean FAIL = false;
-  private Vector sailors;
-  private Vector boats;
-  private Vector reserves;
+  private final boolean OK = true;
+  private final boolean FAIL = false;
+  private final Vector sailors;
+  private final Vector boats;
+  private final Vector reserves;
   /** Constructor
    */
   public JoinsDriver() {
@@ -715,7 +715,7 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
  
-    AttrType Stypes[] = {
+    AttrType[] Stypes = {
       new AttrType(AttrType.attrInteger),
       new AttrType(AttrType.attrString),
       new AttrType(AttrType.attrInteger),
@@ -871,7 +871,7 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
  
-    AttrType Stypes[] = {
+    AttrType[] Stypes = {
       new AttrType(AttrType.attrInteger),
       new AttrType(AttrType.attrString),
       new AttrType(AttrType.attrInteger),
@@ -1035,7 +1035,7 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
  
-    AttrType Stypes[] = {
+    AttrType[] Stypes = {
       new AttrType(AttrType.attrInteger),
       new AttrType(AttrType.attrString),
       new AttrType(AttrType.attrInteger),
@@ -1183,7 +1183,7 @@ class JoinsDriver implements GlobalConst {
 
 public class SM_JoinTest
 {
-  public static void main(String argv[])
+  public static void main(String[] argv)
   {
     boolean sortstatus;
     //SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
@@ -1192,7 +1192,7 @@ public class SM_JoinTest
     JoinsDriver jjoin = new JoinsDriver();
 
     sortstatus = jjoin.runTests();
-    if (sortstatus != true) {
+    if (!sortstatus) {
       System.out.println("Error ocurred during join tests");
     }
     else {

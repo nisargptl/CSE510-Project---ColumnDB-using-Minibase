@@ -81,7 +81,7 @@ public class Heapfile implements Filetype, GlobalConst {
        user record(rid) and true if record is found.
        If the user record cannot be found, return false.
     */
-    private boolean _findDataPage(RID rid, PageId dirPageId, HFPage dirpage, PageId dataPageId, HFPage datapage, RID rpDataPageRid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException, Exception {
+    private boolean _findDataPage(RID rid, PageId dirPageId, HFPage dirpage, PageId dataPageId, HFPage datapage, RID rpDataPageRid) throws Exception {
         PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 
         HFPage currentDirPage = new HFPage();
@@ -196,7 +196,7 @@ public class Heapfile implements Filetype, GlobalConst {
             // If the name is NULL, allocate a temporary name
             // and no logging is required.
             _fileName = "tempHeapFile";
-            String useId = new String("user.name");
+            String useId = "user.name";
             String userAccName;
             userAccName = System.getProperty(useId);
             _fileName = _fileName + userAccName;
@@ -340,7 +340,7 @@ public class Heapfile implements Filetype, GlobalConst {
         found = false;
         Tuple atuple;
         DataPageInfo dpinfo = new DataPageInfo();
-        while (found == false) { //Start While01
+        while (!found) { //Start While01
             // look for suitable dpinfo-struct
             for (currentDataPageRid = currentDirPage.firstRecord(); currentDataPageRid != null; currentDataPageRid = currentDirPage.nextRecord(currentDataPageRid)) {
                 atuple = currentDirPage.getRecord(currentDataPageRid);
@@ -363,7 +363,7 @@ public class Heapfile implements Filetype, GlobalConst {
             //     there is no datapagerecord on the current directory page
             //     whose corresponding datapage has enough space free
             //     several subcases: see below
-            if (found == false) { //Start IF01
+            if (!found) { //Start IF01
                 // case (2)
 
                 //System.out.println("no datapagerecord on the current directory is OK");
@@ -382,7 +382,7 @@ public class Heapfile implements Filetype, GlobalConst {
                 // - (2.2) (currentDirPage->available_space() <= sizeof(DataPageInfo):
                 //         look at the next directory page, if necessary, create it.
 
-                if (currentDirPage.available_space() >= dpinfo.size) {
+                if (currentDirPage.available_space() >= DataPageInfo.size) {
                     //Start IF02
                     // case (2.1) : add a new data page record into the
                     //              current directory page
@@ -553,7 +553,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
         status = _findDataPage(rid, currentDirPageId, currentDirPage, currentDataPageId, currentDataPage, currentDataPageRid);
 
-        if (status != true) return status;    // record not found
+        if (!status) return status;    // record not found
 
         // ASSERTIONS:
         // - currentDirPage, currentDirPageId valid and pinned
@@ -684,7 +684,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
         status = _findDataPage(rid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageRid);
 
-        if (status != true) return status;    // record not found
+        if (!status) return status;    // record not found
         Tuple atuple = new Tuple();
         atuple = dataPage.returnRecord(rid);
 
@@ -733,7 +733,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
         status = _findDataPage(rid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageRid);
 
-        if (status != true) return null; // record not found
+        if (!status) return null; // record not found
 
         Tuple atuple = new Tuple();
         atuple = dataPage.getRecord(rid);
@@ -953,7 +953,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
     } // end of delete_file_entry
 
-    public int getRIDPos(RID r) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
+    public int getRIDPos(RID r) throws Exception {
 
         PageId currentDirPageId = new PageId();
         currentDirPageId.pid = _firstDirPageId.pid;
@@ -1002,7 +1002,7 @@ public class Heapfile implements Filetype, GlobalConst {
         return _firstDirPageId;
     }
 
-    public int positionOfRecord(RID r) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
+    public int positionOfRecord(RID r) throws Exception {
 
         PageId currentDirPageId = new PageId();
         currentDirPageId.pid = _firstDirPageId.pid;

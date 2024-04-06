@@ -21,20 +21,22 @@ import java.io.*;
 
 public class NestedLoopsJoins  extends Iterator 
 {
-  private AttrType      _in1[],  _in2[];
-  private   int        in1_len, in2_len;
-  private   Iterator  outer;
-  private   short t2_str_sizescopy[];
-  private   CondExpr OutputFilter[];
-  private   CondExpr RightFilter[];
-  private   int        n_buf_pgs;        // # of buffer pages available.
+  private final AttrType[] _in1;
+    private final AttrType[] _in2;
+  private final int        in1_len;
+    private final int in2_len;
+  private final Iterator  outer;
+  private final short[] t2_str_sizescopy;
+  private final CondExpr[] OutputFilter;
+  private final CondExpr[] RightFilter;
+  private final int        n_buf_pgs;        // # of buffer pages available.
   private   boolean        done,         // Is the join complete
     get_from_outer;                 // if TRUE, a tuple is got from outer
   private   Tuple     outer_tuple, inner_tuple;
-  private   Tuple     Jtuple;           // Joined tuple
-  private   FldSpec   perm_mat[];
-  private   int        nOutFlds;
-  private   Heapfile  hf;
+  private final Tuple     Jtuple;           // Joined tuple
+  private final FldSpec[] perm_mat;
+  private final int        nOutFlds;
+  private final Heapfile  hf;
   private   Scan      inner;
   
   
@@ -56,19 +58,19 @@ public class NestedLoopsJoins  extends Iterator
    *@exception IOException some I/O fault
    *@exception NestedLoopException exception from this class
    */
-  public NestedLoopsJoins( AttrType    in1[],    
-			   int     len_in1,           
-			   short   t1_str_sizes[],
-			   AttrType    in2[],         
-			   int     len_in2,           
-			   short   t2_str_sizes[],   
-			   int     amt_of_mem,        
-			   Iterator     am1,          
-			   String relationName,      
-			   CondExpr outFilter[],      
-			   CondExpr rightFilter[],    
-			   FldSpec   proj_list[],
-			   int        n_out_flds
+  public NestedLoopsJoins(AttrType[] in1,
+                          int     len_in1,
+                          short[] t1_str_sizes,
+                          AttrType[] in2,
+                          int     len_in2,
+                          short[] t2_str_sizes,
+                          int     amt_of_mem,
+                          Iterator     am1,
+                          String relationName,
+                          CondExpr[] outFilter,
+                          CondExpr[] rightFilter,
+                          FldSpec[] proj_list,
+                          int        n_out_flds
 			   ) throws IOException,NestedLoopException
     {
       
@@ -135,19 +137,8 @@ public class NestedLoopsJoins  extends Iterator
 
    */
   public Tuple get_next()
-    throws IOException,
-	   JoinsException ,
-	   IndexException,
-	   InvalidTupleSizeException,
-	   InvalidTypeException, 
-	   PageNotReadException,
-	   TupleUtilsException, 
-	   PredEvalException,
-	   SortException,
-	   LowMemException,
-	   UnknowAttrType,
-	   UnknownKeyTypeException,
-	   Exception
+    throws
+          Exception
     {
       // This is a DUMBEST form of a join, not making use of any key information...
       
@@ -162,7 +153,7 @@ public class NestedLoopsJoins  extends Iterator
 	  // If a get_next on the outer returns DONE?, then the nested loops
 	  //join is done too.
 	  
-	  if (get_from_outer == true)
+	  if (get_from_outer)
 	    {
 	      get_from_outer = false;
 	      if (inner != null)     // If this not the first time,
@@ -201,9 +192,9 @@ public class NestedLoopsJoins  extends Iterator
 	      while ((inner_tuple = inner.getNext(rid)) != null)
 		{
 		  inner_tuple.setHdr((short)in2_len, _in2,t2_str_sizescopy);
-		  if (PredEval.Eval(RightFilter, inner_tuple, null, _in2, null) == true)
+		  if (PredEval.Eval(RightFilter, inner_tuple, null, _in2, null))
 		    {
-		      if (PredEval.Eval(OutputFilter, outer_tuple, inner_tuple, _in1, _in2) == true)
+		      if (PredEval.Eval(OutputFilter, outer_tuple, inner_tuple, _in1, _in2))
 			{
 			  // Apply a projection on the outer and inner tuples.
 			  Projection.Join(outer_tuple, _in1, 

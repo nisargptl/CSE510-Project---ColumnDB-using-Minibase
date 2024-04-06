@@ -55,7 +55,7 @@ class TupleList {
   TupleList next;
 
   public TupleList() {
-  };
+  }
 }
 
 // set up answers for each query.
@@ -94,23 +94,23 @@ public class QueryCheck {
   public static final int Max_group_num = 5;
   public static final int Max_answer = 15;
 
-  private AttrType[] types;
-  private short[] sizes;// sizes of attributes in answer tuple
+  private final AttrType[] types;
+  private final short[] sizes;// sizes of attributes in answer tuple
   private short columnum; // number of attributes in answer tuple
   private int curGroup; // current group number
   private int tuplenum; // total number of answer tuples
   private int groupnum; // number of groups in answer tuples
   private Order grouporder; // order of groups
 
-  private Group[] mygroup;
+  private final Group[] mygroup;
 
   // group mark, 1: checked already, 0: not checked
-  private int gmark[];
+  private final int[] gmark;
 
   private int total; // total number of correct answers
   private int G_O_flag; // error flag for group order wrong
   // error flag for tuple order wrong
-  private int[] T_O_flag;
+  private final int[] T_O_flag;
 
   private TupleList missing;
   private TupleList extra;
@@ -351,7 +351,7 @@ public class QueryCheck {
     } catch (Exception e) {
       System.err.println("**** Error setting up the tuples");
     }
-    TupleCopy(cur.tuple, t, (int) columnum, types);
+    TupleCopy(cur.tuple, t, columnum, types);
     cur.next = list;
     list = cur;
   }
@@ -410,7 +410,7 @@ public class QueryCheck {
           return;
         }
       } else { // grouporder == UNSORT
-        int temp[] = new int[1];
+        int[] temp = new int[1];
         temp[0] = -1;
         curGroup = Search(t, temp);
         if (curGroup == -1) {
@@ -430,7 +430,7 @@ public class QueryCheck {
 
       try {
         TupleUtils tUtil = new TupleUtils();
-        if (tUtil.Equal(mygroup[curGroup].mytuple[count], t, types, (int) columnum)) {
+        if (TupleUtils.Equal(mygroup[curGroup].mytuple[count], t, types, columnum)) {
           MarkTuple(curGroup, count);
         }
 
@@ -441,7 +441,6 @@ public class QueryCheck {
         System.err.println("" + e);
         System.err.println("***** Error comparing the value of tuples");
       }
-      return;
     } else { // no order inside curGroup
 
       // look for tuple t inside curGroup
@@ -449,7 +448,7 @@ public class QueryCheck {
         try {
           TupleUtils tUtil = new TupleUtils();
           if ((mygroup[curGroup].mark[i] == 0) &&
-              (tUtil.Equal(mygroup[curGroup].mytuple[i], t, types, (int) columnum))) {// found
+              (TupleUtils.Equal(mygroup[curGroup].mytuple[i], t, types, columnum))) {// found
             MarkTuple(curGroup, i);
             return;
           }
@@ -462,12 +461,11 @@ public class QueryCheck {
       // not found
       MisMatch(t);
 
-      return;
     }
   }
 
   void MisMatch(Tuple t) {
-    int t_num[] = new int[1];
+    int[] t_num = new int[1];
 
     t_num[0] = -1;
     // first look for it in other groups
@@ -475,13 +473,11 @@ public class QueryCheck {
 
     if (tempGroup == -1) { // t not in answer tuples
       AddtoList(extra, t);
-      return;
     } else if (tempGroup == curGroup) {
       if (mygroup[curGroup].order.order == Order.UNSORT) {
         // this should not happen
         System.out.print("*****Tuple in current group, but "
             + "checking failed to find it.\n\n");
-        return;
       } else { // tuple sorted order in curGroup is wrong
         System.out.print("\n*****Tuples in group " + curGroup
             + " should be sorted.\n\n");
@@ -494,7 +490,6 @@ public class QueryCheck {
 
         MarkTuple(curGroup, t_num[0]);
 
-        return;
       }
     } else { // found in another group
       // if mygroup[curGroup].count == 0, it's probably due to groups are not
@@ -554,7 +549,6 @@ public class QueryCheck {
 
         MarkTuple(curGroup, t_num[0]);
       }
-      return;
     }
   }
 
@@ -578,7 +572,6 @@ public class QueryCheck {
         curGroup = -1;
       }
     }
-    return;
   }
 
   // Search() will look for a tuple and return the group number
@@ -590,7 +583,7 @@ public class QueryCheck {
           try {
             TupleUtils tUtil = new TupleUtils();
             if ((mygroup[i].mark[j] == 0) &&
-                (tUtil.Equal(mygroup[i].mytuple[j], t, types, (int) columnum))) {
+                (TupleUtils.Equal(mygroup[i].mytuple[j], t, types, columnum))) {
               t_num[0] = j;
               return i;
             }
@@ -665,6 +658,5 @@ public class QueryCheck {
       System.out.print("\nQuery" + querynum + " completed successfully!\n");
       System.out.print("*******************Query" + querynum + " finished!!!*****************\n\n");
     }
-    return;
   }
 }
