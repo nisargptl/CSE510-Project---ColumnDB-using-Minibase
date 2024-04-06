@@ -1,4 +1,4 @@
-JDKPATH = /Library/Java/JavaVirtualMachines/graalvm-jdk-21.0.2+13.1/Contents/Home
+JDKPATH = /Users/sovinirs/Library/Java/JavaVirtualMachines/openjdk-21.0.2/Contents/Home
 LIBPATH = .:..
 CLASSPATH = $(JDKPATH)/lib/classes.zip:.:..:$(LIBPATH)
 BINPATH = $(JDKPATH)/bin

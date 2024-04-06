@@ -340,52 +340,52 @@ public class Columnarfile {
         return "BM" + "." + fname + "." + columnNo + "." + attrType.toString();
     }
 
-    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
-        // Define the name for the bitmap file based on the column number and the
-        // specific value
-        String indexName = getBMName(columnNo, value);
-
-        String prefix = getBMName(columnNo, attrType);
-
-        for(String s : BMMap.keySet()){
-            if(s.substring(0,prefix.length()).equals(prefix)){
-                bmName.add(s);
-            }
-
-            // Directly extract and compare the value from the tuple based on the column's
-            // attribute type
-            boolean matchesValue = false;
-            switch (_ctype[columnNo].attrType) {
-                case AttrType.attrInteger:
-                    int intValue = tuple.getIntFld(1);
-                    if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
-                        matchesValue = true;
-                    }
-                    break;
-                case AttrType.attrString:
-                    String stringValue = tuple.getStrFld(1);
-                    if (value instanceof ValueString && ((ValueString) value).getValue().equals(stringValue)) {
-                        matchesValue = true;
-                    }
-                    break;
-                case AttrType.attrReal:
-                    float floatValue = tuple.getFloFld(1);
-                    if (value instanceof ValueFloat && ((ValueFloat) value).getValue() == floatValue) {
-                        matchesValue = true;
-                    }
-                    break;
-                // Include other types as necessary
-            }
-
-            if (matchesValue) {
-                bitMapFile.insert(position);
-            } else {
-                bitMapFile.delete(position);
-            }
-            position++;
-        }
-        return  bmName.toArray(new String[bmName.size()]);
-    }
+//    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
+//        // Define the name for the bitmap file based on the column number and the
+//        // specific value
+//        String indexName = getBMName(columnNo, value);
+//
+//        String prefix = getBMName(columnNo, attrType);
+//
+//        for(String s : BMMap.keySet()){
+//            if(s.substring(0,prefix.length()).equals(prefix)){
+//                bmName.add(s);
+//            }
+//
+//            // Directly extract and compare the value from the tuple based on the column's
+//            // attribute type
+//            boolean matchesValue = false;
+//            switch (_ctype[columnNo].attrType) {
+//                case AttrType.attrInteger:
+//                    int intValue = tuple.getIntFld(1);
+//                    if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
+//                        matchesValue = true;
+//                    }
+//                    break;
+//                case AttrType.attrString:
+//                    String stringValue = tuple.getStrFld(1);
+//                    if (value instanceof ValueString && ((ValueString) value).getValue().equals(stringValue)) {
+//                        matchesValue = true;
+//                    }
+//                    break;
+//                case AttrType.attrReal:
+//                    float floatValue = tuple.getFloFld(1);
+//                    if (value instanceof ValueFloat && ((ValueFloat) value).getValue() == floatValue) {
+//                        matchesValue = true;
+//                    }
+//                    break;
+//                // Include other types as necessary
+//            }
+//
+//            if (matchesValue) {
+//                bitMapFile.insert(position);
+//            } else {
+//                bitMapFile.delete(position);
+//            }
+//            position++;
+//        }
+//        return  bmName.toArray(new String[bmName.size()]);
+//    }
 
     public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
         // Initialize a map to keep track of bitmap files created during this operation
