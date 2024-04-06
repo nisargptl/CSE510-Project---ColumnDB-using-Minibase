@@ -58,11 +58,8 @@ public abstract class Iterator implements Flags {
    *@exception IndexException exception from Index class
    *@exception SortException exception Sort class
    */
-  public abstract void close() 
-    throws IOException, 
-	   JoinsException, 
-	   SortException,
-	   IndexException;
+  public abstract void close()
+          throws Exception;
   
   /**
    * tries to get n_pages of buffer space

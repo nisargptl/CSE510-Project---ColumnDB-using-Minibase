@@ -1,8 +1,15 @@
 package index;
+import bitmap.BitMapFile;
+import bitmap.BitmapFileScan;
+import columnar.Columnarfile;
 import global.*;
 import btree.*;
+import heap.Tuple;
 import iterator.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
 
 
 /**
@@ -10,8 +17,10 @@ import java.io.*;
  * Currently only BTree_scan is supported
  */
 public class IndexUtils {
+	static Columnarfile columnarfile;
 
-  /**
+	static CondExpr[] _selects;
+	/**
    * BTree_scan opens a BTree scan based on selection conditions
    * @param selects conditions to apply
    * @param indFile the index (BTree) file
@@ -194,5 +203,62 @@ public class IndexUtils {
     }
     
   }
-  
+
+  public static IndexFileScan Bitmap_scan(Columnarfile cf,
+							  int columnNo,
+							  CondExpr[] selects,
+							  boolean indexOnly
+  ) throws IndexException {
+
+	  try {
+		  columnarfile = cf;
+	  } catch (Exception e) {
+		  e.printStackTrace();
+	  }
+
+	  try {
+		  List<BitmapFileScan> scans = new ArrayList<>();
+		  for (String bmName : columnarfile.getAvailableBM(columnNo)){
+			  if(evalBMName(bmName, columnNo)){
+					scans.add((new BitMapFile(bmName)).new_scan());
+			  }
+		  }
+	  } catch (Exception e) {
+		  // any exception is swalled into a Index Exception
+		  throw new IndexException(e, "IndexScan.java: BitMapFile exceptions caught from BitMapFile constructor");
+	  }
+	  return null;
+    }
+
+	static boolean evalBMName(String s, int _columnNo) throws Exception {
+	  if(_selects == null)
+		  return true;
+
+	  short[] _sizes = new short[1];
+	  _sizes[0] = columnarfile.getAttrsizeforcolumn(_columnNo);
+	  AttrType[] _types = new AttrType[1];
+	  _types[0] = columnarfile.getAttrtypeforcolumn(_columnNo);
+
+	  byte[] data = new byte[6+_sizes[0]];
+	  String val = s.split("\\.")[3];
+	  if(_types[0].attrType == AttrType.attrInteger) {
+		  int t = Integer.parseInt(val);
+		  Convert.setIntValue(t,6, data);
+	  } else {
+		  Convert.setStrValue(val, 6, data);
+	  }
+
+	  Tuple jTuple = new Tuple(data,0,data.length);
+	  _sizes[0] -= 2;
+
+	  jTuple.setHdr((short)1,_types, _sizes);
+
+	  if(PredEval.Eval(_selects,jTuple,null,_types, null)){
+		  return true;
+	  }
+
+
+	  return false;
+  }
+
 }
