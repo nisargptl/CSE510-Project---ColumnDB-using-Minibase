@@ -16,33 +16,21 @@ import btree.*;
 public class Utility implements Catalogglobal{
 
  // WRAPS DELETE UTILITY IN TX
- void deleteRecordUT(String relation, attrNode item){};
+ void deleteRecordUT(String relation, attrNode item){}
 
- // DELETES RECORDS
- void deleteRecUT(String relation, attrNode item){};
+    // DELETES RECORDS
+ void deleteRecUT(String relation, attrNode item){}
 
- // DELETES INDEX ENRIES FOR RECORDS
- void deleteRecIndexesUT(String relation, RID rid, Tuple tuple){};
+    // DELETES INDEX ENRIES FOR RECORDS
+ void deleteRecIndexesUT(String relation, RID rid, Tuple tuple){}
 
- // WRAPS INSERT UTILITY  IN TX
+    // WRAPS INSERT UTILITY  IN TX
  public static void insertRecordUT(String relation, int attrCnt, attrNode [] attrList)
-   throws Catalogmissparam, 
-	  Catalogrelexists, 
-	  Catalogdupattrs, 
-	  Catalognomem,
-	  IOException, 
-	  Catalogioerror,
-	  Cataloghferror, 
-	  Catalogrelnotfound, 
-	  Catalogindexnotfound,
-	  Catalogattrnotfound, 
-	  Catalogbadattrcount, 
-	  Catalogattrexists,
-	  Catalogbadtype,
-	  Exception
+   throws
+         Exception
  {
 	insertRecUT(relation, attrCnt, attrList);
- };
+ }
 
 
 //---------------------------------------------------
@@ -59,20 +47,8 @@ public class Utility implements Catalogglobal{
 //---------------------------------------------------
 
 public static void insertRecUT(String relation, int attrCnt, attrNode [] attrList)
-  throws Catalogmissparam, 
-	 Catalogrelexists, 
-	 Catalogdupattrs, 
-	 Catalognomem,
-	 IOException, 
-	 Catalogioerror,
-	 Cataloghferror, 
-	 Catalogrelnotfound, 
-	 Catalogindexnotfound,
-	 Catalogattrnotfound, 
-	 Catalogbadattrcount, 
-	 Catalogattrexists,
-	 Catalogbadtype,
-	 Exception
+  throws
+        Exception
  {
  RelDesc  relRec = null;
  RID      rid = null;
@@ -118,7 +94,7 @@ ExtendedSystemDefs.MINIBASE_RELCAT.getInfo(relation, relRec);
  // CHECK ATTRIBUTE LIST
 
  for(int z = 0; z < attrCnt; z++) 
-    if (attrRecs[z].attrName.equalsIgnoreCase(attrList[z].attrName)==true)
+    if (attrRecs[z].attrName.equalsIgnoreCase(attrList[z].attrName))
  	throw new Catalogattrexists(null, "Catalog: Attribute Exists!");
 
 
@@ -174,7 +150,7 @@ ExtendedSystemDefs.MINIBASE_RELCAT.getInfo(relation, relRec);
       switch (attrRecs[i].attrType.attrType) {
 
       case(AttrType.attrInteger):
-          Integer integerVal = new Integer(attrList[i].attrValue);
+          Integer integerVal = Integer.valueOf(attrList[i].attrValue);
           intVal = integerVal.intValue();
           tuple.setIntFld(attrRecs[i].attrPos, intVal);
           break;
@@ -214,7 +190,7 @@ ExtendedSystemDefs.MINIBASE_RELCAT.getInfo(relation, relRec);
 
      for(int x = 0; x < attrCnt ; x++)
        {
-          if (attrRecs[x].attrName.equalsIgnoreCase(indexRecs[i].attrName)==true)
+          if (attrRecs[x].attrName.equalsIgnoreCase(indexRecs[i].attrName))
             {
                attrType = attrRecs[x].attrType;
                attrPos  = attrRecs[x].attrPos;
@@ -266,17 +242,17 @@ ExtendedSystemDefs.MINIBASE_RELCAT.getInfo(relation, relRec);
 	}
 
  } // end for loop - errors break out of loop
-};
+}
 
- // WRAPS LOAD UTILITY IN TX
- void loadUT(String relation, String fileName){};
+    // WRAPS LOAD UTILITY IN TX
+ void loadUT(String relation, String fileName){}
 
- // LOADS RECORDS
- void loadRecordsUT(String relation, String fileName){};
+    // LOADS RECORDS
+ void loadRecordsUT(String relation, String fileName){}
 
- // LOADS INDEXES
+    // LOADS INDEXES
  void loadIndexesUT(Tuple tuple, int attrCnt, int indexCnt,
-     AttrDesc [] attrs, IndexDesc [] indexes, void [] iFiles, RID rid ){};
+     AttrDesc [] attrs, IndexDesc [] indexes, Object [] iFiles, RID rid ){}
 
 //-------------------------------
 // TYPECHECK INTS

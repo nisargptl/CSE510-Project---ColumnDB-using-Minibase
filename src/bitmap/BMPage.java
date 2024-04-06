@@ -16,11 +16,11 @@ public class BMPage extends HFPage implements GlobalConst {
   public static final int NEXT_PAGE = 8;
   public static final int CUR_PAGE = 12;
 
-  private PageId curPage = new PageId();
+  private final PageId curPage = new PageId();
   private short counter;
   private short freeSpace;
-  private PageId prevPage = new PageId();
-  private PageId nextPage = new PageId();
+  private final PageId prevPage = new PageId();
+  private final PageId nextPage = new PageId();
 
   public BMPage() {
   }

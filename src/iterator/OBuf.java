@@ -56,8 +56,8 @@ public class OBuf implements GlobalConst{
    *@exception Exception other exceptions
    */
   public Tuple  Put(Tuple buf)
-    throws IOException,
-	   Exception
+    throws
+          Exception
     {
       
       byte[] copybuf;
@@ -89,12 +89,12 @@ public class OBuf implements GlobalConst{
    *@exception IOException some I/O fault
    *@exception Exception other exceptions
    */
-  public   long flush()  throws IOException, Exception
+  public   long flush()  throws Exception
     {
       int count;
       int bytes_written = 0;
       byte[] tempbuf = new byte[t_size]; 
-      if (buffer_only == true)
+      if (buffer_only)
 	System.out.println("Stupid error - but no error protocol");
       
       if (dirty)

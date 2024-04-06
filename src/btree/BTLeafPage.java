@@ -204,7 +204,7 @@ public class BTLeafPage extends BTSortedPage {
 	for(entry = getFirst(rid); entry!=null; entry=getNext(rid)) 
 	  {  
 	    if ( entry.equals(dEntry) ) {
-	      if ( super.deleteSortedRecord( rid ) == false )
+	      if (!super.deleteSortedRecord(rid))
 		throw new LeafDeleteException(null, "Delete record failed");
 	      return true;
 	    }
@@ -262,7 +262,7 @@ public class BTLeafPage extends BTSortedPage {
             RID delRid=new RID();
             delRid.pageNo = getCurPage();
             delRid.slotNo = getSlotCnt()-1;
-            if ( deleteSortedRecord(delRid) == false )
+            if (!deleteSortedRecord(delRid))
 	      throw new LeafRedistributeException(null, "delete record failed");
 
 	    
@@ -272,7 +272,7 @@ public class BTLeafPage extends BTSortedPage {
             else 
                 st = parentIndexPage.adjustKey(lastEntry.key,
                                             firstEntry.key);
-            if (st == false) 
+            if (!st)
 	      throw new LeafRedistributeException(null, "adjust key failed");
             return true;
 	  }
@@ -300,7 +300,7 @@ public class BTLeafPage extends BTSortedPage {
             RID delRid=new RID();
             delRid.pageNo = getCurPage();
             delRid.slotNo = 0;
-            if ( deleteSortedRecord(delRid) == false) 
+            if (!deleteSortedRecord(delRid))
 	      throw new LeafRedistributeException(null, "delete record failed");  
 	    
 	    
@@ -312,7 +312,7 @@ public class BTLeafPage extends BTSortedPage {
             
             // adjust the entry pointing to itself in its parent
             st = parentIndexPage.adjustKey(tmpEntry.key, firstEntry.key);
-            if( st==false) 
+            if(!st)
 	      throw new LeafRedistributeException(null, "adjust key failed"); 
             return true;
 	  }

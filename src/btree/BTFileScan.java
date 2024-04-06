@@ -105,7 +105,7 @@ public class BTFileScan  extends IndexFileScan
 	throw new ScanDeleteException();
       }
       
-      if( (deletedcurrent == true) || (didfirst==false) ) 
+      if( (deletedcurrent) || (!didfirst) )
 	return;    
       
       entry=leafPage.getCurrent(curRid);  
@@ -114,7 +114,6 @@ public class BTFileScan  extends IndexFileScan
       leafPage=bfile.findRunStart(entry.key, curRid);
       
       deletedcurrent = true;
-      return;
     }
     catch (Exception e) {
       e.printStackTrace();

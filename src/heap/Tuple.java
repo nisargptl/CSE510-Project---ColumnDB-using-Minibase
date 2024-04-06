@@ -365,7 +365,7 @@ public class Tuple implements GlobalConst{
     *
     */
 
-public void setHdr (short numFlds,  AttrType types[], short strSizes[])
+public void setHdr (short numFlds, AttrType[] types, short[] strSizes)
  throws IOException, InvalidTypeException, InvalidTupleSizeException		
 {
   if((numFlds +2)*2 > max_size)
@@ -461,9 +461,7 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
   public short[] copyFldOffset() 
    {
      short[] newFldOffset = new short[fldCnt + 1];
-     for (int i=0; i<=fldCnt; i++) {
-       newFldOffset[i] = fldOffset[i];
-     }
+       System.arraycopy(fldOffset, 0, newFldOffset, 0, fldCnt + 1);
      
      return newFldOffset;
    }
@@ -473,7 +471,7 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
   * @param type  the types in the tuple
   * @Exception IOException I/O exception
   */
- public void print(AttrType type[])
+ public void print(AttrType[] type)
     throws IOException 
  {
   int i, val;

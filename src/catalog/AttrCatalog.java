@@ -65,9 +65,9 @@ public class AttrCatalog extends Heapfile
       catch (Exception e) {
 	throw new AttrCatalogException(e, "setHdr() failed");
       }
-    };
-  
-  // GET ATTRIBUTE DESCRIPTION
+    }
+
+    // GET ATTRIBUTE DESCRIPTION
   public void getInfo(String relation, String attrName, AttrDesc record)
     throws Catalogmissparam, 
 	   Catalogioerror, 
@@ -107,13 +107,13 @@ public class AttrCatalog extends Heapfile
 	  throw new AttrCatalogException(e4, "read_tuple failed");
 	}
 	
-	if ( record.relName.equalsIgnoreCase(relation)==true 
-	     && record.attrName.equalsIgnoreCase(attrName)==true )
+	if ( record.relName.equalsIgnoreCase(relation)
+	     && record.attrName.equalsIgnoreCase(attrName))
 	  return;
       }
-    };
-  
-  // GET ALL ATTRIBUTES OF A RELATION/
+    }
+
+    // GET ALL ATTRIBUTES OF A RELATION/
   // Return attrCnt
   public int getRelInfo(String relation, int attrCnt, AttrDesc [] Attrs)
     throws Catalogmissparam, 
@@ -197,7 +197,7 @@ public class AttrCatalog extends Heapfile
 	    throw new AttrCatalogException(e4, "read_tuple failed");
 	  }
 	  
-	  if(attrRec.relName.equalsIgnoreCase(relation)==true) 
+	  if(attrRec.relName.equalsIgnoreCase(relation))
 	    {
 	      Attrs[attrRec.attrPos - 1] = attrRec;  
 	      count++;
@@ -207,9 +207,9 @@ public class AttrCatalog extends Heapfile
 	    break; 
 	}
       return attrCnt;    
-    };
-  
-  // RETURNS ATTRTYPE AND STRINGSIZE ARRAYS FOR CONSTRUCTING TUPLES
+    }
+
+    // RETURNS ATTRTYPE AND STRINGSIZE ARRAYS FOR CONSTRUCTING TUPLES
   public int getTupleStructure(String relation, int attrCnt,
 			       AttrType [] typeArray, short [] sizeArray)
     throws Catalogmissparam, 
@@ -294,10 +294,10 @@ public class AttrCatalog extends Heapfile
 	}
       
       return attrCnt;    
-    };
-  
-  
-  // ADD ATTRIBUTE ENTRY TO CATALOG
+    }
+
+
+    // ADD ATTRIBUTE ENTRY TO CATALOG
   public void addInfo(AttrDesc record)
     throws AttrCatalogException, 
 	   IOException
@@ -317,10 +317,10 @@ public class AttrCatalog extends Heapfile
       catch (Exception e2) {
 	throw new AttrCatalogException(e2, "insertRecord failed");
       }
-    };
-  
-  
-  // REMOVE AN ATTRIBUTE ENTRY FROM CATALOG
+    }
+
+
+    // REMOVE AN ATTRIBUTE ENTRY FROM CATALOG
   // return true if success, false if not found.
   public void removeInfo(String relation, String attrName)
     throws AttrCatalogException, 
@@ -360,8 +360,8 @@ public class AttrCatalog extends Heapfile
 	  throw new AttrCatalogException(e4, "read_tuple failed");
 	}
 	
-	if ( record.relName.equalsIgnoreCase(relation)==true 
-	     && record.attrName.equalsIgnoreCase(attrName)==true )
+	if ( record.relName.equalsIgnoreCase(relation)
+	     && record.attrName.equalsIgnoreCase(attrName))
 	  {
 	    try {
 	      deleteRecord(rid);
@@ -372,10 +372,10 @@ public class AttrCatalog extends Heapfile
 	    return;
 	  }
       }
-    };
-  
-  
-  //--------------------------------------------------
+    }
+
+
+    //--------------------------------------------------
   // MAKE_TUPLE
   //--------------------------------------------------
   // Tuple must have been initialized properly in the 
@@ -412,10 +412,10 @@ public class AttrCatalog extends Heapfile
       catch (Exception e1) {
 	throw new AttrCatalogException(e1, "make_tuple failed");
       }
-    };
-  
-  
-  //--------------------------------------------------
+    }
+
+
+    //--------------------------------------------------
   // READ_TUPLE
   //--------------------------------------------------
   
@@ -466,15 +466,15 @@ public class AttrCatalog extends Heapfile
     }
   
   // REMOVE ALL ATTRIBUTE ENTRIES FOR A RELATION
-  public void dropRelation(String relation){};
-  
-  // ADD AN INDEX TO A RELATION
+  public void dropRelation(String relation){}
+
+    // ADD AN INDEX TO A RELATION
   public void addIndex(String relation, String attrname,
-		       IndexType accessType){};
-  
-  
-  Tuple tuple;
+		       IndexType accessType){}
+
+
+    Tuple tuple;
   short [] str_sizes;
   AttrType [] attrs;
   short max;
-};
+}

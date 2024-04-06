@@ -14,5 +14,5 @@ class RelDesc
 	int  indexCnt = 0;                // number of indexed attrs
 	int  numTuples = 0;               // number of tuples in the relation
 	int  numPages = 0;                // number of pages in the file
-};
+}
 

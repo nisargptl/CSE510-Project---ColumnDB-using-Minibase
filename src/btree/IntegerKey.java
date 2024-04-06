@@ -16,7 +16,7 @@ public class IntegerKey extends KeyClass {
    */
   public IntegerKey(Integer value) 
   { 
-    key=new Integer(value.intValue());
+    key= Integer.valueOf(value.intValue());
   }
 
   /** Class constructor
@@ -24,7 +24,7 @@ public class IntegerKey extends KeyClass {
    */
   public IntegerKey(int value) 
   { 
-    key=new Integer(value);
+    key= Integer.valueOf(value);
   }
 
 
@@ -34,13 +34,13 @@ public class IntegerKey extends KeyClass {
    */
   public Integer getKey() 
   {
-    return new Integer(key.intValue());
+    return Integer.valueOf(key.intValue());
   }
 
   /** set the integer key value
    */  
   public void setKey(Integer value) 
   { 
-    key=new Integer(value.intValue());
+    key= Integer.valueOf(value.intValue());
   }
 }

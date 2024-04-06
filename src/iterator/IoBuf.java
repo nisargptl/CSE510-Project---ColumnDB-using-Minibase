@@ -21,7 +21,7 @@ public class IoBuf implements GlobalConst{
    *@param tSize the page size
    *@param temp_fd the reference to a Heapfile
    */ 
-  public void init(byte bufs[][], int n_pages, int tSize, Heapfile temp_fd)
+  public void init(byte[][] bufs, int n_pages, int tSize, Heapfile temp_fd)
     {
       _bufs    = bufs;
       _n_pages = n_pages;
@@ -50,9 +50,8 @@ public class IoBuf implements GlobalConst{
    *@exception Exception  other exceptions
    */
   public void Put(Tuple buf)
-    throws NoOutputBuffer,
-	   IOException,
-	   Exception
+    throws
+          Exception
     {
       if (mode != WRITE_BUFFER)
 	throw new NoOutputBuffer("IoBuf:Trying to write to io buffer when it is acting as a input buffer");
@@ -73,8 +72,7 @@ public class IoBuf implements GlobalConst{
 	{
 	  t_wr_to_pg = 0;
 	  curr_page++;
-	}      
-      return;
+	}
     }
 
   /**
@@ -86,8 +84,8 @@ public class IoBuf implements GlobalConst{
    *@exception Exception other exceptions
    */
   public Tuple Get(Tuple  buf)
-    throws IOException,
-	   Exception
+    throws
+          Exception
     {
       Tuple temptuple;
       if (done){
@@ -109,7 +107,7 @@ public class IoBuf implements GlobalConst{
       else
 	{
 	  // just reading tuples from the buffer pages.
-	  if ((curr_page * t_per_pg + t_rd_from_pg) == t_written)
+	  if (((long) curr_page * t_per_pg + t_rd_from_pg) == t_written)
 	    {
 	      done = true;
 	      buf = null;
@@ -135,7 +133,7 @@ public class IoBuf implements GlobalConst{
    *@exception IOException some I/O fault
    *@exception Exception other exceptions
    */
-  public long flush()throws IOException, Exception 
+  public long flush()throws Exception
     {
       int count;
       byte [] tempbuf = new byte [t_size];
@@ -171,8 +169,8 @@ public class IoBuf implements GlobalConst{
    *@exception Exception other exceptions
    */
   public void reread()
-    throws IOException,
-	   Exception
+    throws
+          Exception
     {
       
       mode = READ_BUFFER;
@@ -199,7 +197,7 @@ public class IoBuf implements GlobalConst{
   private  int  t_wr_to_pg,          // # of tuples written to current page
     t_wr_to_buf;                      // # of tuples written to buffer.
   private  int  curr_page;            // Current page being written to.
-  private  byte _bufs[][];            // Array of pointers to buffer pages.
+  private byte[][] _bufs;            // Array of pointers to buffer pages.
   private  int  _n_pages;             // number of pages in array
   private  int  t_size;               // Size of a tuple
   private  long t_written;           // # of tuples written so far

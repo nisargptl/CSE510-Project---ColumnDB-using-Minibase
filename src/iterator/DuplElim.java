@@ -14,16 +14,16 @@ import java.io.*;
  */
 public class DuplElim extends Iterator
 {
-  private AttrType[] _in;     // memory for array allocated by constructor
-  private short       in_len;
+  private final AttrType[] _in;     // memory for array allocated by constructor
+  private final short       in_len;
   private short[]    str_lens;
   
   private Iterator _am;
   private boolean      done;
   
-  private AttrType  sortFldType;
+  private final AttrType  sortFldType;
   private int       sortFldLen;
-  private Tuple    Jtuple;
+  private final Tuple    Jtuple;
   
   private Tuple TempTuple1, TempTuple2;
   
@@ -38,12 +38,12 @@ public class DuplElim extends Iterator
    *@exception DuplElimException the exception from DuplElim.java
    */
   public DuplElim(
-		  AttrType in[],         
-		  short      len_in,     
-		  short    s_sizes[],
-		  Iterator am,          
-		  int       amt_of_mem,  
-		  boolean     inp_sorted
+          AttrType[] in,
+          short      len_in,
+          short[] s_sizes,
+          Iterator am,
+          int       amt_of_mem,
+          boolean     inp_sorted
 		  )throws IOException ,DuplElimException
     {
       _in = new AttrType[in.length];
@@ -117,19 +117,8 @@ public class DuplElim extends Iterator
    *@exception Exception other exceptions
    */
   public Tuple get_next() 
-    throws IOException,
-	   JoinsException ,
-	   IndexException,
-	   InvalidTupleSizeException,
-	   InvalidTypeException, 
-	   PageNotReadException,
-	   TupleUtilsException, 
-	   PredEvalException,
-	   SortException,
-	   LowMemException,
-	   UnknowAttrType,
-	   UnknownKeyTypeException,
-	   Exception
+    throws
+          Exception
     {
       Tuple t;
       

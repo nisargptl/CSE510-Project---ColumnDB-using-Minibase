@@ -9,7 +9,6 @@ import btree.KeyFactory;
 import iterator.*;
 import btree.BTreeFile;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -41,11 +40,13 @@ public class Columnarfile {
         columnMap = new HashMap<>();
 
         try {
-            // Fetching the headerfile of the columnarfile to check if the columnarfile actually exists on the disk
+            // Fetching the headerfile of the columnarfile to check if the columnarfile
+            // actually exists on the disk
             PageId pid = SystemDefs.JavabaseDB.get_file_entry(_fileName + ".hdr");
 
             if (pid == null) {
-                throw new Exception("Columnar file " + _fileName + "does not exist! Please try again with a different CF name");
+                throw new Exception(
+                        "Columnar file " + _fileName + "does not exist! Please try again with a different CF name");
             }
 
             hf = new Heapfile(_fileName + ".hdr");
@@ -57,7 +58,9 @@ public class Columnarfile {
             Tuple _hdr = scan.getNext(_hdrRid);
             _hdr.setHeaderMetaData();
 
-            // Header file format - numColumns, AttrType[0], AttrSize[0], AttrType[1], AttrSize[1], AttrType[2], AttrSize[2],  .... AttrType[numColumns-1], AttrSize[numColumns-1]
+            // Header file format - numColumns, AttrType[0], AttrSize[0], AttrType[1],
+            // AttrSize[1], AttrType[2], AttrSize[2], .... AttrType[numColumns-1],
+            // AttrSize[numColumns-1]
             this.numColumns = (short) _hdr.getIntFld(1);
             _ctype = new AttrType[numColumns];
             attrsizes = new short[numColumns];
@@ -81,7 +84,9 @@ public class Columnarfile {
         }
     }
 
-    public Columnarfile(String _fileName, int n, AttrType[] types, short[] attrSizes) throws IOException, InvalidTupleSizeException, InvalidTypeException, FieldNumberOutOfBoundException, SpaceNotAvailableException, HFException, HFBufMgrException, InvalidSlotNumberException, HFDiskMgrException {
+    public Columnarfile(String _fileName, int n, AttrType[] types, short[] attrSizes)
+            throws IOException, InvalidTupleSizeException, InvalidTypeException, FieldNumberOutOfBoundException,
+            SpaceNotAvailableException, HFException, HFBufMgrException, InvalidSlotNumberException, HFDiskMgrException {
         String[] colnames = new String[n];
         boolean status = true;
         Heapfile _hdrFile = null;
@@ -139,7 +144,7 @@ public class Columnarfile {
             htypes[htypes.length - 1] = new AttrType(AttrType.attrInteger);
             short[] hsizes = new short[numColumns];
             for (int i = 0; i < numColumns; i++) {
-                hsizes[i] = 20; //column name can't be more than 20 chars
+                hsizes[i] = 20; // column name can't be more than 20 chars
             }
             _hdr = new Tuple();
             _hdr.setHdr((short) htypes.length, htypes, hsizes);
@@ -159,10 +164,12 @@ public class Columnarfile {
         }
     }
 
-    // Functionality - Deletes the columnar file by deleting the heapfiles of the columns and the heapfile of the header
+    // Functionality - Deletes the columnar file by deleting the heapfiles of the
+    // columns and the heapfile of the header
     // Parameters - Nothing
     // Returns - Nothing
-    public void deleteColumnarFile() throws InvalidSlotNumberException, FileAlreadyDeletedException, InvalidTupleSizeException, HFBufMgrException, HFDiskMgrException, IOException, HFException {
+    public void deleteColumnarFile() throws InvalidSlotNumberException, FileAlreadyDeletedException,
+            InvalidTupleSizeException, HFBufMgrException, HFDiskMgrException, IOException, HFException {
         Heapfile _hdr = new Heapfile(fname + "hdr");
         _hdr.deleteFile();
         Heapfile idx = new Heapfile(fname + "idx");
@@ -178,7 +185,8 @@ public class Columnarfile {
 
     // Functionality - Inserts tuple into a columnar file
     // Parameters -
-    // 1. byte[] data - The byte array of the data to be inserted into the columnarfile
+    // 1. byte[] data - The byte array of the data to be inserted into the
+    // columnarfile
     // Returns -
     // 1. the TID object of the inserted tuple
     public TID insertTuple(byte[] data) throws Exception {
@@ -187,7 +195,8 @@ public class Columnarfile {
         int position = 0;
 
         for (int i = 0; i < numColumns; i++) {
-            // Need to separate each rec from the byte array "data" to insert them into separate heapfiles
+            // Need to separate each rec from the byte array "data" to insert them into
+            // separate heapfiles
             byte[] rec = new byte[asize[i]];
             System.arraycopy(data, offset, rec, 0, asize[i]);
 
@@ -204,7 +213,8 @@ public class Columnarfile {
         return new TID(numColumns, position, rids);
     }
 
-    // Functionality - Gets the tuple given the TID of that tuple in the columnarfile
+    // Functionality - Gets the tuple given the TID of that tuple in the
+    // columnarfile
     // Parameters -
     // 1. TID tid - The TID of the tuple to be retrieved
     // Returns-
@@ -227,7 +237,8 @@ public class Columnarfile {
     // Functionality - Gets the number of tuples in the columnarfile
     // Parameters - None
     // Returns - an integer which is the number of tuples in the columnarfile
-    public int getTupleCnt() throws HFDiskMgrException, HFException, HFBufMgrException, IOException, InvalidSlotNumberException, InvalidTupleSizeException {
+    public int getTupleCnt() throws HFDiskMgrException, HFException, HFBufMgrException, IOException,
+            InvalidSlotNumberException, InvalidTupleSizeException {
         return getColumn(0).getRecCnt();
     }
 
@@ -238,9 +249,12 @@ public class Columnarfile {
         return new TupleScan(this);
     }
 
-    // Functionality - opens a tuple scan but only on the specified columns - exploits the advantage of columnarfiles (non need to scan all the columns which we have to do for row stores)
+    // Functionality - opens a tuple scan but only on the specified columns -
+    // exploits the advantage of columnarfiles (non need to scan all the columns
+    // which we have to do for row stores)
     // Parameters -
-    // 1. short[] columnNums - The column numbers for which we have to open the scans
+    // 1. short[] columnNums - The column numbers for which we have to open the
+    // scans
     // Returns - A tuplescan object.
     public TupleScan openTupleScan(short[] columnNums) throws Exception {
         return new TupleScan(this, columnNums);
@@ -248,7 +262,8 @@ public class Columnarfile {
 
     // Functionality - opens a scan on one single column
     // Parameters -
-    // 1. int colNum - The number of the column for which the scan object has to be returned
+    // 1. int colNum - The number of the column for which the scan object has to be
+    // returned
     // Returns - returns the scan object of the given column number
     public Scan openColumnScan(int colNum) throws Exception {
         if (colNum >= _columnHeaps.length) {
@@ -298,13 +313,13 @@ public class Columnarfile {
     }
 
     public boolean createBtreeIndex(int columnNo) throws Exception {
-        String indexName = getBTName(columnNo);
+        String indexName = getBTName(columnNo + 1);
 
-        int keyType = _ctype[columnNo].attrType;
-        int keySize = asize[columnNo];
+        int keyType = _ctype[columnNo - 1].attrType;
+        int keySize = asize[columnNo - 1];
         int deleteFashion = 0;
         BTreeFile bTreeFile = new BTreeFile(indexName, keyType, keySize, deleteFashion);
-        Scan columnScan = openColumnScan(columnNo);
+        Scan columnScan = openColumnScan(columnNo - 1);
         RID rid = new RID();
         Tuple tuple;
         while (true) {
@@ -312,12 +327,12 @@ public class Columnarfile {
             if (tuple == null) {
                 break;
             }
-            int position = getColumn(columnNo).positionOfRecord(rid);
-            bTreeFile.insert(KeyFactory.getKeyClass(tuple.getTupleByteArray(), _ctype[columnNo], asize[columnNo]), rid);
+
+            bTreeFile.insert(
+                    KeyFactory.getKeyClass(tuple.getTupleByteArray(), _ctype[columnNo - 1], asize[columnNo - 1]), rid);
         }
         columnScan.closescan();
         bTreeFile.close();
-//        addIndexToColumnar(0, indexName);
         return true;
     }
 
@@ -325,9 +340,10 @@ public class Columnarfile {
         return "BM" + "." + fname + "." + columnNo + "." + attrType.toString();
     }
 
-    public String[] getAvailableBM(int columnNo) {
-        List<String> bmName = new ArrayList<>();
-        AttrType attrType = _ctype[columnNo];
+    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
+        // Define the name for the bitmap file based on the column number and the
+        // specific value
+        String indexName = getBMName(columnNo, value);
 
         String prefix = getBMName(columnNo, attrType);
 
@@ -335,6 +351,38 @@ public class Columnarfile {
             if(s.substring(0,prefix.length()).equals(prefix)){
                 bmName.add(s);
             }
+
+            // Directly extract and compare the value from the tuple based on the column's
+            // attribute type
+            boolean matchesValue = false;
+            switch (_ctype[columnNo].attrType) {
+                case AttrType.attrInteger:
+                    int intValue = tuple.getIntFld(1);
+                    if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
+                        matchesValue = true;
+                    }
+                    break;
+                case AttrType.attrString:
+                    String stringValue = tuple.getStrFld(1);
+                    if (value instanceof ValueString && ((ValueString) value).getValue().equals(stringValue)) {
+                        matchesValue = true;
+                    }
+                    break;
+                case AttrType.attrReal:
+                    float floatValue = tuple.getFloFld(1);
+                    if (value instanceof ValueFloat && ((ValueFloat) value).getValue() == floatValue) {
+                        matchesValue = true;
+                    }
+                    break;
+                // Include other types as necessary
+            }
+
+            if (matchesValue) {
+                bitMapFile.insert(position);
+            } else {
+                bitMapFile.delete(position);
+            }
+            position++;
         }
         return  bmName.toArray(new String[bmName.size()]);
     }
@@ -551,7 +599,7 @@ public class Columnarfile {
             itypes[0] = new AttrType(AttrType.attrInteger);
             itypes[1] = new AttrType(AttrType.attrString);
             short[] isizes = new short[1];
-            isizes[0] = 40; //index name can't be more than 40 chars
+            isizes[0] = 40; // index name can't be more than 40 chars
             Tuple t = new Tuple();
             t.setHdr((short) 2, itypes, isizes);
             int size = t.size();
@@ -642,7 +690,6 @@ public class Columnarfile {
         return fname;
     }
 
-
     public AttrType[] getAttributes() {
         return _ctype;
     }
@@ -655,6 +702,7 @@ public class Columnarfile {
     }
 
     public String getBTName(int columnNo) {
+        columnNo += 1;
         return "BT" + "." + fname + "." + columnNo;
     }
 

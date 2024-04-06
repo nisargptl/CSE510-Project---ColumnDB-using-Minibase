@@ -43,7 +43,7 @@ public class Scan implements GlobalConst{
     private RID datapageRid = new RID();
 
     /** the actual PageId of the data page with the current record */
-    private PageId datapageId = new PageId();
+    private final PageId datapageId = new PageId();
 
     /** in-core copy (pinned) of the same */
     private HFPage datapage = new HFPage();
@@ -87,7 +87,7 @@ public class Scan implements GlobalConst{
   {
     Tuple recptrtuple = null;
     
-    if (nextUserStatus != true) {
+    if (!nextUserStatus) {
         nextDataPage();
     }
      
@@ -107,8 +107,7 @@ public class Scan implements GlobalConst{
     }   
     
     userrid = datapage.nextRecord(rid);
-    if(userrid == null) nextUserStatus = false;
-    else nextUserStatus = true;
+      nextUserStatus = userrid != null;
      
     return recptrtuple;
   }
@@ -131,7 +130,7 @@ public class Scan implements GlobalConst{
 
     bst = peekNext(nxtrid);
 
-    if (nxtrid.equals(rid)==true) 
+    if (nxtrid.equals(rid))
     	return true;
 
     // This is kind lame, but otherwise it will take all day.
@@ -145,12 +144,12 @@ public class Scan implements GlobalConst{
       
       bst =  firstDataPage();
 
-      if (bst != true)
+      if (!bst)
 	return bst;
       
       while (!datapageId.equals(pgid)) {
 	bst = nextDataPage();
-	if (bst != true)
+	if (!bst)
 	  return bst;
       }
     }
@@ -173,7 +172,7 @@ public class Scan implements GlobalConst{
     
     bst = peekNext(nxtrid);
     
-    while ((bst == true) && (nxtrid != rid))
+    while ((bst) && (nxtrid != rid))
       bst = mvNext(nxtrid);
     
     return bst;
@@ -260,7 +259,7 @@ public class Scan implements GlobalConst{
     /** get first directory page and pin it */
     	try {
 	   dirpage  = new HFPage();
-       	   pinPage(dirpageId, (Page) dirpage, false);	   
+       	   pinPage(dirpageId, dirpage, false);
        }
 
     	catch (Exception e) {
@@ -312,7 +311,7 @@ public class Scan implements GlobalConst{
 	try {
 	
            dirpage = new HFPage();
-	    pinPage(nextDirPageId, (Page )dirpage, false);
+	    pinPage(nextDirPageId, dirpage, false);
 	
 	    }
 	
@@ -440,7 +439,7 @@ public class Scan implements GlobalConst{
 	// pin first data page
 	try {
 	  datapage  = new HFPage();
-	  pinPage(datapageId, (Page) datapage, false);
+	  pinPage(datapageId, datapage, false);
 	}
 	catch (Exception e){
 	  e.printStackTrace();
@@ -508,7 +507,7 @@ public class Scan implements GlobalConst{
 	
  	try { 
 	  dirpage  = new HFPage();
-	  pinPage(dirpageId, (Page)dirpage, false);
+	  pinPage(dirpageId, dirpage, false);
 	}
 	
 	catch (Exception e){
@@ -553,7 +552,7 @@ public class Scan implements GlobalConst{
 	
  	try {
 	  datapage = new HFPage();
-	  pinPage(dpinfo.pageId, (Page) datapage, false);
+	  pinPage(dpinfo.pageId, datapage, false);
 	}
 	
 	catch (Exception e) {
@@ -610,7 +609,7 @@ public class Scan implements GlobalConst{
 	  
 	  status = nextDataPage();
 
-	  if (status==true){
+	  if (status){
 	    rid.pageNo.pid = userrid.pageNo.pid;
 	    rid.slotNo = userrid.slotNo;
 	  }

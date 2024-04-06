@@ -17,10 +17,10 @@ import chainexception.*;
  */
 class BMDriver extends TestDriver implements GlobalConst {
   
-  private int TRUE  = 1;
-  private int FALSE = 0;
-  private boolean OK = true;
-  private boolean FAIL = false;
+  private final int TRUE  = 1;
+  private final int FALSE = 0;
+  private final boolean OK = true;
+  private final boolean FAIL = false;
   
   /**
    * BMDriver Constructor, inherited from TestDriver
@@ -631,14 +631,14 @@ class BMDriver extends TestDriver implements GlobalConst {
 
 public class BMTest {
 
-   public static void main (String argv[]) {
+   public static void main (String[] argv) {
 
      BMDriver bmt = new BMDriver();
      boolean dbstatus;
 
      dbstatus = bmt.runTests();
 
-     if (dbstatus != true) {
+     if (!dbstatus) {
        System.err.println ("Error encountered during buffer manager tests:\n");
        Runtime.getRuntime().exit(1);
      }

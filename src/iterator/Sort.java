@@ -19,31 +19,31 @@ public class Sort extends Iterator implements GlobalConst
 {
   private static final int ARBIT_RUNS = 10;
   
-  private AttrType[]  _in;         
-  private short       n_cols;
-  private short[]     str_lens;
-  private Iterator    _am;
-  private int         _sort_fld;
-  private TupleOrder  order;
-  private int         _n_pages;
-  private byte[][]    bufs;
+  private final AttrType[]  _in;
+  private final short       n_cols;
+  private final short[]     str_lens;
+  private final Iterator    _am;
+  private final int         _sort_fld;
+  private final TupleOrder  order;
+  private final int         _n_pages;
+  private final byte[][]    bufs;
   private boolean     first_time;
   private int         Nruns;
-  private int         max_elems_in_heap;
-  private int         sortFldLen;
-  private int         tuple_size;
+  private final int         max_elems_in_heap;
+  private final int         sortFldLen;
+  private final int         tuple_size;
   
-  private pnodeSplayPQ Q;
+  private final pnodeSplayPQ Q;
   private Heapfile[]   temp_files; 
   private int          n_tempfiles;
   private Tuple        output_tuple;  
   private int[]        n_tuples;
   private int          n_runs;
-  private Tuple        op_buf;
-  private OBuf         o_buf;
+  private final Tuple        op_buf;
+  private final OBuf         o_buf;
   private SpoofIbuf[]  i_buf;
-  private PageId[]     bufs_pids;
-  private boolean useBM = true; // flag for whether to use buffer manager
+  private final PageId[]     bufs_pids;
+  private final boolean useBM = true; // flag for whether to use buffer manager
   
   /**
    * Set up for merging the runs.
@@ -59,10 +59,8 @@ public class Sort extends Iterator implements GlobalConst
    * @exception Exception other exceptions
    */
   private void setup_for_merge(int tuple_size, int n_R_runs)
-    throws IOException, 
-	   LowMemException, 
-	   SortException,
-	   Exception
+    throws
+          Exception
   {
     // don't know what will happen if n_R_runs > _n_pages
     if (n_R_runs > _n_pages) 
@@ -118,7 +116,6 @@ public class Sort extends Iterator implements GlobalConst
 
       }
     }
-    return; 
   }
   
   /**
@@ -133,12 +130,8 @@ public class Sort extends Iterator implements GlobalConst
    * @exception JoinsException from <code>Iterator.get_next()</code>
    */
   private int generate_runs(int max_elems, AttrType sortFldType, int sortFldLen) 
-    throws IOException, 
-	   SortException, 
-	   UnknowAttrType,
-	   TupleUtilsException,
-	   JoinsException,
-	   Exception
+    throws
+          Exception
   {
     Tuple tuple; 
     pnode cur_node;
@@ -243,16 +236,12 @@ public class Sort extends Iterator implements GlobalConst
 	// check to see whether need to expand the array
 	if (run_num == n_tempfiles) {
 	  Heapfile[] temp1 = new Heapfile[2*n_tempfiles];
-	  for (int i=0; i<n_tempfiles; i++) {
-	    temp1[i] = temp_files[i];
-	  }
+        System.arraycopy(temp_files, 0, temp1, 0, n_tempfiles);
 	  temp_files = temp1; 
 	  n_tempfiles *= 2; 
 
 	  int[] temp2 = new int[2*n_runs];
-	  for(int j=0; j<n_runs; j++) {
-	    temp2[j] = n_tuples[j];
-	  }
+        if (n_runs >= 0) System.arraycopy(n_tuples, 0, temp2, 0, n_runs);
 	  n_tuples = temp2;
 	  n_runs *=2; 
 	}
@@ -338,16 +327,12 @@ public class Sort extends Iterator implements GlobalConst
 	  // check to see whether need to expand the array
 	  if (run_num == n_tempfiles) {
 	    Heapfile[] temp1 = new Heapfile[2*n_tempfiles];
-	    for (int i=0; i<n_tempfiles; i++) {
-	      temp1[i] = temp_files[i];
-	    }
+          System.arraycopy(temp_files, 0, temp1, 0, n_tempfiles);
 	    temp_files = temp1; 
 	    n_tempfiles *= 2; 
 	    
 	    int[] temp2 = new int[2*n_runs];
-	    for(int j=0; j<n_runs; j++) {
-	      temp2[j] = n_tuples[j];
-	    }
+          if (n_runs >= 0) System.arraycopy(n_tuples, 0, temp2, 0, n_runs);
 	    n_tuples = temp2;
 	    n_runs *=2; 
 	  }
@@ -407,9 +392,8 @@ public class Sort extends Iterator implements GlobalConst
    * @exception SortException something went wrong in the lower layer. 
    */
   private Tuple delete_min() 
-    throws IOException, 
-	   SortException,
-	   Exception
+    throws
+          Exception
   {
     pnode cur_node;                // needs pq_defs.java  
     Tuple new_tuple, old_tuple;  
@@ -422,7 +406,7 @@ public class Sort extends Iterator implements GlobalConst
     */
     // we just removed one tuple from one run, now we need to put another
     // tuple of the same run into the queue
-    if (i_buf[cur_node.run_num].empty() != true) { 
+    if (!i_buf[cur_node.run_num].empty()) {
       // run not exhausted 
       new_tuple = new Tuple(tuple_size); // need tuple.java??
 
@@ -496,8 +480,7 @@ public class Sort extends Iterator implements GlobalConst
       //System.err.println("error in sort.java");
       throw new UnknowAttrType("Sort.java: don't know how to handle attrSymbol, attrNull");
     }
-    
-    return;
+
   }
 
   /**
@@ -538,8 +521,7 @@ public class Sort extends Iterator implements GlobalConst
       //System.err.println("error in sort.java");
       throw new UnknowAttrType("Sort.java: don't know how to handle attrSymbol, attrNull");
     }
-    
-    return;
+
   }
   
   /** 
@@ -666,12 +648,8 @@ public class Sort extends Iterator implements GlobalConst
    * @exception Exception other exceptions
    */
   public Tuple get_next() 
-    throws IOException, 
-	   SortException, 
-	   UnknowAttrType,
-	   LowMemException, 
-	   JoinsException,
-	   Exception
+    throws
+          Exception
   {
     if (first_time) {
       // first get_next call to the sort routine

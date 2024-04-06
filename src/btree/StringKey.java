@@ -14,14 +14,14 @@ public class StringKey extends KeyClass {
   /** Class constructor
    *  @param     s   the value of the string key to be set 
    */
-  public StringKey(String s) { key = new String(s); }
+  public StringKey(String s) { key = s; }
 
   /** get a copy of the istring key
   *  @return the reference of the copy 
   */ 
-  public String getKey() {return new String(key);}
+  public String getKey() {return key;}
 
   /** set the string key value
    */ 
-  public void setKey(String s) { key=new String(s);}
+  public void setKey(String s) { key= s;}
 }
