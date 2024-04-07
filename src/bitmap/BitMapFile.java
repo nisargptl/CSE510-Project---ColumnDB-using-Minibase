@@ -16,9 +16,13 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
   private final String fileName;
+  private boolean isCompressed;
 
-  public BitMapFile(String filename) throws Exception {
+
+  public BitMapFile(String filename, boolean isCompressed) throws Exception {
     this.fileName = filename;
+    this.isCompressed = isCompressed;
+
     headerPageId = get_file_entry(filename);
     if (headerPageId == null) {
       throw new GetFileEntryException(null, "file not found");
@@ -26,9 +30,11 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     headerPage = new BitMapHeaderPage(headerPageId);
   }
 
-  public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, AttrType attrType)
+  public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, AttrType attrType, boolean isCompressed)
           throws Exception {
     this.fileName = filename;
+    this.isCompressed = isCompressed;
+
     headerPageId = get_file_entry(filename);
     if (headerPageId == null) {
       headerPage = new BitMapHeaderPage();
@@ -139,48 +145,65 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     if (headerPage == null) {
       throw new Exception("Bitmap header page is null");
     }
-    if (headerPage.get_rootId().pid != INVALID_PAGE) {
-      int pageCounter = 1;
-      while (position >= BMPage.NUM_POSITIONS_IN_A_PAGE) {
-        pageCounter++;
-        position -= BMPage.NUM_POSITIONS_IN_A_PAGE;
-      }
-      PageId bmPageId = headerPage.get_rootId();
-      Page page = pinPage(bmPageId);
-      pinnedPages.add(bmPageId);
-      BMPage bmPage = new BMPage(page);
-      for (int i = 1; i < pageCounter; i++) {
-        bmPageId = bmPage.getNextPage();
-        if (bmPageId.pid == BMPage.INVALID_PAGE) {
-          PageId newPageId = getNewBMPage(bmPage.getCurPage());
-          pinnedPages.add(newPageId);
-          bmPage.setNextPage(newPageId);
-          bmPageId = newPageId;
-        }
-        page = pinPage(bmPageId);
-        bmPage = new BMPage(page);
-      }
-      byte[] currData = bmPage.getBMpageArray();
-      int bytoPos = position/8;
-      int bitPos = position%8;
-      if(set)
-        currData[bytoPos] |= (1<<bitPos);
-      else
-        currData[bytoPos] &= ~(1<<bitPos);
-      bmPage.writeBMPageArray(currData);
-      if (bmPage.getCounter() < position + 1) {
-        bmPage.updateCounter((short) (position + 1));
-      }
-    } else {
+
+    if (headerPage.get_rootId().pid == INVALID_PAGE) {
+      // If no root page exists, create one
       PageId newPageId = getNewBMPage(headerPageId);
       pinnedPages.add(newPageId);
       headerPage.set_rootId(newPageId);
-      setValueAtPosition(set, position);
     }
+
+    PageId currentPageId = headerPage.get_rootId();
+    Page currentPage = pinPage(currentPageId);
+    pinnedPages.add(currentPageId);
+    BMPage bmPage = new BMPage(currentPage);
+
+    byte[] bitmapData;
+    if (this.isCompressed) {
+      // If compressed, decode the RLE to manipulate the bitmap
+      bitmapData = CBitMapPage.decodeRLE(bmPage.getBMpageArray());
+    } else {
+      // If uncompressed, work directly with the bitmap array
+      bitmapData = bmPage.getBMpageArray();
+    }
+
+    // Ensure bitmapData is large enough to include the position
+    int requiredSize = (position / 8) + 1;
+    if (bitmapData.length < requiredSize) {
+      byte[] newBitmapData = new byte[requiredSize];
+      System.arraycopy(bitmapData, 0, newBitmapData, 0, bitmapData.length);
+      bitmapData = newBitmapData;
+    }
+
+    // Set or clear the bit at the specified position
+    int bytePos = position / 8;
+    int bitPos = position % 8;
+    if (set) {
+      bitmapData[bytePos] |= (1 << bitPos);
+    } else {
+      bitmapData[bytePos] &= ~(1 << bitPos);
+    }
+
+    // If compressed, re-encode the bitmap using RLE
+    if (this.isCompressed) {
+      byte[] encodedBitmapData = CBitMapPage.encodeRLE(bitmapData);
+      bmPage.writeBMPageArray(encodedBitmapData);
+    } else {
+      // If uncompressed, write the modified bitmap directly
+      bmPage.writeBMPageArray(bitmapData);
+    }
+
+    // Update the page counter if necessary
+    if (bmPage.getCounter() < position + 1) {
+      bmPage.updateCounter((short) (position + 1));
+    }
+
+    // Unpin all used pages
     for (PageId pinnedPage : pinnedPages) {
       unpinPage(pinnedPage, true);
     }
   }
+
 
   private PageId getNewBMPage(PageId prevPageId) throws Exception {
     Page apage = new Page();

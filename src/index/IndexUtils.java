@@ -220,7 +220,7 @@ public class IndexUtils {
 		  List<BitmapFileScan> scans = new ArrayList<>();
 		  for (String bmName : columnarfile.getAvailableBM(columnNo)){
 			  if(evalBMName(bmName, columnNo)){
-					scans.add((new BitMapFile(bmName)).new_scan());
+					scans.add((new BitMapFile(bmName, false)).new_scan());
 			  }
 		  }
 	  } catch (Exception e) {

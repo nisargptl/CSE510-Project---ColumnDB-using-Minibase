@@ -401,7 +401,7 @@ public class Columnarfile {
 //        return  bmName.toArray(new String[bmName.size()]);
 //    }
 
-    public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
+    public boolean createAllBitMapIndexForColumn(int columnNo, boolean isCompressed) throws Exception {
         // Initialize a map to keep track of bitmap files created during this operation
         HashMap<String, BitMapFile> BMMap = new HashMap<>();
 
@@ -426,7 +426,7 @@ public class Columnarfile {
             // Create or retrieve a BitMapFile for the current attribute type
             BitMapFile bitMapFile = BMMap.computeIfAbsent(bitMapFileName, k -> {
                 try {
-                    BitMapFile newBitMapFile = new BitMapFile(bitMapFileName, this, columnNo, attrType);
+                    BitMapFile newBitMapFile = new BitMapFile(bitMapFileName, this, columnNo, attrType, isCompressed);
                     addIndexToColumnar(1, bitMapFileName); // Register the new bitmap index
                     return newBitMapFile;
                 } catch (Exception e) {

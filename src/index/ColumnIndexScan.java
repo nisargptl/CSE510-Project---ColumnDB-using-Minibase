@@ -166,7 +166,7 @@ public class ColumnIndexScan extends Iterator {
 
             case IndexType.BitMapIndex:
                 try {
-                    indFile = new BitMapFile(relName);
+                    indFile = new BitMapFile(relName, false);
                 } catch (GetFileEntryException e) {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
