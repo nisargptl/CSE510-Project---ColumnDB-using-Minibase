@@ -52,14 +52,16 @@ public class ColumnarIndexScan extends Iterator {
         // Assuming columnarfile provides access to the columnar storage.
         this.columnarfile = new Columnarfile(relName);
         int c = 0;
-        indexScans = new ColumnIndexScan[fldNum.length];
+        indexScans = new ColumnIndexScan[fldNum.length - 1];
 
-        for (int i = 0; i < fldNum.length; i++) {
-            if(types[fldNum[i]].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i]], str_sizes[i - c], selects, indexOnly);
+        for (int i = 0; i < fldNum.length - 1; i++) {
+            if (types[fldNum[i]].attrType == AttrType.attrString) {
+                indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i]], str_sizes[i - c],
+                        selects, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i]], (short) 0, selects, indexOnly);
+                indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i]], (short) 0, selects,
+                        indexOnly);
             }
         }
 
@@ -88,21 +90,23 @@ public class ColumnarIndexScan extends Iterator {
         for (ColumnIndexScan scan : indexScans) {
             System.out.println("here1");
             Tuple tempTuple = scan.get_next();
-            System.out.println("columnar");
+            System.out.println("ColumnarIndexScan");
 
             if (tempTuple == null)
                 continue;
-            int position = tempTuple.getIntFld(1); // Assuming the position is stored in the first field.
+            // int position = tempTuple.getIntFld(1); // Assuming the position is stored in
+            // the first field.
 
-            if (position < minPosition) {
-                minPosition = position;
-                // resultTuple = tempTuple;
-                for (int i = 0; i < tempTuple.fldCnt; i++) {
-                    resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
-                }
+            // if (position < minPosition) {
+            // minPosition = position;
+            // resultTuple = tempTuple;
+            for (int i = 0; i < tempTuple.fldCnt; i++) {
+                resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
                 resultFldNo++;
-                isResultTuplePopulated = true;
+
             }
+            isResultTuplePopulated = true;
+            // }
         }
 
         if (isResultTuplePopulated == false)
