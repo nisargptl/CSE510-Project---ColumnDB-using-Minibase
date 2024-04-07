@@ -123,7 +123,7 @@ public class Query {
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
 
-                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length + 1, projectionList, otherConstraint, true);
+                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
             System.out.println("here");
