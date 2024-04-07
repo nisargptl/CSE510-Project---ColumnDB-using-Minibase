@@ -13,13 +13,25 @@
                 "name",
                 "name",
                 "name.3,name.4",
-                "name.3 = 4",
+                "name.3 = 5",
                 "name.3,name.4",
                 "BTREE,BTREE",
-                "name.3 = 4",
+                "name.3 = 5",
                 "name.3,name.4",
                 "100",
                 "0"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Index with Arguments",
+            "request": "launch",
+            "mainClass": "tests.Index",
+            "args": [
+                "name",
+                "name",
+                "4",
+                "BTREE"
             ]
         },
         {
