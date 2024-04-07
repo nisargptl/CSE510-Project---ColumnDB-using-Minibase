@@ -1,5 +1,6 @@
-javac -d out -cp src src/tests/Query.java
 javac -d out -cp src src/tests/BatchInsert.java
+javac -d out -cp src src/tests/Index.java
+javac -d out -cp src src/tests/Query.java
 
 rm -rf /tmp/name*
 java -cp out tests.BatchInsert sample_2.txt name name 4 1
