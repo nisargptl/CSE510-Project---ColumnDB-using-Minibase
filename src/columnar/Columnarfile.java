@@ -406,7 +406,7 @@ public class Columnarfile {
         HashMap<String, BitMapFile> BMMap = new HashMap<>();
 
         // Open a scan on the specified column
-        Scan columnScan = openColumnScan(columnNo);
+        Scan columnScan = openColumnScan(columnNo - 1);
         RID rid = new RID();
         Tuple tuple;
         int position = 0;
@@ -418,7 +418,7 @@ public class Columnarfile {
             }
 
             // Use _ctype[columnNo] directly to identify the attribute type
-            AttrType attrType = _ctype[columnNo];
+            AttrType attrType = _ctype[columnNo - 1];
 
             // Generate a bitmap file name based on the column number and the attribute type
             String bitMapFileName = getBMName(columnNo, attrType);
