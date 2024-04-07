@@ -56,10 +56,10 @@ public class ColumnarIndexScan extends Iterator {
 
         for (int i = 0; i < fldNum.length; i++) {
             if(types[fldNum[i]].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i]], str_sizes[i - c], selects, indexOnly);
+                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i]], str_sizes[i - c], selects, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(index[i], relName, indName[i], types[fldNum[i]], (short) 0, selects, indexOnly);
+                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i]], (short) 0, selects, indexOnly);
             }
         }
 

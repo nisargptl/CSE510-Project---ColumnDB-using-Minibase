@@ -340,6 +340,20 @@ public class Columnarfile {
         return "BM" + "." + fname + "." + columnNo + "." + attrType.toString();
     }
 
+    public String[] getAvailableBM(int columnNo) {
+        List<String> bmName = new ArrayList<>();
+        AttrType attrType = _ctype[columnNo];
+
+        String prefix = getBMName(columnNo, attrType);
+
+        for(String s : BMMap.keySet()){
+            if(s.substring(0,prefix.length()).equals(prefix)){
+                bmName.add(s);
+            }
+        }
+        return  bmName.toArray(new String[bmName.size()]);
+    }
+
 //    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
 //        // Define the name for the bitmap file based on the column number and the
 //        // specific value
