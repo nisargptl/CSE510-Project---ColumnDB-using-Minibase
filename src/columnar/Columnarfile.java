@@ -26,7 +26,7 @@ public class Columnarfile {
     short[] attrsizes;
     short[] asize;
     private Heapfile[] _columnHeaps;
-    Heapfile _deletedTuples;
+    Heapfile _SortedDTuples;
     Tuple _hdr;
     RID _hdrRid;
     HashMap<String, Integer> columnMap;
@@ -457,9 +457,9 @@ public class Columnarfile {
     }
 
     public boolean markTupleDeleted(int position) {
-        String name = getDeletedFileName();
+        String DeletedFileName = getDeletedFileName();
         try {
-            Heapfile f = new Heapfile(name);
+            Heapfile f = new Heapfile(DeletedFileName);
             Integer pos = position;
             AttrType[] types = new AttrType[1];
             types[0] = new AttrType(AttrType.attrInteger);
@@ -502,8 +502,8 @@ public class Columnarfile {
      * @param tidarg
      * @return
      */
-    public boolean markTupleDeleted(TID tidarg) {
-        return markTupleDeleted(tidarg.position);
+    public boolean markTupleDeleted(TID tid) {
+        return markTupleDeleted(tid.position);
     }
 
     /**
@@ -520,21 +520,20 @@ public class Columnarfile {
      */
     public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
 
-        boolean status = OK;
-        Sort deletedTuples = null;
+        Sort SortedDTuples = null;
         RID rid;
         Heapfile f = null;
-        int pos_marked;
-        boolean done = false;
+        int position;
+        boolean flag = false;
         try {
             f = new Heapfile(getDeletedFileName());
         } catch (Exception e) {
-            status = FAIL;
             System.err.println(" Could not open heapfile");
             e.printStackTrace();
+            f.deleteFile();
+            return false;
         }
 
-        if (status == OK) {
             try {
                 AttrType[] types = new AttrType[1];
                 types[0] = new AttrType(AttrType.attrInteger);
@@ -542,49 +541,46 @@ public class Columnarfile {
                 FldSpec[] projlist = new FldSpec[1];
                 projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
                 FileScan fs = new FileScan(getDeletedFileName(), types, sizes, (short) 1, 1, projlist, null);
-                deletedTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Descending), 4, 10);
+                SortedDTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Descending), 4, 10);
 
             } catch (Exception e) {
-                status = FAIL;
                 System.err.println("*** Error opening scan\n");
                 e.printStackTrace();
             }
-        }
 
-        if (status == OK) {
+
             int i = 0;
             Tuple tuple;
-            while (!done) {
+            while (!flag) {
                 try {
                     rid = new RID();
-                    tuple = deletedTuples.get_next();
+                    tuple = SortedDTuples.get_next();
                     if (tuple == null) {
-                        deletedTuples.close();
-                        done = true;
+                        SortedDTuples.close();
+                        flag = true;
                         break;
                     }
-                    pos_marked = Convert.getIntValue(6, tuple.getTupleByteArray());
+                    position = Convert.getIntValue(6, tuple.getTupleByteArray());
                     for (int j = 0; j < numColumns; j++) {
-                        rid = getColumn(j).recordAtPosition(pos_marked);
+                        rid = getColumn(j).recordAtPosition(position);
                         getColumn(j).deleteRecord(rid);
 
 //                        for (String fileName : BMMap.keySet()) {
 //                            int columnNo = Integer.parseInt(fileName.split("\\.")[2]);
 //                            if (columnNo == i) {
 //                                BitMapFile bitMapFile = getBMIndex(fileName);
-//                                bitMapFile.fullDelete(pos_marked);
+//                                bitMapFile.fullDelete(position);
 //                            }
 //                        }
                     }
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (deletedTuples != null)
-                        deletedTuples.close();
+                    if (SortedDTuples != null)
+                        SortedDTuples.close();
                     f.deleteFile();
                     return false;
                 }
-            }
         }
         f.deleteFile();
 
