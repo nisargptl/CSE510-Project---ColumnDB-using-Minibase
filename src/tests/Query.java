@@ -89,19 +89,19 @@ public class Query {
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
-        // CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
-        //
-        // for (int i = 0; i < scanTypes.length; i++) {
-        // scanConstraint[i] =
-        // OperationUtils.processRawConditionExpression(scanConstraints[i]);
-        // }
+        CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
+        
+        for (int i = 0; i < scanTypes.length; i++) {
+        scanConstraint[i] =
+        OperationUtils.processRawConditionExpression(scanConstraints[i]);
+        }
         cf.close();
         Iterator it = null;
         try {
             if (scanTypes[0].equals(FILESCAN)) {               
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
            } else if (scanTypes[0].equals(COLUMNSCAN)) {
-               it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+               it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
             } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
