@@ -204,31 +204,30 @@ public class IndexUtils {
     
   }
 
-  public static IndexFileScan Bitmap_scan(Columnarfile cf,
-							  int columnNo,
-							  CondExpr[] selects,
-							  boolean indexOnly
-  ) throws IndexException {
+	public static List<BitmapFileScan> Bitmap_scan(Columnarfile cf,
+												   int columnNo,
+												   CondExpr[] selects,
+												   boolean indexOnly
+	) throws IndexException, IOException {
+		columnarfile = cf;
+		_selects = selects;
+		List<BitmapFileScan> scans = new ArrayList<>();
 
-	  try {
-		  columnarfile = cf;
-	  } catch (Exception e) {
-		  e.printStackTrace();
-	  }
+		try {
+			for (String bmName : cf.getAvailableBM(columnNo)) {
+				if (evalBMName(bmName, columnNo)) {
+					// add switch for scan based on isCompressed variable
+					BitMapFile bmFile = new BitMapFile(bmName, false);
+					BitmapFileScan scan = new BitmapFileScan(bmFile);
+					scans.add(scan);
+				}
+			}
+			return scans;
+		} catch (Exception e) {
+			throw new IndexException(e, "Bitmap_scan: Exception during bitmap index scan");
+		}
+	}
 
-	  try {
-		  List<BitmapFileScan> scans = new ArrayList<>();
-		  for (String bmName : columnarfile.getAvailableBM(columnNo)){
-			  if(evalBMName(bmName, columnNo)){
-					scans.add((new BitMapFile(bmName, false)).new_scan());
-			  }
-		  }
-	  } catch (Exception e) {
-		  // any exception is swalled into a Index Exception
-		  throw new IndexException(e, "IndexScan.java: BitMapFile exceptions caught from BitMapFile constructor");
-	  }
-	  return null;
-    }
 
 	static boolean evalBMName(String s, int _columnNo) throws Exception {
 	  if(_selects == null)

@@ -172,7 +172,7 @@ public class ColumnIndexScan extends Iterator {
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
                 }
                 // todo: implement bitmap index case here (needs BitMapFileScan or implements something similar here)
-                indScan =  IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
+                indScan = (IndexFileScan) IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
                 break;
             case IndexType.None:
             default:
