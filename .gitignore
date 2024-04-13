@@ -1,5 +1,6 @@
 out/**
 /.idea/
+/.vscode
 src/bitmap/*.class
 src/btree/*.class
 src/bufmgr/*.class
