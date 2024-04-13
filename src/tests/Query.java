@@ -131,7 +131,7 @@ public class Query {
             while (true) {
                 System.out.println(cnt);
                 Tuple result = it.get_next();
-                System.out.println("Count");
+                // System.out.println("Count");
                 if (result == null) {
                     break;
                 }

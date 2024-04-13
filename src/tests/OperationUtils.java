@@ -28,19 +28,19 @@ public class OperationUtils {
         // String expression = "([columnarTable1.A = 'RandomTextHere'] v [columnarTable1.B > 2]) ^ ([columnarTable1.C = columnarTable1.D])"
         CondExpr[] condExprs;
 
-        if (expression.length() == 0) {
+        if (expression.equals(" ")) {
             condExprs = new CondExpr[1];
             condExprs[0] = null;
 
             return condExprs;
         }
 
-        String[] andExpressions = expression.split(" \\^ ");
+        String[] andExpressions = expression.split(" and ");
         condExprs = new CondExpr[andExpressions.length + 1];
         for (int i = 0; i < andExpressions.length; i++) {
             String temp = andExpressions[i].replace("(", "");
             temp = temp.replace(")", "");
-            String[] orExpressions = temp.split(" v ");
+            String[] orExpressions = temp.split(" or ");
 
             condExprs[i] = new CondExpr();
             CondExpr conditionalExpression = condExprs[i];
@@ -82,19 +82,19 @@ public class OperationUtils {
         // String expression = "([columnarTable1.A = 'RandomTextHere'] v [columnarTable1.B > 2]) ^ ([columnarTable1.C = columnarTable1.D])"
         CondExpr[] condExprs;
 
-        if (expression.length() == 0) {
+        if (expression.equals(" ")) {
             condExprs = new CondExpr[1];
             condExprs[0] = null;
 
             return condExprs;
         }
 
-        String[] andExpressions = expression.split(" \\^ ");
+        String[] andExpressions = expression.split(" and ");
         condExprs = new CondExpr[andExpressions.length + 1];
         for (int i = 0; i < andExpressions.length; i++) {
             String temp = andExpressions[i].replace("(", "");
             temp = temp.replace(")", "");
-            String[] orExpressions = temp.split(" v ");
+            String[] orExpressions = temp.split(" or ");
 
             condExprs[i] = new CondExpr();
             CondExpr conditionalExpression = condExprs[i];
