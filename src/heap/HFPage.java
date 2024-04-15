@@ -8,7 +8,6 @@ import java.lang.*;
 import global.*;
 import diskmgr.*;
 
-
 /**
  * Define constant values for INVALID_SLOT and EMPTY_SLOT
  */
@@ -26,7 +25,6 @@ interface ConstSlot {
 
 public class HFPage extends Page implements ConstSlot, GlobalConst {
 
-
     public static final int SIZE_OF_SLOT = 4;
     public static final int DPFIXED = 4 * 2 + 3 * 4;
 
@@ -37,12 +35,13 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
     public static final int PREV_PAGE = 8;
     public static final int NEXT_PAGE = 12;
     public static final int CUR_PAGE = 16;
-  
-  /* Warning:
-     These items must all pack tight, (no padding) for
-     the current implementation to work properly.
-     Be careful when modifying this class.
-  */
+
+    /*
+     * Warning:
+     * These items must all pack tight, (no padding) for
+     * the current implementation to work properly.
+     * Be careful when modifying this class.
+     */
 
     /**
      * number of slots in use
@@ -118,11 +117,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
      * @see Page
      */
 
-
     public void init(PageId pageNo, Page apage) throws IOException {
         data = apage.getpage();
 
-        slotCnt = 0;                // no slots in use
+        slotCnt = 0; // no slots in use
         Convert.setShortValue(slotCnt, SLOT_CNT, data);
 
         curPage.pid = pageNo.pid;
@@ -132,10 +130,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         Convert.setIntValue(prevPage.pid, PREV_PAGE, data);
         Convert.setIntValue(nextPage.pid, NEXT_PAGE, data);
 
-        usedPtr = (short) MAX_SPACE;  // offset in data array (grow backwards)
+        usedPtr = (short) MAX_SPACE; // offset in data array (grow backwards)
         Convert.setShortValue(usedPtr, USED_PTR, data);
 
-        freeSpace = (short) (MAX_SPACE - DPFIXED);    // amount of space available
+        freeSpace = (short) (MAX_SPACE - DPFIXED); // amount of space available
         Convert.setShortValue(freeSpace, FREE_SPACE, data);
 
     }
@@ -304,14 +302,14 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         return val;
     }
 
-
     /**
      * inserts a new record onto the page, returns RID of this record
      *
      * @param record a record to be inserted
      * @return RID of record, null if sufficient space does not exist
      * @throws IOException I/O errors
-     *                     in C++ Status insertRecord(char *recPtr, int recLen, RID& rid)
+     *                     in C++ Status insertRecord(char *recPtr, int recLen, RID&
+     *                     rid)
      */
     public RID insertRecord(byte[] record) throws IOException {
         RID rid = new RID();
@@ -335,10 +333,11 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
             short length;
             for (i = 0; i < slotCnt; i++) {
                 length = getSlotLength(i);
-                if (length == EMPTY_SLOT) break;
+                if (length == EMPTY_SLOT)
+                    break;
             }
 
-            if (i == slotCnt)   //use a new slot
+            if (i == slotCnt) // use a new slot
             {
                 // adjust free space
                 freeSpace -= spaceNeeded;
@@ -354,10 +353,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
             }
 
             usedPtr = Convert.getShortValue(USED_PTR, data);
-            usedPtr -= recLen;    // adjust usedPtr
+            usedPtr -= recLen; // adjust usedPtr
             Convert.setShortValue(usedPtr, USED_PTR, data);
 
-            //insert the slot info onto the data page
+            // insert the slot info onto the data page
             setSlot(i, recLen, usedPtr);
 
             // insert data onto the data page
@@ -420,7 +419,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
             freeSpace += recLen;
             Convert.setShortValue(freeSpace, FREE_SPACE, data);
 
-            setSlot(slotNo, EMPTY_SLOT, 0);  // mark slot free
+            setSlot(slotNo, EMPTY_SLOT, 0); // mark slot free
         } else {
             throw new InvalidSlotNumberException(null, "HEAPFILE: INVALID_SLOTNO");
         }
@@ -433,8 +432,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         short length;
         for (i = 0; i < slotCnt; i++) {
             length = getSlotLength(i);
-            if (length != EMPTY_SLOT) position--;
-            if (position == -1) break;
+            if (length != EMPTY_SLOT)
+                position--;
+            if (position == -1)
+                break;
         }
 
         return i;
@@ -449,17 +450,18 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         RID rid = new RID();
         // find the first non-empty slot
 
-
         slotCnt = Convert.getShortValue(SLOT_CNT, data);
 
         int i;
         short length;
         for (i = 0; i < slotCnt; i++) {
             length = getSlotLength(i);
-            if (length != EMPTY_SLOT) break;
+            if (length != EMPTY_SLOT)
+                break;
         }
 
-        if (i == slotCnt) return null;
+        if (i == slotCnt)
+            return null;
 
         // found a non-empty slot
 
@@ -473,7 +475,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
     /**
      * @param curRid current record ID
      * @return RID of next record on the page, null if no more
-     * records exist on the page
+     *         records exist on the page
      * @throws IOException I/O errors
      *                     in C++ Status nextRecord (RID curRid, RID& nextRid)
      */
@@ -487,10 +489,12 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         // find the next non-empty slot
         for (i++; i < slotCnt; i++) {
             length = getSlotLength(i);
-            if (length != EMPTY_SLOT) break;
+            if (length != EMPTY_SLOT)
+                break;
         }
 
-        if (i >= slotCnt) return null;
+        if (i >= slotCnt)
+            return null;
 
         // found a non-empty slot
 
@@ -534,16 +538,15 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
             throw new InvalidSlotNumberException(null, "HEAPFILE: INVALID_SLOTNO");
         }
 
-
     }
 
     /**
      * returns a tuple in a byte array[pageSize] with given RID rid.
      * <br>
-     * in C++	Status returnRecord(RID rid, char*& recPtr, int& recLen)
+     * in C++ Status returnRecord(RID rid, char*& recPtr, int& recLen)
      *
      * @param rid the record ID
-     * @return a tuple  with its length and offset in the byte array
+     * @return a tuple with its length and offset in the byte array
      * @throws InvalidSlotNumberException Invalid slot number
      * @throws IOException                I/O errors
      * @see Tuple
@@ -597,7 +600,8 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 
         for (i = 0; i < slotCnt; i++) {
             length = getSlotLength(i);
-            if (length != EMPTY_SLOT) return false;
+            if (length != EMPTY_SLOT)
+                return false;
         }
 
         return true;
@@ -606,14 +610,14 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
     /**
      * Compacts the slot directory on an HFPage.
      * WARNING -- this will probably lead to a change in the RIDs of
-     * records on the page.  You CAN'T DO THIS on most kinds of pages.
+     * records on the page. You CAN'T DO THIS on most kinds of pages.
      *
      * @throws IOException I/O errors
      */
     protected void compact_slot_dir() throws IOException {
-        int current_scan_posn = 0;   // current scan position
-        int first_free_slot = -1;   // An invalid position.
-        boolean move = false;          // Move a record? -- initially false
+        int current_scan_posn = 0; // current scan position
+        int first_free_slot = -1; // An invalid position.
+        boolean move = false; // Move a record? -- initially false
         short length;
         short offset;
 
@@ -634,7 +638,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
                 setSlot(first_free_slot, length, offset);
 
                 // Mark the current_scan_posn as empty
-                //  slot[current_scan_posn].length = EMPTY_SLOT;
+                // slot[current_scan_posn].length = EMPTY_SLOT;
                 setSlot(current_scan_posn, EMPTY_SLOT, 0);
 
                 // Now make the first_free_slot point to the next free slot.
@@ -666,8 +670,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         short length;
         for (i = 0; i < slotCnt; i++) {
             length = getSlotLength(i);
-            if (length != EMPTY_SLOT) position++;
-            if (i == rid.slotNo) break;
+            if (length != EMPTY_SLOT)
+                position++;
+            if (i == rid.slotNo)
+                break;
         }
 
         return position;
@@ -681,10 +687,66 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
         short length;
         for (i = 0; i < slotCnt; i++) {
             length = getSlotLength(i);
-            if (length != EMPTY_SLOT) position++;
-            if (i == rid.slotNo) break;
+            if (length != EMPTY_SLOT)
+                position++;
+            if (i == rid.slotNo)
+                break;
         }
 
         return position;
+    }
+
+    public RID lastRecord()
+            throws IOException {
+        RID rid = new RID();
+        // find the first non-empty slot
+
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+
+        int i;
+        short length;
+        for (i = slotCnt - 1; i >= 0; i--) {
+            length = getSlotLength(i);
+            if (length != EMPTY_SLOT)
+                break;
+        }
+
+        if (i < 0)
+            return null;
+
+        // found a non-empty slot
+
+        rid.slotNo = i;
+        curPage.pid = Convert.getIntValue(CUR_PAGE, data);
+        rid.pageNo.pid = curPage.pid;
+
+        return rid;
+    }
+
+    public RID prevRecord(RID curRid)
+            throws IOException {
+        RID rid = new RID();
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+
+        int i = curRid.slotNo;
+        short length;
+
+        // find the next non-empty slot
+        for (i--; i >= 0; i--) {
+            length = getSlotLength(i);
+            if (length != EMPTY_SLOT)
+                break;
+        }
+
+        if (i < 0)
+            return null;
+
+        // found a non-empty slot
+
+        rid.slotNo = i;
+        curPage.pid = Convert.getIntValue(CUR_PAGE, data);
+        rid.pageNo.pid = curPage.pid;
+
+        return rid;
     }
 }
