@@ -25,3 +25,9 @@ java -cp out tests.BatchInsert sample_2.txt name name 4 1
 java -cp out tests.Index name name 3 BTREE
 java -cp out tests.Index name name 4 BTREE
 java -cp out tests.Query name name name.3,name.4 "name.3 = 4" name.3,name.4 BTREE,BTREE "name.3 = 4" name.3,name.4 100 0 # or BITMAP,BITMAP for bitmap index testing
+
+## combined for btree 
+javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Query.java && javac -d out -cp src src/tests/BatchInsert.java && java -cp out tests.BatchInsert sample_2.txt name name 4 1 && java -cp out tests.Index name name 3 BTREE && java -cp out tests.Index name name 4 BTREE
+
+## combined for bitmap 
+javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Query.java && javac -d out -cp src src/tests/BatchInsert.java && java -cp out tests.BatchInsert sample_2.txt name name 4 1 && java -cp out tests.Index name name 3 BITMAP && java -cp out tests.Index name name 4 BITMAP

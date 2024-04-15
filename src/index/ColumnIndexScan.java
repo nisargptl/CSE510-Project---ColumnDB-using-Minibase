@@ -1,35 +1,5 @@
 package index;
 
-// import columnar.Columnarfile;
-
-// public class ColumnIndexScan {
-
-//     public ColumnIndexScan(Columnarfile cf, int columnNo, CondExpr[] selects, boolean indexOnly) {
-//         _selects = selects;
-//         index_only = indexOnly;
-//         try {
-
-//             columnarfile = cf;
-//             indName = columnarfile.getBTName(columnNo);
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//             return;
-//         }
-
-//         try {
-//             btIndFile = new BTreeFile(indName);
-//         } catch (Exception e) {
-//             throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught from BTreeFile constructor");
-//         }
-
-//         try {
-//             btIndScan = IndexUtils.BTree_scan(_selects, btIndFile);
-//         } catch (Exception e) {
-//             throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
-//         }
-//     }
-// }
-
 import global.*;
 import bufmgr.*;
 import diskmgr.*;
@@ -38,6 +8,7 @@ import iterator.*;
 import heap.*;
 import java.io.*;
 import java.util.Arrays;
+import java.util.List;
 
 import bitmap.*;
 import columnar.*;
@@ -69,7 +40,7 @@ public class ColumnIndexScan extends Iterator {
     private final AttrType _type;
     private final short _s_sizes;
     private int[] _outputColumnsIndexes;
-    private Scan bitMapScan;
+    private final List<BitmapFileScan> bitmapScan;
     private final Columnarfile columnarfile;
     private IndexType index;
 
@@ -110,29 +81,6 @@ public class ColumnIndexScan extends Iterator {
 
         Jtuple = new Tuple();
 
-        // try {
-        // ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,
-        // str_sizes, outFlds, noOutFlds);
-        // } catch (TupleUtilsException e) {
-        // throw new IndexException(e, "ColumnIndexScan.java: TupleUtilsException caught
-        // from TupleUtils.setup_op_tuple()");
-        // } catch (InvalidRelation e) {
-        // throw new IndexException(e, "ColumnIndexScan.java: InvalidRelation caught
-        // from TupleUtils.setup_op_tuple()");
-        // }
-
-        // perm_mat = outFlds;
-        // _noOutFlds = noOutFlds;
-        // tuple1 = new Tuple();
-        // try {
-        // tuple1.setHdr((short) noInFlds, types, str_sizes);
-        // } catch (Exception e) {
-        // throw new IndexException(e, "ColumnIndexScan.java: Heapfile error");
-        // }
-
-        // t1_size = tuple1.size();
-        // index_only = indexOnly; // added by bingjie miao
-
         try {
             f = new Heapfile(relName);
         } catch (Exception e) {
@@ -157,6 +105,7 @@ public class ColumnIndexScan extends Iterator {
 
                 try {
                     indScan = IndexUtils.BTree_scan(selects, indFile);
+                    bitmapScan = null;
                 } catch (Exception e) {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
@@ -171,8 +120,15 @@ public class ColumnIndexScan extends Iterator {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
                 }
-                // todo: implement bitmap index case here (needs BitMapFileScan or implements something similar here)
-                indScan =  IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
+                // todo: implement bitmap index case here (needs BitMapFileScan or implements
+                // something similar here)
+                try {
+                    bitmapScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
+                    indScan = null;
+                } catch (Exception e) {
+                    throw new IndexException(e,
+                            "ColumnIndexScan.java: GetFileEntryException exceptions caught from IndexUtils.Bitmap_scan().");
+                }
                 break;
             case IndexType.None:
             default:
@@ -192,16 +148,22 @@ public class ColumnIndexScan extends Iterator {
      * @exception IndexException          error from the lower layer
      * @exception UnknownKeyTypeException key type unknown
      * @exception IOException             from the lower layer
+     * @throws ScanIteratorException
+     * @throws FieldNumberOutOfBoundException
+     * @throws InvalidTupleSizeException
+     * @throws InvalidTypeException
      */
 
     public Tuple get_next()
             throws IndexException,
             UnknownKeyTypeException,
-            IOException {
+            IOException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException,
+            ScanIteratorException {
         if (index.indexType == IndexType.B_Index) {
             return get_btree_next();
         } else {
-            return null;// get_bm_next();
+            // return null;
+            return get_bm_next();
         }
     }
 
@@ -209,8 +171,8 @@ public class ColumnIndexScan extends Iterator {
             throws IndexException,
             UnknownKeyTypeException,
             IOException {
-        RID rid;
-        int unused;
+        // RID rid;
+        // int unused;
         KeyDataEntry nextentry = null;
 
         try {
@@ -267,122 +229,52 @@ public class ColumnIndexScan extends Iterator {
                 }
                 return Jtuple;
             }
-            // todo: look into it
 
-            // not index_only, need to return the whole tuple
-            // rid = ((LeafData) nextentry.data).getData();
-            // try {
-            // tuple1 = f.getRecord(rid);
-            // } catch (Exception e) {
-            // throw new IndexException(e, "ColumnIndexScan.java: getRecord failed");
-            // }
-
-            // try {
-            // tuple1.setHdr((short) _noInFlds, _type, _s_sizes);
-            // } catch (Exception e) {
-            // throw new IndexException(e, "ColumnIndexScan.java: Heapfile error");
-            // }
-
-            // boolean eval;
-            // try {
-            // eval = PredEval.Eval(_selects, tuple1, null, _type, null);
-            // } catch (Exception e) {
-            // throw new IndexException(e, "ColumnIndexScan.java: Heapfile error");
-            // }
-
-            // if (eval) {
-            // // need projection.java
-            // try {
-            // Projection.Project(tuple1, _type, Jtuple, perm_mat, _noOutFlds);
-            // } catch (Exception e) {
-            // throw new IndexException(e, "ColumnIndexScan.java: Heapfile error");
-            // }
-
-            // return Jtuple;
-            // }
-
-            // try {
-            // nextentry = indScan.get_next();
-            // } catch (Exception e) {
-            // throw new IndexException(e, "ColumnIndexScan.java: BTree error");
-            // }
-
-            // Retrieve the Record ID (RID) from the next entry in the index scan
-            // rid = ((LeafData) nextentry.data).getData();
-
-            // // Print the key of the next entry, depending on its type
-            // if (nextentry.key instanceof IntegerKey) {
-            // System.out.println("Record Match found Key " + ((IntegerKey)
-            // nextentry.key).getKey().intValue());
-            // } else {
-            // System.out.println("Record Match found Key " + ((StringKey)
-            // nextentry.key).getKey().toString());
-            // }
-
-            // // Print the position of the record
-            // System.out.println("Record Match found at Position " + (rid.position + 1));
-
-            // // Get the number of output columns
-            // int numOfOutputColumns = _outputColumnsIndexes.length;
-
-            // // Initialize the Columnarfile and Heapfile
-            // Columnarfile cf = new Columnarfile(_colFileName);
-            // Heapfile hf = new Heapfile(_relName);
-
-            // // Get the position of the record in the heap file
-            // int position = getPositionFromRID(rid, hf);
-
-            // // Get the attribute types of the columns in the columnar file
-            // AttrType[] attrType = cf.getType();
-
-            // // Create arrays to store the required attribute types and string sizes for
-            // the
-            // // output columns
-            // AttrType[] reqAttrType = new AttrType[numOfOutputColumns];
-            // short[] s_sizes = new short[numOfOutputColumns];
-
-            // // Populate the reqAttrType and s_sizes arrays
-            // int j = 0;
-            // for (int i = 0; i < numOfOutputColumns; i++) {
-            // reqAttrType[i] = attrType[_outputColumnsIndexes[i] - 1];
-            // if (reqAttrType[i].attrType == AttrType.attrString) {
-            // s_sizes[j] = _s_sizes[_outputColumnsIndexes[i] - 1];
-            // j++;
-            // }
-            // }
-
-            // // Copy the relevant part of s_sizes to strSizes
-            // short[] strSizes = Arrays.copyOfRange(s_sizes, 0, j);
-
-            // // Create a new Tuple and set its header
-            // Tuple tuple = new Tuple();
-            // try {
-            // tuple.setHdr((short) numOfOutputColumns, reqAttrType, strSizes);
-            // } catch (InvalidTypeException e) {
-            // e.printStackTrace();
-            // }
-
-            // // Populate the new tuple with data from the corresponding columns in the
-            // // columnar file
-            // for (int i = 0; i < numOfOutputColumns; i++) {
-            // int indexNumber = _outputColumnsIndexes[i];
-            // Heapfile heapfile = cf.getColumnFiles()[indexNumber - 1];
-            // Tuple tupleTemp = Util.getTupleFromPosition(position, heapfile);
-            // tupleTemp.initHeaders();
-            // if (attrType[indexNumber - 1].attrType == AttrType.attrString) {
-            // tuple.setStrFld(i + 1, tupleTemp.getStrFld(1));
-            // } else if (attrType[indexNumber - 1].attrType == AttrType.attrInteger) {
-            // tuple.setIntFld(i + 1, tupleTemp.getIntFld(1));
-            // } else if (attrType[indexNumber - 1].attrType == AttrType.attrReal) {
-            // tuple.setFloFld(i + 1, tupleTemp.getFloFld(1));
-            // }
-            // }
-
-            // // Return the new tuple
-            // return tuple;
         }
 
         return null;
+    }
+
+    public Tuple get_bm_next()
+            throws InvalidTypeException, InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException,
+            ScanIteratorException {
+        int position = -1;
+
+        for (BitmapFileScan scan : bitmapScan) {
+            position = scan.get_next();
+            // Handle position found
+
+            if (position != -1) {
+                break;
+            }
+            AttrType[] attrType = new AttrType[1];
+            short[] s_sizes = new short[0];
+
+            attrType[0] = new AttrType(AttrType.attrInteger);
+            Jtuple.setHdr((short) 1, attrType, s_sizes);
+            Jtuple.setIntFld(1, position);
+
+            // return Jtuple;
+        }
+
+        if (position == -1) {
+            return null;
+        }
+        return Jtuple;
+
+        // while (position != -1) {
+        // // If the position is -1, there are no more entries to scan
+        // // Tuple resultTuple = new Tuple();
+        // AttrType[] attrType = new AttrType[1];
+        // short[] s_sizes = new short[0];
+
+        // attrType[0] = new AttrType(AttrType.attrInteger);
+        // Jtuple.setHdr((short) 1, attrType, s_sizes);
+        // Jtuple.setIntFld(1, position);
+
+        // return Jtuple;
+        // }
+        // return null;
     }
 
     /**

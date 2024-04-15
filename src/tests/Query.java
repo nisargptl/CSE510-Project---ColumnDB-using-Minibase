@@ -85,24 +85,23 @@ public class Query {
             String attribute = OperationUtils.getAttributeName(targetColumns[i]);
             targets[i] = (short) cf.getAttributePosition(attribute);
         }
-       
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
         CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
-        
-        for (int i = 0; i < scanTypes.length; i++) {
-        scanConstraint[i] =
-        OperationUtils.processRawConditionExpression(scanConstraints[i]);
+
+        for (int i = 0; i < scanConstraints.length; i++) { // todo: changed this
+            scanConstraint[i] = OperationUtils.processRawConditionExpression(scanConstraints[i]);
         }
         cf.close();
         Iterator it = null;
         try {
-            if (scanTypes[0].equals(FILESCAN)) {               
+            if (scanTypes[0].equals(FILESCAN)) {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
-           } else if (scanTypes[0].equals(COLUMNSCAN)) {
-               it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
-            } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
+            } else if (scanTypes[0].equals(COLUMNSCAN)) {
+                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0],
+                        otherConstraint);
+            } else if (scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
                 for (int i = 0; i < scanTypes.length; i++) {
@@ -123,7 +122,8 @@ public class Query {
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
 
-                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
+                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes,
+                        scanColumns.length, projection.length, projectionList, otherConstraint, true);
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
             System.out.println("here");
