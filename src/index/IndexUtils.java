@@ -5,6 +5,7 @@ import bitmap.BitmapFileScan;
 import columnar.Columnarfile;
 import global.*;
 import btree.*;
+import heap.FieldNumberOutOfBoundException;
 import heap.Tuple;
 import iterator.*;
 import java.io.*;
@@ -203,56 +204,78 @@ public class IndexUtils {
 
 	}
 
-	public static List<BitmapFileScan> Bitmap_scan(Columnarfile cf,
-			int columnNo,
-			CondExpr[] selects,
-			boolean indexOnly) throws IndexException, IOException {
-		columnarfile = cf;
-		_selects = selects;
-		List<BitmapFileScan> scans = new ArrayList<>();
-
+	public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int columnNo, CondExpr[] selects, boolean indexOnly) throws IndexException {
 		try {
-			for (String bmName : cf.getAvailableBM(columnNo)) {
-				if (evalBMName(bmName, columnNo)) {
-					BitMapFile bmFile = new BitMapFile(bmName);
-					BitmapFileScan scan = new BitmapFileScan(bmFile);
-					scans.add(scan);
-				}
+			List<BitmapFileScan> scans = new ArrayList<>();
+			for (String bmName : columnarFile.getAvailableBM(columnNo)) {
+					scans.add((new BitMapFile(bmName)).new_scan());
 			}
-			return scans;
+
+			return new IndexFileScan() {
+				private BitSet bitMaps = new BitSet();
+				private int scanCounter = 0;
+				private int counter = 0;
+
+				@Override
+				public KeyDataEntry get_next() {
+					int position = get_next_position(scans);
+					if (position < 0)
+						return null;
+
+					IntegerKey key = new IntegerKey(position);
+					RID rid = new RID();  // Dummy RID, replace with actual if needed
+					return new KeyDataEntry(key, rid);
+				}
+
+				@Override
+				public void close() throws Exception {
+					for (BitmapFileScan s : scans) {
+						s.close();
+					}
+				}
+
+				@Override
+				public void delete_current() throws ScanDeleteException, FieldNumberOutOfBoundException, IOException, IndexException {
+					throw new UnsupportedOperationException("Delete operation not supported on bitmap scans.");
+				}
+
+
+				@Override
+				public int keysize() {
+					return Integer.SIZE / Byte.SIZE;  // This returns 4, as an integer is typically 4 bytes.
+				}
+
+
+				private int get_next_position(List<BitmapFileScan> scans) {
+					try {
+						if (scanCounter == 0 || scanCounter > counter) {
+							bitMaps.clear();
+							for (BitmapFileScan s : scans) {
+								counter = s.counter;
+								BitSet bs = s.get_next_bitmap();
+								if (bs == null) {
+									return -1;
+								} else {
+									bitMaps.or(bs);
+								}
+							}
+						}
+						while (scanCounter <= counter) {
+							if (bitMaps.get(scanCounter)) {
+								int position = scanCounter++;
+								return position;
+							} else {
+								scanCounter++;
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return -1;
+				}
+			};
 		} catch (Exception e) {
-			throw new IndexException(e, "Bitmap_scan: Exception during bitmap index scan");
+			throw new IndexException(e, "Bitmap_scan: exceptions caught");
 		}
 	}
-
-	static boolean evalBMName(String s, int _columnNo) throws Exception {
-		if (_selects == null)
-			return true;
-
-		short[] _sizes = new short[1];
-		_sizes[0] = columnarfile.getAttrsizeforcolumn(_columnNo);
-		AttrType[] _types = new AttrType[1];
-		_types[0] = columnarfile.getAttrtypeforcolumn(_columnNo);
-
-		byte[] data = new byte[6 + _sizes[0]];
-		String val = s.split("\\.")[3];
-		if (_types[0].attrType == AttrType.attrInteger) {
-			int t = Integer.parseInt(val);
-			Convert.setIntValue(t, 6, data);
-		} else {
-			Convert.setStrValue(val, 6, data);
-		}
-
-		Tuple jTuple = new Tuple(data, 0, data.length);
-		_sizes[0] -= 2;
-
-		jTuple.setHdr((short) 1, _types, _sizes);
-
-		if (PredEval.Eval(_selects, jTuple, null, _types, null)) {
-			return true;
-		}
-
-		return false;
-	}
-
 }

@@ -7,6 +7,7 @@ import btree.*;
 import iterator.*;
 import heap.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class ColumnIndexScan extends Iterator {
     private final AttrType _type;
     private final short _s_sizes;
     private int[] _outputColumnsIndexes;
-    private final List<BitmapFileScan> bitmapScan;
+    private List<BitmapFileScan> bitMapScans = new ArrayList<>();
     private final Columnarfile columnarfile;
     private IndexType index;
 
@@ -105,7 +106,6 @@ public class ColumnIndexScan extends Iterator {
 
                 try {
                     indScan = IndexUtils.BTree_scan(selects, indFile);
-                    bitmapScan = null;
                 } catch (Exception e) {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
@@ -120,15 +120,9 @@ public class ColumnIndexScan extends Iterator {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
                 }
-                // todo: implement bitmap index case here (needs BitMapFileScan or implements
-                // something similar here)
-                try {
-                    bitmapScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
-                    indScan = null;
-                } catch (Exception e) {
-                    throw new IndexException(e,
-                            "ColumnIndexScan.java: GetFileEntryException exceptions caught from IndexUtils.Bitmap_scan().");
-                }
+                // todo: implement bitmap index case here (needs BitMapFileScan or implements something similar here)
+                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
+                System.out.println(indScan.get_next().data);
                 break;
             case IndexType.None:
             default:
@@ -240,7 +234,7 @@ public class ColumnIndexScan extends Iterator {
             ScanIteratorException {
         int position = -1;
 
-        for (BitmapFileScan scan : bitmapScan) {
+        for (BitmapFileScan scan : bitMapScans) {
             position = scan.get_next();
             // Handle position found
 
