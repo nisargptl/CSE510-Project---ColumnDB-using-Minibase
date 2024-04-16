@@ -6,6 +6,7 @@ import diskmgr.PCounter;
 import global.AttrType;
 import global.IndexType;
 import global.SystemDefs;
+import global.TupleOrder;
 import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
@@ -95,7 +96,9 @@ public class Query {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
             } 
            else if (scanTypes[0].equals(COLUMNSCAN)) {
-                it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+                // Iterator it1 = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+                it=new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+                // it=new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it1, 2, new TupleOrder(0), 50);
             }
             else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
@@ -138,9 +141,9 @@ public class Query {
             System.out.println("here");
             int cnt = 0;
             while (true) {
-                System.out.println(cnt);
+                // System.out.println(cnt);
                 Tuple result = it.get_next();
-                System.out.println("Count");
+                // System.out.println("Count");
                 if (result == null) {
                     break;
                 }

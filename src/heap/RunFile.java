@@ -7,6 +7,7 @@ import global.RID;
 import global.SystemDefs;
 
 import java.io.IOException;
+import java.util.Random;
 
 public class RunFile implements heap.Filetype, GlobalConst {
 
@@ -42,6 +43,9 @@ public class RunFile implements heap.Filetype, GlobalConst {
         // If the name is NULL, allocate a temporary name
         // and no logging is required.
         _fileName = "runFile";
+        Random random = new Random();
+        int randValue=random.nextInt(999999999);
+        _fileName+=String.valueOf(randValue);
         String useId = new String("user.name");
         String userAccName;
         userAccName = System.getProperty(useId);
@@ -343,6 +347,8 @@ public class RunFile implements heap.Filetype, GlobalConst {
 
     private void add_file_entry(String filename, PageId pageno)
             throws HFDiskMgrException {
+            
+                // System.out.println("trying to add file: "+filename);
 
         try {
             SystemDefs.JavabaseDB.add_file_entry(filename, pageno);
@@ -354,6 +360,7 @@ public class RunFile implements heap.Filetype, GlobalConst {
 
     private void delete_file_entry(String filename)
             throws HFDiskMgrException {
+                // System.out.println("Deleting File Name : "+filename);
 
         try {
             SystemDefs.JavabaseDB.delete_file_entry(filename);

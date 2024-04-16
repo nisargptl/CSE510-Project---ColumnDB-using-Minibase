@@ -22,7 +22,7 @@ import static tests.TestDriver.OK;
 public class Columnarfile {
     String fname;
     boolean _fileDeleted = false;
-    short numColumns;
+    public short numColumns;
     AttrType[] _ctype;
     short[] attrsizes;
     short[] asize;
@@ -719,6 +719,12 @@ public class Columnarfile {
         return fname + ".del";
     }
 
+    public AttrType[] getAllAttrTypes(){
+        return _ctype;
+    }
+    public short[] getAllAttrSizes(){
+        return attrsizes;
+    }
     public AttrType getAttrtypeforcolumn(int columnNo) throws Exception {
         if (columnNo < numColumns) {
             return _ctype[columnNo];

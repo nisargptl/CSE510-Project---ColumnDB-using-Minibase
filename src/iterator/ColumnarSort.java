@@ -28,7 +28,7 @@ public class ColumnarSort extends Iterator implements GlobalConst {
     private boolean first_time;
     private int Nruns;
     private int max_elems_in_heap;
-    private int sortFldLen;
+    // private int sortFldLen;
     private int tuple_size;
     Tuple[] tuples;
 
@@ -59,11 +59,12 @@ public class ColumnarSort extends Iterator implements GlobalConst {
      */
     public ColumnarSort(AttrType[] in,
                         short len_in,
-                        short[] str_sizes,
+                        // short[] str_sizes,
+                        short[] attr_sizes,
                         Iterator am,
                         int sort_fld,
                         TupleOrder sort_order,
-                        int sort_fld_len,
+                        // int sort_fld_len,
                         int n_pages
     ) throws IOException, SortException {
         _in = new AttrType[len_in];
@@ -82,14 +83,16 @@ public class ColumnarSort extends Iterator implements GlobalConst {
         n_strs = 0;
         for (int i = 0; i < len_in; i++) {
             if (_in[i].attrType == AttrType.attrString) {
-                str_lens[n_strs] = str_sizes[n_strs];
+                // str_lens[n_strs] = str_sizes[n_strs];
+                str_lens[n_strs] = attr_sizes[n_strs];
                 n_strs++;
             }
         }
 
         Tuple t = new Tuple(); // need Tuple.java
         try {
-            t.setHdr(len_in, _in, str_sizes);
+            // t.setHdr(len_in, _in, str_sizes);
+            t.setHdr(len_in, _in, str_lens);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: t.setHdr() failed");
         }
@@ -127,7 +130,7 @@ public class ColumnarSort extends Iterator implements GlobalConst {
         o_buf = new COBuf();
 
         max_elems_in_heap = 200;
-        sortFldLen = sort_fld_len;
+        // sortFldLen = sort_fld_len;
     }
 
     /**
@@ -629,7 +632,9 @@ public class ColumnarSort extends Iterator implements GlobalConst {
             t.setHdr(n_cols, _in, str_lens);
             return t;
         }
+        close();
         return null;
+        
     }
 
     public int getPasses() {
@@ -663,6 +668,7 @@ public class ColumnarSort extends Iterator implements GlobalConst {
                     }
                     temp_files.set(i, null);
                 }
+
             }
             closeFlag = true;
         }
