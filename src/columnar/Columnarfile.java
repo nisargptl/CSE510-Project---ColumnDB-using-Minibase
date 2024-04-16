@@ -32,7 +32,6 @@ public class Columnarfile {
     HashMap<String, Integer> columnMap;
     HashMap<String, BitMapFile> BMMap = new HashMap<>();
 
-
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
         Heapfile hf;
         Scan scan;
@@ -347,60 +346,64 @@ public class Columnarfile {
 
         String prefix = getBMName(columnNo, attrType);
 
-        for(String s : BMMap.keySet()){
-            if(s.substring(0,prefix.length()).equals(prefix)){
+        for (String s : BMMap.keySet()) {
+            if (s.substring(0, prefix.length()).equals(prefix)) {
                 bmName.add(s);
             }
         }
-        return  bmName.toArray(new String[bmName.size()]);
+        return bmName.toArray(new String[bmName.size()]);
     }
 
-//    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
-//        // Define the name for the bitmap file based on the column number and the
-//        // specific value
-//        String indexName = getBMName(columnNo, value);
-//
-//        String prefix = getBMName(columnNo, attrType);
-//
-//        for(String s : BMMap.keySet()){
-//            if(s.substring(0,prefix.length()).equals(prefix)){
-//                bmName.add(s);
-//            }
-//
-//            // Directly extract and compare the value from the tuple based on the column's
-//            // attribute type
-//            boolean matchesValue = false;
-//            switch (_ctype[columnNo].attrType) {
-//                case AttrType.attrInteger:
-//                    int intValue = tuple.getIntFld(1);
-//                    if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
-//                        matchesValue = true;
-//                    }
-//                    break;
-//                case AttrType.attrString:
-//                    String stringValue = tuple.getStrFld(1);
-//                    if (value instanceof ValueString && ((ValueString) value).getValue().equals(stringValue)) {
-//                        matchesValue = true;
-//                    }
-//                    break;
-//                case AttrType.attrReal:
-//                    float floatValue = tuple.getFloFld(1);
-//                    if (value instanceof ValueFloat && ((ValueFloat) value).getValue() == floatValue) {
-//                        matchesValue = true;
-//                    }
-//                    break;
-//                // Include other types as necessary
-//            }
-//
-//            if (matchesValue) {
-//                bitMapFile.insert(position);
-//            } else {
-//                bitMapFile.delete(position);
-//            }
-//            position++;
-//        }
-//        return  bmName.toArray(new String[bmName.size()]);
-//    }
+    // public boolean createBitMapIndex(int columnNo, ValueClass value) throws
+    // Exception {
+    // // Define the name for the bitmap file based on the column number and the
+    // // specific value
+    // String indexName = getBMName(columnNo, value);
+    //
+    // String prefix = getBMName(columnNo, attrType);
+    //
+    // for(String s : BMMap.keySet()){
+    // if(s.substring(0,prefix.length()).equals(prefix)){
+    // bmName.add(s);
+    // }
+    //
+    // // Directly extract and compare the value from the tuple based on the
+    // column's
+    // // attribute type
+    // boolean matchesValue = false;
+    // switch (_ctype[columnNo].attrType) {
+    // case AttrType.attrInteger:
+    // int intValue = tuple.getIntFld(1);
+    // if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
+    // matchesValue = true;
+    // }
+    // break;
+    // case AttrType.attrString:
+    // String stringValue = tuple.getStrFld(1);
+    // if (value instanceof ValueString && ((ValueString)
+    // value).getValue().equals(stringValue)) {
+    // matchesValue = true;
+    // }
+    // break;
+    // case AttrType.attrReal:
+    // float floatValue = tuple.getFloFld(1);
+    // if (value instanceof ValueFloat && ((ValueFloat) value).getValue() ==
+    // floatValue) {
+    // matchesValue = true;
+    // }
+    // break;
+    // // Include other types as necessary
+    // }
+    //
+    // if (matchesValue) {
+    // bitMapFile.insert(position);
+    // } else {
+    // bitMapFile.delete(position);
+    // }
+    // position++;
+    // }
+    // return bmName.toArray(new String[bmName.size()]);
+    // }
 
     public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
         // Initialize a map to keep track of bitmap files created during this operation
@@ -469,28 +472,28 @@ public class Columnarfile {
             t.setIntFld(1, pos);
             f.insertRecord(t.getTupleByteArray());
 
-//            for (int i = 0; i < numColumns; i++) {
-//                Tuple tuple = getColumn(i).getRecord(position);
-//                ValueClass valueClass;
-//                KeyClass keyClass;
-//                valueClass = ValueFactory.getValueClass(tuple.getTupleByteArray(),
-//                        atype[i],
-//                        asize[i]);
-//                keyClass = KeyFactory.getKeyClass(tuple.getTupleByteArray(),
-//                        atype[i],
-//                        asize[i]);
-//
-//                String bTreeFileName = getBTName(i);
-//                String bitMapFileName = getBMName(i, valueClass);
-//                if (BTMap.containsKey(bTreeFileName)) {
-//                    BTreeFile bTreeFile = getBTIndex(bTreeFileName);
-//                    bTreeFile.Delete(keyClass, position);
-//                }
-//                if (BMMap.containsKey(bitMapFileName)) {
-//                    BitMapFile bitMapFile = getBMIndex(bitMapFileName);
-//                    bitMapFile.delete(position);
-//                }
-//            }
+            // for (int i = 0; i < numColumns; i++) {
+            // Tuple tuple = getColumn(i).getRecord(position);
+            // ValueClass valueClass;
+            // KeyClass keyClass;
+            // valueClass = ValueFactory.getValueClass(tuple.getTupleByteArray(),
+            // atype[i],
+            // asize[i]);
+            // keyClass = KeyFactory.getKeyClass(tuple.getTupleByteArray(),
+            // atype[i],
+            // asize[i]);
+            //
+            // String bTreeFileName = getBTName(i);
+            // String bitMapFileName = getBMName(i, valueClass);
+            // if (BTMap.containsKey(bTreeFileName)) {
+            // BTreeFile bTreeFile = getBTIndex(bTreeFileName);
+            // bTreeFile.Delete(keyClass, position);
+            // }
+            // if (BMMap.containsKey(bitMapFileName)) {
+            // BitMapFile bitMapFile = getBMIndex(bitMapFileName);
+            // bitMapFile.delete(position);
+            // }
+            // }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -507,7 +510,8 @@ public class Columnarfile {
     }
 
     /**
-     * Purges all tuples marked for deletion. Removes keys/positions from indexes too
+     * Purges all tuples marked for deletion. Removes keys/positions from indexes
+     * too
      *
      * @return
      * @throws HFDiskMgrException
@@ -518,7 +522,8 @@ public class Columnarfile {
      * @throws HFBufMgrException
      * @throws SortException
      */
-    public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
+    public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException,
+            InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
 
         Sort SortedDTuples = null;
         RID rid;
@@ -534,53 +539,52 @@ public class Columnarfile {
             return false;
         }
 
+        try {
+            AttrType[] types = new AttrType[1];
+            types[0] = new AttrType(AttrType.attrInteger);
+            short[] sizes = new short[0];
+            FldSpec[] projlist = new FldSpec[1];
+            projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
+            FileScan fs = new FileScan(getDeletedFileName(), types, sizes, (short) 1, 1, projlist, null);
+            SortedDTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Descending), 4, 10);
+
+        } catch (Exception e) {
+            System.err.println("*** Error opening scan\n");
+            e.printStackTrace();
+        }
+
+        int i = 0;
+        Tuple tuple;
+        while (!flag) {
             try {
-                AttrType[] types = new AttrType[1];
-                types[0] = new AttrType(AttrType.attrInteger);
-                short[] sizes = new short[0];
-                FldSpec[] projlist = new FldSpec[1];
-                projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
-                FileScan fs = new FileScan(getDeletedFileName(), types, sizes, (short) 1, 1, projlist, null);
-                SortedDTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Descending), 4, 10);
+                rid = new RID();
+                tuple = SortedDTuples.get_next();
+                if (tuple == null) {
+                    SortedDTuples.close();
+                    flag = true;
+                    break;
+                }
+                position = Convert.getIntValue(6, tuple.getTupleByteArray());
+                for (int j = 0; j < numColumns; j++) {
+                    rid = getColumn(j).recordAtPosition(position);
+                    getColumn(j).deleteRecord(rid);
+
+                    // for (String fileName : BMMap.keySet()) {
+                    // int columnNo = Integer.parseInt(fileName.split("\\.")[2]);
+                    // if (columnNo == i) {
+                    // BitMapFile bitMapFile = getBMIndex(fileName);
+                    // bitMapFile.fullDelete(position);
+                    // }
+                    // }
+                }
 
             } catch (Exception e) {
-                System.err.println("*** Error opening scan\n");
                 e.printStackTrace();
+                if (SortedDTuples != null)
+                    SortedDTuples.close();
+                f.deleteFile();
+                return false;
             }
-
-
-            int i = 0;
-            Tuple tuple;
-            while (!flag) {
-                try {
-                    rid = new RID();
-                    tuple = SortedDTuples.get_next();
-                    if (tuple == null) {
-                        SortedDTuples.close();
-                        flag = true;
-                        break;
-                    }
-                    position = Convert.getIntValue(6, tuple.getTupleByteArray());
-                    for (int j = 0; j < numColumns; j++) {
-                        rid = getColumn(j).recordAtPosition(position);
-                        getColumn(j).deleteRecord(rid);
-
-//                        for (String fileName : BMMap.keySet()) {
-//                            int columnNo = Integer.parseInt(fileName.split("\\.")[2]);
-//                            if (columnNo == i) {
-//                                BitMapFile bitMapFile = getBMIndex(fileName);
-//                                bitMapFile.fullDelete(position);
-//                            }
-//                        }
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    if (SortedDTuples != null)
-                        SortedDTuples.close();
-                    f.deleteFile();
-                    return false;
-                }
         }
         f.deleteFile();
 
@@ -589,7 +593,7 @@ public class Columnarfile {
 
     public static byte[] objectToByteArray(Serializable object) {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+                ObjectOutputStream oos = new ObjectOutputStream(bos)) {
 
             // Serialize the object to the byte array
             oos.writeObject(object);
