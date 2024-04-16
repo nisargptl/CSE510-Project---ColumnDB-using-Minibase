@@ -1,5 +1,6 @@
 package heap;
 
+import diskmgr.DuplicateEntryException;
 import diskmgr.Page;
 import global.GlobalConst;
 import global.PageId;
@@ -33,38 +34,57 @@ public class RunFile implements heap.Filetype, GlobalConst {
     public RunFile()
             throws HFException,
             HFBufMgrException,
-            HFDiskMgrException,
+            // HFDiskMgrException,
             IOException
 
     {
-        // Give us a prayer of destructing cleanly if construction fails.
-        _file_deleted = true;
-        _fileName = null;
-        // If the name is NULL, allocate a temporary name
-        // and no logging is required.
-        _fileName = "runFile";
-        Random random = new Random();
-        int randValue=random.nextInt(999999999);
-        _fileName+=String.valueOf(randValue);
-        String useId = new String("user.name");
-        String userAccName;
-        userAccName = System.getProperty(useId);
-        _fileName = _fileName + userAccName;
+        boolean fileadded = false;
+        Page apage=null;
+        while (!fileadded) {
+            // Give us a prayer of destructing cleanly if construction fails.
+            _file_deleted = true;
+            _fileName = null;
+            // If the name is NULL, allocate a temporary name
+            // and no logging is required.
+            _fileName = "runFile";
+            // Random random = new Random();
+            // int randValue = random.nextInt(999999999);
+            // _fileName += String.valueOf(randValue);
+            String useId = new String("user.name");
+            String userAccName;
+            userAccName = System.getProperty(useId);
+            _fileName = _fileName + userAccName;
 
-        String filenum = Integer.toString(tempfilecount);
-        _fileName = _fileName + filenum;
-        _ftype = TEMP;
-        tempfilecount++;
+            String filenum = Integer.toString(tempfilecount);
+            _fileName = _fileName + filenum;
+            _ftype = TEMP;
+            tempfilecount++;
 
-        Page apage = new Page();
-        _firstDataPageId = null;
-        // file doesn't exist. First create it.
-        _firstDataPageId = newPage(apage, 1);
-        // check error
-        if (_firstDataPageId == null)
-            throw new HFException(null, "can't new page");
+            apage = new Page();
+            _firstDataPageId = null;
+            // file doesn't exist. First create it.
+            _firstDataPageId = newPage(apage, 1);
+            // check error
+            if (_firstDataPageId == null)
+                throw new HFException(null, "can't new page");
+            // System.out.println("okay i am fing here");
+            try {
+                System.out.println("trying to add with file name : "+_fileName);;
+                add_file_entry(_fileName, _firstDataPageId);
+            } catch (HFDiskMgrException e) {
+                // TODO Auto-generated catch block
+                // e.printStackTrace();
+                continue;
+            }
+            finally{
+                // System.out.println("okay i am fing here22222");
+                fileadded=true;
+            }
+            
+            
+            
 
-        add_file_entry(_fileName, _firstDataPageId);
+        }
         // check error(new exception: Could not add file entry
 
         HFPage firstDataPage = new HFPage();
@@ -230,8 +250,6 @@ public class RunFile implements heap.Filetype, GlobalConst {
         }
     }
 
-
-
     public void finishScan() throws HFBufMgrException {
         unpinPage(_currentDataPageId, false);
         _currentDataPageId = null;
@@ -347,8 +365,8 @@ public class RunFile implements heap.Filetype, GlobalConst {
 
     private void add_file_entry(String filename, PageId pageno)
             throws HFDiskMgrException {
-            
-                // System.out.println("trying to add file: "+filename);
+
+        // System.out.println("trying to add file: "+filename);
 
         try {
             SystemDefs.JavabaseDB.add_file_entry(filename, pageno);
@@ -360,7 +378,7 @@ public class RunFile implements heap.Filetype, GlobalConst {
 
     private void delete_file_entry(String filename)
             throws HFDiskMgrException {
-                // System.out.println("Deleting File Name : "+filename);
+        // System.out.println("Deleting File Name : "+filename);
 
         try {
             SystemDefs.JavabaseDB.delete_file_entry(filename);
