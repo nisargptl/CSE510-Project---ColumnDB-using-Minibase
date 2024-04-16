@@ -84,7 +84,7 @@ public class ColumnarSort extends Iterator implements GlobalConst {
         for (int i = 0; i < len_in; i++) {
             if (_in[i].attrType == AttrType.attrString) {
                 // str_lens[n_strs] = str_sizes[n_strs];
-                str_lens[n_strs] = attr_sizes[n_strs];
+                str_lens[n_strs] = attr_sizes[i];
                 n_strs++;
             }
         }
