@@ -6,13 +6,10 @@ import heap.*;
 import iterator.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ColumnarBitmapEquiJoins {
     private final Columnarfile leftColumnarFile;
     private final Columnarfile rightColumnarFile;
-    // List of join conditions, assumed to be provided in a compatible format
-    private List<String> joinConditions = new ArrayList<>();
 
     public ColumnarBitmapEquiJoinsII(
             AttrType[] in1, int len_in1, short[] t1_str_sizes,
@@ -25,59 +22,59 @@ public class ColumnarBitmapEquiJoins {
         leftColumnarFile = new Columnarfile(leftColumnarFileName);
         rightColumnarFile = new Columnarfile(rightColumnarFileName);
 
-        // Process join conditions and execute the join
+        // Simulated logic to process joins and constraints
         executeJoin(joinExp, innerExp, outerExp, proj_list, n_out_flds, opAttr);
     }
 
     private void executeJoin(CondExpr[] joinExp, CondExpr[] innerExp, CondExpr[] outerExp,
                              FldSpec[] proj_list, int n_out_flds, AttrType[] opAttr) throws Exception {
-        // Process bitmap indexes based on join conditions
 
-        // 1. Retrieve or construct bitmap indexes for the join conditions
-        // 2. Iterate through the bitmaps, finding matching tuples
-        // 3. For each match, apply any additional selection conditions specified in innerExp and outerExp
-        // 4. Project the resulting tuples based on the provided FldSpec array
+        List<BitSet> leftBitSets = new ArrayList<>();
+        List<BitSet> rightBitSets = new ArrayList<>();
 
-        // Example skeleton for scanning bitmaps and joining tuples
-        HashSet<Integer> leftTIDs = new HashSet<>(); // Track TIDs for the left file that match
-        HashSet<Integer> rightTIDs = new HashSet<>(); // Track TIDs for the right file that match
-
-        // Assume joinExp is properly parsed and accessible as needed
+        // Iterate over join conditions and create/retrieve bitmap files for each join condition
         for (CondExpr cond : joinExp) {
-            // Pseudocode for handling a single join condition, adjust as necessary
-            // 1. Retrieve or generate the necessary bitmap files for each value
-            // 2. Perform bitmap operations (AND, OR as required by join conditions)
-            // 3. Decode the resulting bitmap to TIDs, adding them to the respective set
+            // Assume bitmap names are constructed based on field and value.
+            // Here, retrieve or create bitmap indexes for specified fields and conditions
+            String leftBitmapFileName = constructBitmapFileName(leftColumnarFile, leftJoinField, cond);
+            String rightBitmapFileName = constructBitmapFileName(rightColumnarFile, rightJoinField, cond);
 
-            // Example for left file, repeat for right file with necessary adjustments
-            String bitmapFileName = /* construct bitmap file name based on condition */;
-            BitMapFile bmFile = new BitMapFile(bitmapFileName);
+            BitMapFile leftBMF = new BitMapFile(leftBitmapFileName);
+            BitMapFile rightBMF = new BitMapFile(rightBitmapFileName);
 
-            // Here you would access the bitmap, iterate through bits, and collect matching TIDs
-            // The actual logic will depend on your BitMapFile implementation details and needs
+            // Fetch the bitmaps for each condition and store them
+            leftBitSets.add(leftBMF.getBitMap());
+            rightBitSets.add(rightBMF.getBitMap());
         }
 
-        // After collecting TID sets, perform the join operation
-        // For simplicity, this example assumes direct matching TIDs indicating a join condition is met
-        // In practice, you might need to adjust this logic based on the actual conditions
-        for (Integer leftTID : leftTIDs) {
-            if (rightTIDs.contains(leftTID)) {
-                // Fetch tuples using TIDs from both columnar files
-                Tuple leftTuple = leftColumnarFile.getTuple(leftTID);
-                Tuple rightTuple = rightColumnarFile.getTuple(leftTID); // Adjust as necessary
+        // Compute the logical AND of all bitmap vectors retrieved from the bitmap files
+        BitSet leftResultantBitmap = leftBitSets.get(0);
+        BitSet rightResultantBitmap = rightBitSets.get(0);
+        for (int i = 1; i < leftBitSets.size(); i++) {
+            leftResultantBitmap.and(leftBitSets.get(i));
+            rightResultantBitmap.and(rightBitSets.get(i));
+        }
 
-                // Apply additional selection conditions specified in innerExp and outerExp
+        // Use the resultant bitmaps to find matching tuples
+        Tuple joinedTuple = new Tuple();
+        for (int i = leftResultantBitmap.nextSetBit(0); i >= 0; i = leftResultantBitmap.nextSetBit(i+1)) {
+            if (rightResultantBitmap.get(i)) {
+                Tuple leftTuple = leftColumnarFile.getTuple(i);
+                Tuple rightTuple = rightColumnarFile.getTuple(i);
 
-                // If selection conditions are met, project the tuple
-                Tuple Jtuple = new Tuple();
-                AttrType[] Jtypes = new AttrType[n_out_flds];
-                TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, in2, len_in2, t1_str_sizes, t2_str_sizes, proj_list, n_out_flds);
-                Projection.Join(leftTuple, in1, rightTuple, in2, Jtuple, proj_list, n_out_flds);
+                // Project the tuples based on the projection list
+                TupleUtils.setup_op_tuple(joinedTuple, opAttr, in1, len_in1, in2, len_in2, t1_str_sizes, t2_str_sizes, proj_list, n_out_flds);
+                Projection.Join(leftTuple, in1, rightTuple, in2, joinedTuple, proj_list, n_out_flds);
 
-                // Here, handle the projected tuple as needed (e.g., output, store, etc.)
+                // Handle the joined tuple as needed (e.g., output or further processing)
             }
         }
     }
 
-    // Additional methods to support join operations, such as scanning bitmaps, handling conditions, etc.
+    private String constructBitmapFileName(Columnarfile file, int fieldNo, CondExpr cond) {
+        // Construct a file name based on columnar file metadata and condition specifics
+        String columnName = file.getColumnName(fieldNo);
+        String value = cond.operand2.string;
+        return file.getFileName() + "_" + columnName + "_" + value + ".bm";
+    }
 }
