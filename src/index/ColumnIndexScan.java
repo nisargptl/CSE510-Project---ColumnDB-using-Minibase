@@ -41,7 +41,7 @@ public class ColumnIndexScan extends Iterator {
     private final AttrType _type;
     private final short _s_sizes;
     private int[] _outputColumnsIndexes;
-    private List<BitmapFileScan> bitMapScans = new ArrayList<>();
+    // private List<BitmapFileScan> bitMapScans = new ArrayList<>();
     private final Columnarfile columnarfile;
     private IndexType index;
 
@@ -120,9 +120,10 @@ public class ColumnIndexScan extends Iterator {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
                 }
-                // todo: implement bitmap index case here (needs BitMapFileScan or implements something similar here)
+                // todo: implement bitmap index case here
+                // (needs BitMapFileScan or implements something similar here)
                 indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
-                System.out.println(indScan.get_next().data);
+                // System.out.println(indScan.get_next().data);
                 break;
             case IndexType.None:
             default:
@@ -229,46 +230,37 @@ public class ColumnIndexScan extends Iterator {
         return null;
     }
 
-    public Tuple get_bm_next()
-            throws InvalidTypeException, InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException,
-            ScanIteratorException {
-        int position = -1;
+    public Tuple get_bm_next() throws IOException, IndexException {
+        if (index.indexType != IndexType.BitMapIndex || indScan == null) {
+            throw new IndexException("Index scan type is not bitmap or the scan is not initialized.");
+        }
 
-        for (BitmapFileScan scan : bitMapScans) {
-            position = scan.get_next();
-            // Handle position found
-
-            if (position != -1) {
-                break;
+        try {
+            KeyDataEntry entry = indScan.get_next();
+            if (entry == null) {
+                return null; // No more entries
             }
-            AttrType[] attrType = new AttrType[1];
-            short[] s_sizes = new short[0];
 
-            attrType[0] = new AttrType(AttrType.attrInteger);
-            Jtuple.setHdr((short) 1, attrType, s_sizes);
-            Jtuple.setIntFld(1, position);
+            // Assuming the key indicates the tuple position in the columnar file
+            IntegerKey key = (IntegerKey) entry.key;
+            int position = key.getKey();
+            if (index_only) {
+                // Setup for index-only requirement
+                AttrType[] attrTypes = { new AttrType(AttrType.attrInteger) };
+                short[] s_sizes = new short[0]; // No string sizes needed
+                Tuple Jtuple = new Tuple();
+                Jtuple.setHdr((short) 1, attrTypes, s_sizes);
+                Jtuple.setIntFld(1, position);
+                return Jtuple;
+            } else {
+                // Return the full tuple from the columnar file
+                // return columnarfile.getTupleAtPosition(position);
+                return null;
+            }
 
-            // return Jtuple;
+        } catch (Exception e) {
+            throw new IndexException("Failed to get next tuple from bitmap index: " + e.getMessage());
         }
-
-        if (position == -1) {
-            return null;
-        }
-        return Jtuple;
-
-        // while (position != -1) {
-        // // If the position is -1, there are no more entries to scan
-        // // Tuple resultTuple = new Tuple();
-        // AttrType[] attrType = new AttrType[1];
-        // short[] s_sizes = new short[0];
-
-        // attrType[0] = new AttrType(AttrType.attrInteger);
-        // Jtuple.setHdr((short) 1, attrType, s_sizes);
-        // Jtuple.setIntFld(1, position);
-
-        // return Jtuple;
-        // }
-        // return null;
     }
 
     /**
