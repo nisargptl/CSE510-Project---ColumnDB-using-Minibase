@@ -19,7 +19,7 @@ public class ColumnarFileScan extends Iterator{
     public FldSpec[] perm_mat;
     Sort deletedTuples;
     private int currDeletePos = -1;
-    private AttrType[] targetAttrTypes = null;
+    public AttrType[] targetAttrTypes = null;
 
     /**
      * constructor
