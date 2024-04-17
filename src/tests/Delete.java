@@ -72,9 +72,6 @@ public class Delete {
             String attribute = OperationUtils.getAttributeName(targetColumns[i]);
             targets[i] = (short) cf.getAttributePosition(attribute);
         }
-//        for(int i=0;i< otherConstraints.length;i++){
-        System.out.println(otherConstraints);
-//        }
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
@@ -100,6 +97,44 @@ public class Delete {
                     cnt++;
                 }
                 cfs.close();
+            } else if (scanTypes[0].equals(COLUMNSCAN)) {
+                ColumnarColumnScan ccs;
+                ccs = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
+                Boolean deleted = true;
+                while (deleted) {
+                    deleted = ccs.delete_next();
+
+                    if (deleted == false) {
+                        break;
+                    }
+                    cnt++;
+                }
+                ccs.close();
+
+            // } else if (scanTypes[0].equals(BITMAPSCAN) || scanTypes[0].equals(BTREESCAN)) {
+            //     IndexType[] indexType = new IndexType[scanTypes.length];
+            //     for (int i = 0; i < scanTypes.length; i++) {
+            //         if (scanTypes[i].equals(BITMAPSCAN))
+            //             indexType[i] = new IndexType(IndexType.BitMapIndex);
+            //         else if (scanTypes[i].equals(BTREESCAN))
+            //             indexType[i] = new IndexType(IndexType.B_Index);
+            //         else
+            //             throw new Exception("Scan type <" + scanTypes[i] + "> not recognized.");
+            //     }
+            //     ColumnarIndexScan cis;
+            //     cis = new ColumnarIndexScan(columnarFile, scanCols, indexType, scanConstraint, otherConstraint, false, targets, projectionList, sortmem);
+            //     Boolean deleted = true;
+            //     while (deleted) {
+            //         deleted = cis.delete_next();
+
+            //         if (deleted == false) {
+            //             break;
+            //         }
+            //         cnt++;
+            //     }
+
+            //     cis.close();
+
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
 

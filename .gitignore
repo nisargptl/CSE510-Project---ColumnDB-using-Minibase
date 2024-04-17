@@ -1,2 +1,16 @@
 out/**
 /.idea/
+/.vscode/
+src/bitmap/*.class
+src/btree/*.class
+src/bufmgr/*.class
+src/catalog/*.class
+src/chainexception/*.class
+src/columnar/*.class
+src/diskmgr/*.class
+src/global/*.class
+src/heap/*.class
+src/index/*.class
+src/iterator/*.class
+src/tests/*.class
+C:/Windows/Temp/name.minibase-db

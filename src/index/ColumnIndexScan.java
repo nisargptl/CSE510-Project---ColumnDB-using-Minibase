@@ -90,6 +90,7 @@ public class ColumnIndexScan extends Iterator {
      * @exception IOException               from the lower layer
      */
     public ColumnIndexScan(
+            int columnNo,
             IndexType index,
             final String relName,
             final String indName,
@@ -97,8 +98,7 @@ public class ColumnIndexScan extends Iterator {
             short str_sizes,
             CondExpr[] selects,
             final boolean indexOnly)
-            throws
-            Exception {
+            throws Exception {
         _type = type;
         _s_sizes = str_sizes;
         index_only = indexOnly;
@@ -108,7 +108,7 @@ public class ColumnIndexScan extends Iterator {
         this.index = index;
         columnarfile = new Columnarfile(relName);
 
-         Jtuple = new Tuple();
+        Jtuple = new Tuple();
 
         // try {
         // ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,
@@ -166,13 +166,14 @@ public class ColumnIndexScan extends Iterator {
 
             case IndexType.BitMapIndex:
                 try {
-                    bitMapFile = new BitMapFile(relName);
+                    indFile = new BitMapFile(relName);
                 } catch (GetFileEntryException e) {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
                 }
-                // todo: implement bitmap index case here (needs BitMapFileScan or implement
-                // something similar here)
+                // todo: implement bitmap index case here (needs BitMapFileScan or implements something similar here)
+                indScan =  IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
+                break;
             case IndexType.None:
             default:
                 throw new UnknownIndexTypeException("Only BTree index is supported so far"); // todo: edit this
