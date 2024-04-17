@@ -29,6 +29,8 @@ public class Columnarfile {
     HashMap<String, Integer> columnMap;
     HashMap<String, BitMapFile> BMMap = new HashMap<>();
     HashMap<String, BTreeFile> BTMap;
+    List<String> bmName = new ArrayList<>();
+
 
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -341,16 +343,10 @@ public class Columnarfile {
     }
 
     public String[] getAvailableBM(int columnNo) throws Exception {
-        List<String> bmName = new ArrayList<>();
-        //String prefix = fname + "." + columnNo;
+        AttrType attrType = _ctype[columnNo - 1];
+        String bitMapFileName = getBMName(columnNo, attrType);
 
-        //for(String s : BMMap.keySet()){
-            //if(s.substring(0,prefix.length()).equals(prefix)){
-                //bmName.add(s);
-            //}
-        //}
-        bmName.add("BM.name.3.attrInteger");
-        bmName.add("BM.name.4.attrInteger");
+        bmName.add(bitMapFileName);
         return bmName.toArray(new String[bmName.size()]);
     }
 
