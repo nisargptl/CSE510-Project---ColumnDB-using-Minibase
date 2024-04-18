@@ -204,78 +204,228 @@ public class IndexUtils {
 
 	}
 
-	public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int columnNo, CondExpr[] selects, boolean indexOnly) throws IndexException {
+	// public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int
+	// columnNo, CondExpr[] selects,
+	// boolean indexOnly) throws IndexException {
+	// try {
+	// List<BitmapFileScan> scans = new ArrayList<>();
+	// for (String bmName : columnarFile.getAvailableBM(columnNo)) {
+	// scans.add((new BitMapFile(bmName)).new_scan());
+	// }
+
+	// return new IndexFileScan() {
+	// private BitSet bitMaps = new BitSet();
+	// private int scanCounter = 0;
+	// private int counter = 0;
+
+	// @Override
+	// public KeyDataEntry get_next() {
+	// int position = get_next_position(scans);
+	// if (position < 0)
+	// return null;
+
+	// IntegerKey key = new IntegerKey(position);
+	// RID rid = new RID(); // Dummy RID, replace with actual if needed
+	// return new KeyDataEntry(key, rid);
+	// }
+
+	// @Override
+	// public void close() throws Exception {
+	// for (BitmapFileScan s : scans) {
+	// s.close();
+	// }
+	// }
+
+	// @Override
+	// public void delete_current()
+	// throws ScanDeleteException, FieldNumberOutOfBoundException, IOException,
+	// IndexException {
+	// throw new UnsupportedOperationException("Delete operation not supported on
+	// bitmap scans.");
+	// }
+
+	// @Override
+	// public int keysize() {
+	// return Integer.SIZE / Byte.SIZE; // This returns 4, as an integer is
+	// typically 4 bytes.
+	// }
+
+	// private int get_next_position(List<BitmapFileScan> scans) {
+	// try {
+	// if (scanCounter == 0 || scanCounter > counter) {
+	// bitMaps.clear();
+	// for (BitmapFileScan s : scans) {
+	// counter = s.counter;
+	// BitSet bs = s.get_next_bitmap();
+	// if (bs == null) {
+	// return -1;
+	// } else {
+	// bitMaps.or(bs);
+	// }
+	// }
+	// }
+	// while (scanCounter <= counter) {
+	// if (bitMaps.get(scanCounter)) {
+	// int position = scanCounter++;
+	// return position;
+	// } else {
+	// scanCounter++;
+	// }
+	// }
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// return -1;
+	// }
+	// };
+	// } catch (Exception e) {
+	// throw new IndexException(e, "Bitmap_scan: exceptions caught");
+	// }
+	// }
+
+	public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int columnNo, CondExpr[] selects,
+			boolean indexOnly) throws IndexException {
 		try {
 			List<BitmapFileScan> scans = new ArrayList<>();
+
 			for (String bmName : columnarFile.getAvailableBM(columnNo)) {
-					scans.add((new BitMapFile(bmName)).new_scan());
+				// **********
+				Object value = extractValueFromBitmapName(bmName); // new stuff
+				// **********
+				if (evaluateCondition(selects, value)) { // new stuff
+					scans.add(new BitMapFile(bmName).new_scan());
+				}
 			}
 
-			return new IndexFileScan() {
-				private BitSet bitMaps = new BitSet();
-				private int scanCounter = 0;
-				private int counter = 0;
-
-				@Override
-				public KeyDataEntry get_next() {
-					int position = get_next_position(scans);
-					if (position < 0)
-						return null;
-
-					IntegerKey key = new IntegerKey(position);
-					RID rid = new RID();  // Dummy RID, replace with actual if needed
-					return new KeyDataEntry(key, rid);
-				}
-
-				@Override
-				public void close() throws Exception {
-					for (BitmapFileScan s : scans) {
-						s.close();
-					}
-				}
-
-				@Override
-				public void delete_current() throws ScanDeleteException, FieldNumberOutOfBoundException, IOException, IndexException {
-					throw new UnsupportedOperationException("Delete operation not supported on bitmap scans.");
-				}
-
-
-				@Override
-				public int keysize() {
-					return Integer.SIZE / Byte.SIZE;  // This returns 4, as an integer is typically 4 bytes.
-				}
-
-
-				private int get_next_position(List<BitmapFileScan> scans) {
-					try {
-						if (scanCounter == 0 || scanCounter > counter) {
-							bitMaps.clear();
-							for (BitmapFileScan s : scans) {
-								counter = s.counter;
-								BitSet bs = s.get_next_bitmap();
-								if (bs == null) {
-									return -1;
-								} else {
-									bitMaps.or(bs);
-								}
-							}
-						}
-						while (scanCounter <= counter) {
-							if (bitMaps.get(scanCounter)) {
-								int position = scanCounter++;
-								return position;
-							} else {
-								scanCounter++;
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					return -1;
-				}
-			};
+			return generateIndexFileScan(scans);
 		} catch (Exception e) {
 			throw new IndexException(e, "Bitmap_scan: exceptions caught");
 		}
+	}
+
+	// new added here
+	// ***********************************************************
+	private static Object extractValueFromBitmapName(String bmName) {
+		// Logic to translate the bitmap file name into the data value it represents.
+		// Example, if bmName is "column_value", return the value part.
+		return parseValueFromName(bmName);
+	}
+
+	private static Object parseValueFromName(String bmName) {
+		// Assuming the bitmap's name encodes the value directly after an underscore
+		int underscoreIndex = bmName.indexOf('_'); // Find the position of the underscore
+		if (underscoreIndex != -1 && underscoreIndex + 1 < bmName.length()) {
+			return bmName.substring(underscoreIndex + 1); // Extracts the part after the underscore
+		}
+		return null; // Return null if name is not as expected
+	}
+
+	private static boolean evaluateCondition(CondExpr[] selects, Object bitmapValue) {
+		if (selects == null || selects[0] == null)
+			return true; // No condition, include all bitmaps.
+
+		boolean matches = true;
+		for (CondExpr cond : selects) {
+			if (cond != null) {
+				Object condValue = getValueFromCondExpr(cond);
+				System.out.println("condValue: " + condValue);
+				// System.out.println("cond.op.attrOperator, bitmapValue, condValue");
+				// if (!applyOperator(cond.op, bitmapValue, condValue)) {
+				// matches = false;
+				// break;
+				// }
+			}
+		}
+		return matches;
+	}
+
+	private static Object getValueFromCondExpr(CondExpr expr) {
+		// Assuming the actual value is always in operand2 (you'll need to adjust this
+		// logic based on actual cases)
+		return expr.type2.attrType == AttrType.attrInteger ? expr.operand2.integer : expr.operand2.string;
+	}
+
+	// private static boolean applyOperator(AttrOperator op, Object bitmapValue,
+	// Object condValue) {
+	// // This is a simplified example. You should expand it based on data types and
+	// // available operators.
+	// switch (op.attrOperator) {
+	// case AttrOperator.aopEQ:
+	// return bitmapValue.equals(condValue);
+	// case AttrOperator.aopLT:
+	// return ((Comparable) bitmapValue).compareTo(condValue) < 0;
+	// case AttrOperator.aopGT:
+	// return ((Comparable) bitmapValue).compareTo(condValue) > 0;
+	// default:
+	// return false;
+	// }
+	// }
+	// new added till here
+	// ***********************************************************
+
+	private static IndexFileScan generateIndexFileScan(List<BitmapFileScan> scans) {
+		return new IndexFileScan() {
+			private BitSet bitMaps = new BitSet();
+			private int scanCounter = 0;
+			private int counter = 0;
+
+			@Override
+			public KeyDataEntry get_next() {
+				int position = get_next_position(scans);
+				if (position < 0)
+					return null;
+
+				IntegerKey key = new IntegerKey(position);
+				RID rid = new RID(); // Always a dummy RID in this case
+				return new KeyDataEntry(key, rid);
+			}
+
+			@Override
+			public void close() throws Exception {
+				for (BitmapFileScan s : scans) {
+					s.close();
+				}
+			}
+
+			@Override
+			public void delete_current()
+					throws ScanDeleteException, FieldNumberOutOfBoundException, IOException,
+					IndexException {
+				throw new UnsupportedOperationException("Delete operation not supported on bitmap scans.");
+			}
+
+			@Override
+			public int keysize() {
+				return Integer.SIZE / Byte.SIZE; // This returns 4, as an integer is typically 4 bytes.
+			}
+
+			private int get_next_position(List<BitmapFileScan> scans) {
+				try {
+					if (scanCounter == 0 || scanCounter > counter) {
+						bitMaps.clear();
+						for (BitmapFileScan s : scans) {
+							counter = s.counter;
+							BitSet bs = s.get_next_bitmap();
+							if (bs == null) {
+								return -1;
+							} else {
+								bitMaps.or(bs);
+							}
+						}
+					}
+					while (scanCounter <= counter) {
+						if (bitMaps.get(scanCounter)) {
+							int position = scanCounter++;
+							return position;
+						} else {
+							scanCounter++;
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return -1;
+			}
+		};
 	}
 }
