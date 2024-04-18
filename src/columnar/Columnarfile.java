@@ -46,7 +46,7 @@ public class Columnarfile {
 
             if (pid == null) {
                 throw new Exception(
-                        "Columnar file " + _fileName + "does not exist! Please try again with a different CF name");
+                        "Columnar file " + _fileName + " does not exist! Please try again with a different CF name");
             }
 
             hf = new Heapfile(_fileName + ".hdr");

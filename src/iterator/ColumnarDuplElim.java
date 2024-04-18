@@ -12,7 +12,7 @@ import java.io.*;
 /**
  * Eleminate the duplicate tuples from the input relation
  */
-public class DuplElim extends Iterator {
+public class ColumnarDuplElim extends Iterator {
     private final AttrType[] _in;     // memory for array allocated by constructor
     private final short in_len;
     private short[] str_lens;
@@ -37,7 +37,7 @@ public class DuplElim extends Iterator {
      * @throws IOException       some I/O fault
      * @throws DuplElimException the exception from DuplElim.java
      */
-    public DuplElim(
+    public ColumnarDuplElim(
             AttrType[] in,
             short len_in,
             short[] s_sizes,
@@ -76,8 +76,7 @@ public class DuplElim extends Iterator {
         TupleOrder order = new TupleOrder(TupleOrder.Ascending);
         if (!inp_sorted) {
             try {
-                _am = new Sort(in, len_in, s_sizes, am, 1, order,
-                        sortFldLen, amt_of_mem);
+                _am = new ColumnarSort(in, len_in, s_sizes, am, 1, order, amt_of_mem);
             } catch (SortException e) {
                 e.printStackTrace();
                 throw new DuplElimException(e, "SortException is caught by DuplElim.java");

@@ -103,6 +103,7 @@ public class OperationUtils {
                 singleExpression = singleExpression.replace("]", "");
                 String[] expressionParts = singleExpression.split(" ");
                 String attributeName = getAttributeName(expressionParts[0]);
+                System.out.println("ATTR: " + attributeName);
                 String stringOperator = expressionParts[1];
                 String attributeValue = expressionParts[2];
 
@@ -134,6 +135,53 @@ public class OperationUtils {
         return condExprs;
     }
 
+    public static CondExpr[] processEquiJoinConditionExpression(String expression, String[] innerTargetColumns, String[] outerTargetColumns) throws Exception {
+        CondExpr[] condExprs;
+
+        if (expression.length() == 0) {
+            condExprs = new CondExpr[1];
+            condExprs[0] = null;
+
+            return condExprs;
+        }
+
+        String[] andExpressions = expression.split(" \\^ ");
+        condExprs = new CondExpr[andExpressions.length + 1];
+        for (int i = 0; i < andExpressions.length; i++) {
+            String temp = andExpressions[i].replace("(", "");
+            temp = temp.replace(")", "");
+            String[] orExpressions = temp.split(" v ");
+
+            condExprs[i] = new CondExpr();
+            CondExpr conditionalExpression = condExprs[i];
+            for (int j = 0; j < orExpressions.length; j++) {
+                String singleExpression = orExpressions[j].replace("[", "");
+                singleExpression = singleExpression.replace("]", "");
+                String[] expressionParts = singleExpression.split(" ");
+                String attribute1Name = expressionParts[0].split("\\.")[2];
+                String stringOperator = expressionParts[1];
+                String attribute2Name = expressionParts[2].split("\\.")[2];
+
+                conditionalExpression.type1 = new AttrType(AttrType.attrSymbol);
+                conditionalExpression.operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), getColumnPositionInTargets(attribute1Name, outerTargetColumns) + 1);
+                conditionalExpression.op = getOperatorForString(stringOperator);
+                conditionalExpression.type2 = new AttrType(AttrType.attrSymbol);
+                conditionalExpression.operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), getColumnPositionInTargets(attribute2Name, innerTargetColumns) + 1);
+
+                if (j == orExpressions.length - 1) {
+                    conditionalExpression.next = null;
+                } else {
+                    conditionalExpression.next = new CondExpr();
+                    conditionalExpression = conditionalExpression.next;
+                }
+            }
+        }
+        condExprs[andExpressions.length] = null;
+
+        return condExprs;
+    }
+
+
     private static Boolean isString(String value) {
         if (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'') {
             return Boolean.TRUE;
@@ -144,6 +192,9 @@ public class OperationUtils {
 
     public static String getAttributeName(String value) {
         String[] val = value.split("\\.");
+        if(val.length == 3) {
+            return val[2];
+        }
         return val.length == 2? val[1]:val[0];
     }
 
@@ -182,13 +233,22 @@ public class OperationUtils {
             System.out.println("target column " + i + targetColumns[i]);
         }
         for(int i = 0; i < targetColumns.length; i++){
-            String targetColumn = targetColumns[i].split("\\.")[1];
+            String targetColumn;
+            if(targetColumns[i].split("\\.").length == 2){
+                targetColumn = targetColumns[i].split("\\.")[1];
+            } else {
+                targetColumn = targetColumns[i].split("\\.")[2];
+            }
             String[] columnNames = columnName.split("\\.");
-            if (columnNames.length == 2) {
+            if(columnNames.length == 3){
+                System.out.println("HERE");
+                columnName = columnNames[2];
+            } else if (columnNames.length == 2) {
                 columnName = columnNames[1];
             } else {
                 columnName = columnNames[0];
             }
+            System.out.println("TARGET" + targetColumn + " " + columnNames[0]);
             if(columnName.equals(targetColumn))
                 return i;
         }
