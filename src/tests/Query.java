@@ -103,9 +103,10 @@ public class Query {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
             } 
            else if (scanTypes[0].equals(COLUMNSCAN)) {
-                // Iterator it1 = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
-                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
+                Iterator it1 = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+                // it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
                 // it=new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it1, 2, new TupleOrder(0), 50);
+                it = new ColumnarDuplElim(cf.getAllAttrTypes(), cf.numColumns, cf.getStrSize(), it1, 10, false);
             }
             else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
         //    } else if (scanTypes[0].equals(COLUMNSCAN)) {
