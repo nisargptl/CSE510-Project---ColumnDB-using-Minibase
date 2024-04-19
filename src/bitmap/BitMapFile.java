@@ -27,7 +27,7 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   }
 
   public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, AttrType attrType)
-          throws Exception {
+      throws Exception {
     this.fileName = filename;
     headerPageId = get_file_entry(filename);
     if (headerPageId == null) {
@@ -44,7 +44,6 @@ public class BitMapFile extends IndexFile implements GlobalConst {
       headerPage = new BitMapHeaderPage(headerPageId);
     }
   }
-
 
   public void close() throws Exception {
     if (headerPage != null) {
@@ -161,12 +160,12 @@ public class BitMapFile extends IndexFile implements GlobalConst {
         bmPage = new BMPage(page);
       }
       byte[] currData = bmPage.getBMpageArray();
-      int bytoPos = position/8;
-      int bitPos = position%8;
-      if(set)
-        currData[bytoPos] |= (1<<bitPos);
+      int bytoPos = position / 8;
+      int bitPos = position % 8;
+      if (set)
+        currData[bytoPos] |= (1 << bitPos);
       else
-        currData[bytoPos] &= ~(1<<bitPos);
+        currData[bytoPos] &= ~(1 << bitPos);
       bmPage.writeBMPageArray(currData);
       if (bmPage.getCounter() < position + 1) {
         bmPage.updateCounter((short) (position + 1));
@@ -214,12 +213,18 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   }
 
   @Override
-  public void insert(KeyClass data, RID rid) throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException, ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException, DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
+  public void insert(KeyClass data, RID rid)
+      throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException,
+      ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException,
+      DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
     System.out.println("Insert function");
   }
 
   @Override
-  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException, RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException, FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException, IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
+  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException,
+      RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException,
+      FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException,
+      IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
     return false;
   }
 }
