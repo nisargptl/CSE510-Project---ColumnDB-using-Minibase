@@ -191,10 +191,11 @@ public class Heapfile implements Filetype, GlobalConst {
         // Give us a prayer of destructing cleanly if construction fails.
         _file_deleted = true;
         _fileName = null;
-
+        boolean tempFile=false;
         if (name == null) {
             // If the name is NULL, allocate a temporary name
             // and no logging is required.
+            tempFile=true;
             _fileName = "tempHeapFile";
             String useId = "user.name";
             String userAccName;
@@ -237,7 +238,27 @@ public class Heapfile implements Filetype, GlobalConst {
             // check error
             if (_firstDirPageId == null) throw new HFException(null, "can't new page");
 
+            try{
             add_file_entry(_fileName, _firstDirPageId);
+            }
+            catch(Exception e){
+                if(tempFile){
+                    boolean done=true;
+                    int mycount=0;
+                    while(done){
+                        try{
+                        
+                        System.out.println("trying with "+(_fileName+Integer.toString(mycount)));
+                        add_file_entry(_fileName+Integer.toString(mycount), _firstDirPageId);
+                        done=false;
+                        }
+                        catch(Exception e1){
+                            mycount++;
+                        }
+
+                    }
+                }
+            }
             // check error(new exception: Could not add file entry
 
             HFPage firstDirPage = new HFPage();
