@@ -16,7 +16,6 @@ public class ColumnarNestedLoopJoinDriver {
     private static String BTREESCAN = "BTREE";
 
     public static void main(String args[]) throws Exception {
-        // Query Skeleton: COLUMNDB CF1 CF2 PROJECTION OUTERCONST OUTERSCANCOLS [OUTERSCANTYPE] [OUTERSCANCONST] OUTERTARGETCOLUMNS INNERCONST INNERTARGETCOLUMNS JOINCONDITION NUMBUF
         // columnDB cf1 cf2 "cf1.cf1.1,cf2.cf2.1" " " " " "FILE" " " "cf1.cf1.1,3" " " "cf2.1,cf2.3" "cf1.cf1.3=cf2.cf2.3" 20 100
         // columnDB cf1 cf1 “cf1.cf1.1,cf2.cf2.2” "cf1.cf1.3>4" "cf1.cf1.1,cf1.cf1.2,cf1.cf1.3,cf1.cf1.4" "FILE" "cf1.cf1.3 > 4" "cf1.cf1.1,cf1.cf1.3" "cf2.cf2.3 > 4" "cf2.cf2.1,cf2.cf2.3” “cf1.cf1.3=cf2.cf2.3” 20 100
         // Working Query: java -cp out tests.ColumnarNestedLoopJoinDriver columnDB cf1 cf1 "cf1.cf1.1, cf1.cf1.2,cf1.cf1.3,cf2.cf2.1,cf2.2.2,cf2.cf2.3" "cf1.cf1.3 > 4" "cf1.cf1.1,cf1.cf1.2,cf1.cf1.3,cf1.cf1.4" "FILE" "cf1.cf1.3 > 4" "cf1.cf1.1,cf1.cf1.2,cf1.cf1.3" "cf2.cf2.3 > 4" "cf2.cf2.1,cf2.cf2.2,cf2.cf2.3" "cf1.cf1.3 = cf2.cf2.3" 20 100
@@ -34,75 +33,63 @@ public class ColumnarNestedLoopJoinDriver {
         String[] innerTargetColumns = args[10].split(",");
         String joinConstraints = args[11];
         Integer bufferSize = Integer.parseInt(args[12]);
-        Integer sortmem = Integer.parseInt(args[13]);
 
         String dbpath = OperationUtils.dbPath(columnDB);
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
 
-        runInterface(columnarFile1, columnarFile2, projection, outerConstraints, outerScanColumns, outerScanTypes, outerScanConstraints, outerTargetColumns, innerConstraints, innerTargetColumns, joinConstraints, sortmem);
-
-//        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
-
-        System.out.println("Reads: " + PCounter.rcounter);
-        System.out.println("Writes: " + PCounter.wcounter);
-    }
-
-    private static void runInterface(String ocf, String icf, String[] projection, String outerConstraints, String[] outerScanColumns, String[] outerScanTypes, String[] outerScanConstraints, String[] outerTargetColumns, String innerConstraints, String[] innerTargetColumns, String joinConstraints, int sortmem) throws Exception {
-
-        Columnarfile outer = new Columnarfile(ocf);
-        Columnarfile inner = new Columnarfile(icf);
-
         AttrType[] opAttr = new AttrType[projection.length];
         FldSpec[] projectionList = new FldSpec[projection.length];
+
+        // Open the inner and outer relations
+        Columnarfile outer = new Columnarfile(columnarFile1);
+        Columnarfile inner = new Columnarfile(columnarFile2);
+
+        // Find the projection lists on the join. Which columns (from the inner and the outer relation have to be included in the output print statements?)
+
         for (int i = 0; i < projection.length; i++) {
-            String attribute = projection[i].split("\\.")[2];
-            String relationName = projection[i].split("\\.")[0];
-            if (relationName.equals(ocf)) {
-                System.out.println("ATTR: " +  attribute);
+            String cfName = projection[i].split("\\.")[0];
+            String attrName = projection[i].split("\\.")[2];
+            if (cfName.equals(columnarFile1)) {
                 for(int j = 0; j < outerTargetColumns.length; j++) System.out.println(outerTargetColumns[j]);
-                projectionList[i] = new FldSpec(new RelSpec(RelSpec.outer), OperationUtils.getColumnPositionInTargets(attribute, outerTargetColumns) + 1);
-                opAttr[i] = new AttrType(outer.getAttrtypeforcolumn(outer.getAttributePosition(attribute)).attrType);
+                projectionList[i] = new FldSpec(new RelSpec(RelSpec.outer), OperationUtils.getColumnPositionInTargets(attrName, outerTargetColumns) + 1);
+                opAttr[i] = new AttrType(outer.getAttrtypeforcolumn(outer.getAttributePosition(attrName)).attrType);
             } else {
-                projectionList[i] = new FldSpec(new RelSpec(RelSpec.innerRel), OperationUtils.getColumnPositionInTargets(attribute, innerTargetColumns) + 1);
-                opAttr[i] = new AttrType(inner.getAttrtypeforcolumn(inner.getAttributePosition(attribute)).attrType);
+                projectionList[i] = new FldSpec(new RelSpec(RelSpec.innerRel), OperationUtils.getColumnPositionInTargets(attrName, innerTargetColumns) + 1);
+                opAttr[i] = new AttrType(inner.getAttrtypeforcolumn(inner.getAttributePosition(attrName)).attrType);
             }
         }
 
         int[] scanCols = new int[outerScanColumns.length];
-        System.out.println("OUTER: " + outerScanColumns[0] + " " + outerScanColumns.length);
         for (int i = 0; i < outerScanColumns.length; i++) {
-            if (!outerScanColumns[i].equals("")) {
+            if (!outerScanColumns[i].isEmpty()) {
                 String attribute = OperationUtils.getAttributeName(outerScanColumns[i]);
-                System.out.println("ATTRIBUTE: " + attribute);
-                System.out.println("SCAN COL: " + outerScanColumns[i]);
                 scanCols[i] = outer.getAttributePosition(attribute);
             }
         }
 
-        short[] outertargets = new short[outerTargetColumns.length];
+        short[] outerTargets = new short[outerTargetColumns.length];
         AttrType[] outerAttr = new AttrType[outerTargetColumns.length];
         FldSpec[] outerProjection = new FldSpec[outerTargetColumns.length];
         for (int i = 0; i < outerTargetColumns.length; i++) {
             String attribute = OperationUtils.getAttributeName(outerTargetColumns[i]);
-            outertargets[i] = (short) outer.getAttributePosition(attribute);
+            outerTargets[i] = (short) outer.getAttributePosition(attribute);
             outerProjection[i] = new FldSpec(new RelSpec(RelSpec.outer), i + 1);
             outerAttr[i] = new AttrType(outer.getAttrtypeforcolumn(outer.getAttributePosition(attribute)).attrType);
         }
 
-        short[] innertargets = new short[innerTargetColumns.length];
+        short[] innerTargets = new short[innerTargetColumns.length];
         AttrType[] innerAttr = new AttrType[outerTargetColumns.length];
         FldSpec[] innerProjection = new FldSpec[outerTargetColumns.length];
         for (int i = 0; i < innerTargetColumns.length; i++) {
             String attribute = OperationUtils.getAttributeName(innerTargetColumns[i]);
-            innertargets[i] = (short) inner.getAttributePosition(attribute);
+            innerTargets[i] = (short) inner.getAttributePosition(attribute);
             innerProjection[i] = new FldSpec(new RelSpec(RelSpec.outer), i + 1);
             innerAttr[i] = new AttrType(outer.getAttrtypeforcolumn(inner.getAttributePosition(attribute)).attrType);
         }
 
-        CondExpr[] outerConstraint = OperationUtils.processRawConditionExpression(outerConstraints, outerTargetColumns);
-        CondExpr[] innerConstraint = OperationUtils.processRawConditionExpression(innerConstraints, innerTargetColumns);
-        CondExpr[] joinConstraint = OperationUtils.processEquiJoinConditionExpression(joinConstraints, innerTargetColumns, outerTargetColumns);
+        CondExpr[] joinConst = OperationUtils.processEquiJoinConditionExpression(joinConstraints, innerTargetColumns, outerTargetColumns);
+        CondExpr[] outerConst = OperationUtils.processRawConditionExpression(outerConstraints, outerTargetColumns);
+        CondExpr[] innerConst = OperationUtils.processRawConditionExpression(innerConstraints, innerTargetColumns);
 
         CondExpr[][] scanConstraint = new CondExpr[outerScanTypes.length][1];
 
@@ -110,7 +97,7 @@ public class ColumnarNestedLoopJoinDriver {
             scanConstraint[i] = OperationUtils.processRawConditionExpression(outerScanConstraints[i]);
         }
 
-        Tuple proj_tuple = ColumnarScanUtils.getProjectionTuple(outer, inner, projectionList, innertargets, outertargets);
+        Tuple proj_tuple = ColumnarScanUtils.getProjectionTuple(outer, inner, projectionList, innerTargets, outerTargets);
 
         inner.close();
         outer.close();
@@ -118,24 +105,13 @@ public class ColumnarNestedLoopJoinDriver {
         Iterator cnlj = null;
         try {
             if (outerScanTypes[0].equals(FILESCAN)) {
-                it = new ColumnarFileScan(ocf, outerProjection, outertargets, outerConstraint);
+                it = new ColumnarFileScan(columnarFile2, outerProjection, outerTargets, outerConst);
             } else if (outerScanTypes[0].equals(COLUMNSCAN)) {
-                it = new ColumnarColumnScan(ocf, scanCols[0], outerProjection, outertargets, scanConstraint[0], outerConstraint);
-//            } else if (outerScanTypes[0].equals(BITMAPSCAN) || outerScanTypes[0].equals(BTREESCAN)) {
-//                IndexType[] indexType = new IndexType[outerScanTypes.length];
-//                for (int i = 0; i < outerScanTypes.length; i++) {
-//                    if (outerScanTypes[i].equals(BITMAPSCAN))
-//                        indexType[i] = new IndexType(IndexType.BitMapIndex);
-//                    else if (outerScanTypes[i].equals(BTREESCAN))
-//                        indexType[i] = new IndexType(IndexType.B_Index);
-//                    else
-//                        throw new Exception("Scan type <" + outerScanTypes[i] + "> not recognized.");
-//                }
-//                it = new ColumnarIndexScan(ocf, scanCols, indexType, scanConstraint, outerConstraint, false, outertargets, outerProjection, sortmem);
+                it = new ColumnarColumnScan(columnarFile2, scanCols[0], outerProjection, outerTargets, scanConstraint[0], outerConst);
             } else
                 throw new Exception("Scan type <" + outerScanTypes[0] + "> not recognized.");
 
-            cnlj = new ColumnarNestedLoopJoins(outerAttr, innerAttr, it, icf, joinConstraint, innerConstraint, innertargets, innerProjection, projectionList, proj_tuple);
+            cnlj = new ColumnarNestedLoopJoins(outerAttr, innerAttr, it, columnarFile1, joinConst, innerConst, innerTargets, innerProjection, projectionList, proj_tuple);
             int cnt = 0;
             while (true) {
                 Tuple result = cnlj.get_next();
@@ -155,5 +131,10 @@ public class ColumnarNestedLoopJoinDriver {
             cnlj.close();
             it.close();
         }
+
+        SystemDefs.JavabaseDB.closeDB();
+
+        System.out.println("Reads: " + PCounter.rcounter);
+        System.out.println("Writes: " + PCounter.wcounter);
     }
 }
