@@ -133,6 +133,35 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     }
   }
 
+  public boolean getValueAtPosition(int position) throws Exception {
+    if (headerPage == null) {
+      throw new Exception("Bitmap header page is null");
+    }
+
+    int pageCounter = 1;
+    while (position >= BMPage.NUM_POSITIONS_IN_A_PAGE) {
+      pageCounter++;
+      position -= BMPage.NUM_POSITIONS_IN_A_PAGE;
+    }
+
+    PageId bmPageId = headerPage.get_rootId();
+    Page page = pinPage(bmPageId);
+    BMPage bmPage = new BMPage(page);
+    for (int i = 1; i < pageCounter; i++) {
+      bmPageId = bmPage.getNextPage();
+      page = pinPage(bmPageId);
+      bmPage = new BMPage(page);
+    }
+
+    byte[] currData = bmPage.getBMpageArray();
+    int bytePos = position / 8;
+    int bitPos = position % 8;
+    boolean value = (currData[bytePos] & (1 << bitPos)) != 0;
+
+    unpinPage(bmPageId, false);
+    return value;
+  }
+
   private void setValueAtPosition(boolean set, int position) throws Exception {
     List<PageId> pinnedPages = new ArrayList<>();
     if (headerPage == null) {
@@ -179,6 +208,13 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     for (PageId pinnedPage : pinnedPages) {
       unpinPage(pinnedPage, true);
     }
+  }
+
+  public int getTotalPositions() throws Exception {
+    if (headerPage == null) {
+      throw new Exception("Bitmap header page is null");
+    }
+    return headerPage.getCounter();
   }
 
   private PageId getNewBMPage(PageId prevPageId) throws Exception {

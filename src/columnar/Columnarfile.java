@@ -337,20 +337,8 @@ public class Columnarfile {
         return true;
     }
 
-    public String getBMName(int columnNo, AttrType attrType) {
-        String filename = "BM" + "." + fname + "." + columnNo + "." + attrType.toString();
-        return filename;
-    }
 
-    public String[] getAvailableBM(int columnNo) throws Exception {
-        AttrType attrType = _ctype[columnNo - 1];
-        String bitMapFileName = getBMName(columnNo, attrType);
-
-        bmName.add(bitMapFileName);
-        return bmName.toArray(new String[bmName.size()]);
-    }
-
-
+    // BITMAP CREATION IMPLEMENTATION
     public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
         // Adjusted method to use class-level BMMap
         Scan columnScan = openColumnScan(columnNo - 1);
@@ -364,9 +352,15 @@ public class Columnarfile {
                 break;
             }
 
+            // Retrieve and convert the value from the tuple
             AttrType attrType = _ctype[columnNo - 1];
-            String bitMapFileName = getBMName(columnNo, attrType);
+            Object value = extractValueFromTuple(tuple, attrType); // You'll need to implement this
 
+            // Use the value to determine the bitmap file name
+            String bitMapFileName = getBMName(columnNo, attrType, value); // Modify to include value
+            System.out.println("BITMAP FILE NAME: " + bitMapFileName);
+
+            // Ensure a bitmap file for each unique value
             BitMapFile bitMapFile = BMMap.computeIfAbsent(bitMapFileName, k -> {
                 try {
                     return new BitMapFile(bitMapFileName, this, columnNo, attrType);
@@ -376,6 +370,7 @@ public class Columnarfile {
                 }
             });
 
+            // Insert the position into the bitmap file
             if (bitMapFile != null) {
                 bitMapFile.insert(position);
             }
@@ -383,6 +378,8 @@ public class Columnarfile {
         }
 
         columnScan.closescan();
+
+        // Close all opened bitmap files
         for (BitMapFile bmp : BMMap.values()) {
             if (bmp != null) bmp.close();
         }
@@ -390,6 +387,45 @@ public class Columnarfile {
         return true;
     }
 
+    public String getBMName(int columnNo, AttrType attrType, Object value) {
+        // Convert the value to a string safe for inclusion in a filename.
+        String valueString = convertValueToString(value);
+        String filename = "BM" + "." + fname + "." + columnNo + "." + attrType.toString() + "." + valueString;
+        return filename;
+    }
+
+    private String convertValueToString(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        // Convert the value to a string, replacing spaces and special characters that are not safe in filenames
+        String valueString = value.toString().replaceAll("[^a-zA-Z0-9_]", "_");
+        return valueString;
+    }
+
+    private Object extractValueFromTuple(Tuple tuple, AttrType attrType) throws IOException {
+        // Assumes that the tuple consists of a single value of the type specified
+        switch (attrType.attrType) {
+            case AttrType.attrInteger:
+                return Convert.getIntValue(0, tuple.getTupleByteArray());
+            case AttrType.attrString:
+                return Convert.getStrValue(0, tuple.getTupleByteArray(), tuple.getLength());
+            // Add more cases as necessary for other data types
+        }
+        return null;
+    }
+
+    //todo
+    public String[] getAvailableBM(int columnNo) throws Exception {
+        //System.out.println("BMMAP SIZE: " + BMMap.size());
+        Tuple tuple = new Tuple();
+        AttrType attrType = _ctype[columnNo - 1];
+        Object value = extractValueFromTuple(tuple, attrType);
+        String bitMapFileName = getBMName(columnNo, attrType, value);
+
+        bmName.add(bitMapFileName);
+        return bmName.toArray(new String[bmName.size()]);
+    }
 
     public boolean markTupleDeleted(int position) {
         String DeletedFileName = getDeletedFileName();

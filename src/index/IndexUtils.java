@@ -10,6 +10,7 @@ import heap.Tuple;
 import iterator.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -284,23 +285,112 @@ public class IndexUtils {
 	// }
 
 	public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int columnNo, CondExpr[] selects,
-			boolean indexOnly) throws IndexException {
+											boolean indexOnly) throws IndexException {
 		try {
 			List<BitmapFileScan> scans = new ArrayList<>();
 
+			// Loop through available bitmap files for the specified column
+			System.out.println("COLUMN NUMBER: " + columnNo);
 			for (String bmName : columnarFile.getAvailableBM(columnNo)) {
-				// **********
-				Object value = extractValueFromBitmapName(bmName); // new stuff
-				// **********
-				if (evaluateCondition(selects, value)) { // new stuff
-					scans.add(new BitMapFile(bmName).new_scan());
+				System.out.println("BM NAME INSIDE LOOP: " + bmName);
+				BitMapFile bitmapFile = new BitMapFile(bmName);  // Open each bitmap file
+				int totalPositions = bitmapFile.getTotalPositions();  // Get total positions in the bitmap
+
+				// Check up to the total number of positions in the bitmap or 2000, whichever is smaller
+				for (int position = 0; position < Math.min(totalPositions, 2000); position++) {
+					if (evaluateCondition(selects, bitmapFile, position)) {
+						scans.add(bitmapFile.new_scan());  // Add a new scan if condition is met
+						break; // Once a match is found, no need to check further positions in the same bitmap
+					}
 				}
 			}
 
-			return generateIndexFileScan(scans);
+			return generateIndexFileScan(scans);  // Generate and return a composite index file scan
 		} catch (Exception e) {
 			throw new IndexException(e, "Bitmap_scan: exceptions caught");
 		}
+	}
+
+	private static boolean evaluateCondition(CondExpr[] selects, BitMapFile bitmapFile, int position) {
+		if (selects == null || selects[0] == null)
+			return true; // No condition, include all bitmaps.
+
+		boolean matches = true;
+		try {
+			for (CondExpr cond : selects) {
+				if (cond != null) {
+					// Assuming the value at the position in bitmap file can be evaluated here:
+					Object bitmapValue = bitmapFile.getValueAtPosition(position);  // Get the value at the bitmap position
+					Object condValue = getValueFromCondExpr(cond);
+					if (!applyOperator(cond.op, bitmapValue, condValue)) {
+						matches = false;
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			matches = false;
+		}
+		return matches;
+	}
+
+
+//	private static boolean evaluateCondition(CondExpr[] selects, BitMapFile bitmapFile, int position) {
+//		if (selects == null || selects[0] == null) {
+//			return true; // No condition, include all bitmaps.
+//		}
+//
+//		try {
+//			boolean matches = true;
+//			for (CondExpr cond : selects) {
+//				System.out.println(Arrays.toString(selects));
+//				if (cond != null) {
+//					Object bitmapValue = bitmapFile.getValueAtPosition(position); // Assuming this fetches the correct value
+//					System.out.println(bitmapValue);
+//					Object condValue = getValueFromCondExpr(cond);
+//
+//					// Log for debugging purposes
+//					System.out.println("Evaluating: " + bitmapValue + " " + cond.op.attrOperator + " " + condValue);
+//
+//					if (!applyOperator(cond.op, bitmapValue, condValue)) {
+//						matches = false;
+//						break;
+//					}
+//				}
+//			}
+//			return matches;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//	}
+
+
+	private static boolean applyOperator(AttrOperator op, Object bitmapValue, Object condValue) {
+		if (bitmapValue == null || condValue == null) {
+			return false;
+		}
+
+		// Cast and compare based on data type
+		switch (op.attrOperator) {
+			case AttrOperator.aopEQ:
+				return bitmapValue.equals(condValue);
+			case AttrOperator.aopLT:
+				if (bitmapValue instanceof Comparable && condValue instanceof Comparable) {
+					return ((Comparable) bitmapValue).compareTo(condValue) < 0;
+				}
+				break;
+			case AttrOperator.aopGT:
+				if (bitmapValue instanceof Comparable && condValue instanceof Comparable) {
+					return ((Comparable) bitmapValue).compareTo(condValue) > 0;
+				}
+				break;
+			// Add more cases as necessary
+			default:
+				return false;
+		}
+		return false;
 	}
 
 	// new added here
@@ -320,24 +410,24 @@ public class IndexUtils {
 		return null; // Return null if name is not as expected
 	}
 
-	private static boolean evaluateCondition(CondExpr[] selects, Object bitmapValue) {
-		if (selects == null || selects[0] == null)
-			return true; // No condition, include all bitmaps.
-
-		boolean matches = true;
-		for (CondExpr cond : selects) {
-			if (cond != null) {
-				Object condValue = getValueFromCondExpr(cond);
-				System.out.println("condValue: " + condValue);
-				// System.out.println("cond.op.attrOperator, bitmapValue, condValue");
-				// if (!applyOperator(cond.op, bitmapValue, condValue)) {
-				// matches = false;
-				// break;
-				// }
-			}
-		}
-		return matches;
-	}
+//	private static boolean evaluateCondition(CondExpr[] selects, Object bitmapValue) {
+//		if (selects == null || selects[0] == null)
+//			return true; // No condition, include all bitmaps.
+//
+//		boolean matches = true;
+//		for (CondExpr cond : selects) {
+//			if (cond != null) {
+//				Object condValue = getValueFromCondExpr(cond);
+//				System.out.println("condValue: " + condValue);
+//				// System.out.println("cond.op.attrOperator, bitmapValue, condValue");
+//				// if (!applyOperator(cond.op, bitmapValue, condValue)) {
+//				// matches = false;
+//				// break;
+//				// }
+//			}
+//		}
+//		return matches;
+//	}
 
 	private static Object getValueFromCondExpr(CondExpr expr) {
 		// Assuming the actual value is always in operand2 (you'll need to adjust this
