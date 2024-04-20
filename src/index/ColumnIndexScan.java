@@ -44,6 +44,7 @@ public class ColumnIndexScan extends Iterator {
     // private List<BitmapFileScan> bitMapScans = new ArrayList<>();
     private final Columnarfile columnarfile;
     private IndexType index;
+    private int columnNo;
 
     /**
      * class constructor. set up the index scan.
@@ -78,6 +79,7 @@ public class ColumnIndexScan extends Iterator {
         _relName = relName;
         _indName = indName;
         this.index = index;
+        this.columnNo = columnNo;
         columnarfile = new Columnarfile(relName);
 
         Jtuple = new Tuple();
@@ -140,20 +142,11 @@ public class ColumnIndexScan extends Iterator {
      * otherwise, retrieve the tuple and returns the whole tuple
      *
      * @return the tuple
-     * @exception IndexException          error from the lower layer
-     * @exception UnknownKeyTypeException key type unknown
-     * @exception IOException             from the lower layer
-     * @throws ScanIteratorException
-     * @throws FieldNumberOutOfBoundException
-     * @throws InvalidTupleSizeException
-     * @throws InvalidTypeException
+     * @throws Exception
      */
 
     public Tuple get_next()
-            throws IndexException,
-            UnknownKeyTypeException,
-            IOException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException,
-            ScanIteratorException {
+            throws Exception {
         if (index.indexType == IndexType.B_Index) {
             return get_btree_next();
         } else {
@@ -163,10 +156,8 @@ public class ColumnIndexScan extends Iterator {
     }
 
     public Tuple get_btree_next()
-            throws IndexException,
-            UnknownKeyTypeException,
-            IOException {
-        // RID rid;
+            throws Exception {
+        RID rid;
         // int unused;
         KeyDataEntry nextentry = null;
 
@@ -222,6 +213,9 @@ public class ColumnIndexScan extends Iterator {
                     // attrReal not supported for now
                     throw new UnknownKeyTypeException("Only Integer and String keys are supported so far");
                 }
+                // rid = ((LeafData) nextentry.data).getData();
+                // TID tid = columnarfile.getTIDFromRID(columnNo, rid);
+                // System.out.println("TID: " + tid);
                 return Jtuple;
             }
 
