@@ -4,13 +4,11 @@ package tests;
 import columnar.Columnarfile;
 import diskmgr.PCounter;
 import global.AttrType;
-import global.IndexType;
 import global.SystemDefs;
 import heap.Tuple;
-import index.ColumnarIndexScan;
 import iterator.*;
 
-public class Joins {
+public class ColumnarNestedLoopJoinDriver {
 
     private static String FILESCAN = "FILE";
     private static String COLUMNSCAN = "COLUMN";
@@ -21,6 +19,7 @@ public class Joins {
         // Query Skeleton: COLUMNDB CF1 CF2 PROJECTION OUTERCONST OUTERSCANCOLS [OUTERSCANTYPE] [OUTERSCANCONST] OUTERTARGETCOLUMNS INNERCONST INNERTARGETCOLUMNS JOINCONDITION NUMBUF
         // columnDB cf1 cf2 "cf1.cf1.1,cf2.cf2.1" " " " " "FILE" " " "cf1.cf1.1,3" " " "cf2.1,cf2.3" "cf1.cf1.3=cf2.cf2.3" 20 100
         // columnDB cf1 cf1 “cf1.cf1.1,cf2.cf2.2” "cf1.cf1.3>4" "cf1.cf1.1,cf1.cf1.2,cf1.cf1.3,cf1.cf1.4" "FILE" "cf1.cf1.3 > 4" "cf1.cf1.1,cf1.cf1.3" "cf2.cf2.3 > 4" "cf2.cf2.1,cf2.cf2.3” “cf1.cf1.3=cf2.cf2.3” 20 100
+        // Working Query: java -cp out tests.ColumnarNestedLoopJoinDriver columnDB cf1 cf1 "cf1.cf1.1, cf1.cf1.2,cf1.cf1.3,cf2.cf2.1,cf2.2.2,cf2.cf2.3" "cf1.cf1.3 > 4" "cf1.cf1.1,cf1.cf1.2,cf1.cf1.3,cf1.cf1.4" "FILE" "cf1.cf1.3 > 4" "cf1.cf1.1,cf1.cf1.2,cf1.cf1.3" "cf2.cf2.3 > 4" "cf2.cf2.1,cf2.cf2.2,cf2.cf2.3" "cf1.cf1.3 = cf2.cf2.3" 20 100
 
         String columnDB = args[0];
         String columnarFile1 = args[1];

@@ -106,7 +106,7 @@ public class ColumnarDuplElimDriver {
                         // indexName[i] = cf.getBMName();
                     } else if (scanTypes[i].equals(BTREESCAN)) {
                         indexType[i] = new IndexType(IndexType.B_Index);
-                        indexName[i] = cf.getBTName(i); // todo: why is this based on i?
+                        indexName[i] = cf.getBTName(i);
                     } else {
                         indexType[i] = new IndexType(IndexType.None);
                     }
@@ -127,56 +127,39 @@ public class ColumnarDuplElimDriver {
             int cnt = 0;
             it1 = new ColumnarDuplElim(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortmem, true);
             ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
-            Tuple result;
             while (true) {
-                result = it1.get_next();
+                // System.out.println(cnt);
+                Tuple result = it1.get_next();
+
                 if (result == null) {
                     break;
                 } else {
-                    System.out.println("Adding");
+//                    it.get(0).delete_next();
                     sortTuples.add(result);
                 }
-                result.print(opAttr);
-                if(cnt >= 2) {
-                    System.out.println("PREV");
-                    sortTuples.get(cnt - 1).print(opAttr);
-                    sortTuples.get(cnt - 2).print(opAttr);
+                cnt++;
+                // result.print(opAttr);
+            }
+
+            Boolean deleted = true;
+            while (deleted) {
+                // System.out.println("deleting_goin_on");
+                deleted = it.get(1).delete_next();
+
+                if (deleted == false) {
+                    break;
                 }
                 cnt++;
-                result = null;
-                if(result == null) {
-                    System.out.println("null");
-                }
             }
-            Tuple temp;
-            for (int i = 0; i < sortTuples.size(); i++) {
-                temp = sortTuples.get(i);
-                System.out.println("added tuple no: " + (i + 1));
-                temp.print(opAttr);
-            }
-            System.out.print("SIZE:: ");
-            System.out.println(sortTuples.size());
-
-//            Boolean deleted = true;
-//            while (deleted) {
-//                deleted = it.get(1).delete_next();
-//
-//                if (deleted == false) {
-//                    break;
-//                }
-//                cnt++;
-//            }
             it.get(1).close();
             it.get(0).close();
-//            cf.purgeAllDeletedTuples();
-//            System.out.println("deleting done successfully!!!!");
-//            Tuple temp;
-//            for (int i = 0; i < sortTuples.size(); i++) {
-////                cf.insertTuple(sortTuples.get(i).getTupleByteArray());
-//                System.out.println("added tuple no: " + (i + 1));
-//                temp = sortTuples.get(i);
-//                temp.print(opAttr);
-//            }
+            cf.purgeAllDeletedTuples();
+            System.out.println("deleting done successfully!!!!");
+
+            for (int i = 0; i < sortTuples.size(); i++) {
+                cf.insertTuple(sortTuples.get(i).getTupleByteArray());
+                System.out.println("added tuple no: " + (i + 1));
+            }
             System.out.println("all tuples added");
 
             System.out.println();

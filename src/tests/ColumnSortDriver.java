@@ -117,7 +117,7 @@ public class ColumnSortDriver {
                         // indexName[i] = cf.getBMName();
                     } else if (scanTypes[i].equals(BTREESCAN)) {
                         indexType[i] = new IndexType(IndexType.B_Index);
-                        indexName[i] = cf.getBTName(i); // todo: why is this based on i?
+                        indexName[i] = cf.getBTName(i);
                     } else {
                         indexType[i] = new IndexType(IndexType.None);
                     }
@@ -129,13 +129,12 @@ public class ColumnSortDriver {
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
 
-                // it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
                 for (int i = 0; i < 2; i++) {
                     it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
                 }
 
             } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
-            System.out.println("here");
+
             int cnt = 0;
             it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), 50);
             ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
