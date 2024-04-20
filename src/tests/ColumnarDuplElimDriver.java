@@ -1,8 +1,5 @@
 package tests;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import columnar.Columnarfile;
 import diskmgr.PCounter;
 import global.AttrType;
@@ -13,19 +10,15 @@ import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
 
-public class ColumnSortTest {
+import java.util.ArrayList;
 
+public class ColumnarDuplElimDriver {
     private static final String FILESCAN = "FILE";
     private static final String COLUMNSCAN = "COLUMN";
     private static final String BITMAPSCAN = "BITMAP";
     private static final String BTREESCAN = "BTREE";
 
     public static void main(String[] args) throws Exception {
-        // Query Skeleton: COLUMNDB COLUMNFILE PROJECTION OTHERCONST SCANCOLS [SCANTYPE]
-        // [SCANCONST] TARGETCOLUMNS NUMBUF SORTMEM
-        // Example Query: testColumnDB columnarTable A,B,C "C = 5" A,B [BTREE,BITMAP]
-        // "(A = 5 v A = 6),(B > 7)" A,B,C 100 0 4 0
-        // In case no constraints need to be applied, pass "" as input.
         String columnDB = args[0];
         String columnarFile = args[1];
         String[] projection = args[2].split(",");
@@ -36,13 +29,11 @@ public class ColumnSortTest {
         String[] targetColumns = args[7].split(",");
         Integer bufferSize = Integer.parseInt(args[8]);
         Integer sortmem = Integer.parseInt(args[9]);
-        Integer sortField = Integer.parseInt(args[10]);
-        Integer sortOrder = Integer.parseInt(args[11]);
 
-        String dbpath = OperationUtils.dbPath(columnDB);
-        SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
+        String columndbpath = OperationUtils.dbPath(columnDB);
+        new SystemDefs(columndbpath, 0, bufferSize, "Clock");
 
-        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder);
+        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem);
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
@@ -51,7 +42,7 @@ public class ColumnSortTest {
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
-    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder) throws Exception {
+    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem) throws Exception {
         Columnarfile cf = new Columnarfile(columnarFile);
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
@@ -107,9 +98,6 @@ public class ColumnSortTest {
                     it.add(new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint));
                 }
             } else if (scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
-                //    } else if (scanTypes[0].equals(COLUMNSCAN)) {
-                //        it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
-                // } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
                 for (int i = 0; i < scanTypes.length; i++) {
@@ -123,55 +111,72 @@ public class ColumnSortTest {
                         indexType[i] = new IndexType(IndexType.None);
                     }
                 }
-
                 System.out.println("Index Type len: " + indexType.length);
                 System.out.println("Index Name len: " + indexName.length);
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
-
-                // it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
                 for (int i = 0; i < 2; i++) {
                     it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
                 }
 
-            } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
-            System.out.println("here");
-            int cnt = 0;
-            it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), 50);
-            ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
-            while (true) {
-                // System.out.println(cnt);
-                Tuple result = it1.get_next();
+            } else {
+                throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
+            }
 
+            int cnt = 0;
+            it1 = new ColumnarDuplElim(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortmem, true);
+            ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
+            Tuple result;
+            while (true) {
+                result = it1.get_next();
                 if (result == null) {
                     break;
                 } else {
+                    System.out.println("Adding");
                     sortTuples.add(result);
                 }
-                cnt++;
-                // result.print(opAttr);
-            }
-
-            Boolean deleted = true;
-            while (deleted) {
-                // System.out.println("deleting_goin_on");
-                deleted = it.get(1).delete_next();
-
-                if (deleted == false) {
-                    break;
+                result.print(opAttr);
+                if(cnt >= 2) {
+                    System.out.println("PREV");
+                    sortTuples.get(cnt - 1).print(opAttr);
+                    sortTuples.get(cnt - 2).print(opAttr);
                 }
                 cnt++;
+                result = null;
+                if(result == null) {
+                    System.out.println("null");
+                }
             }
+            Tuple temp;
+            for (int i = 0; i < sortTuples.size(); i++) {
+                temp = sortTuples.get(i);
+                System.out.println("added tuple no: " + (i + 1));
+                temp.print(opAttr);
+            }
+            System.out.print("SIZE:: ");
+            System.out.println(sortTuples.size());
+
+//            Boolean deleted = true;
+//            while (deleted) {
+//                deleted = it.get(1).delete_next();
+//
+//                if (deleted == false) {
+//                    break;
+//                }
+//                cnt++;
+//            }
             it.get(1).close();
             it.get(0).close();
-            cf.purgeAllDeletedTuples();
-            System.out.println("deleting done successfully!!!!");
-
-            for (int i = 0; i < sortTuples.size(); i++) {
-                cf.insertTuple(sortTuples.get(i).getTupleByteArray());
-                System.out.println("added tuple no: " + (i + 1));
-            }
+//            cf.purgeAllDeletedTuples();
+//            System.out.println("deleting done successfully!!!!");
+//            Tuple temp;
+//            for (int i = 0; i < sortTuples.size(); i++) {
+////                cf.insertTuple(sortTuples.get(i).getTupleByteArray());
+//                System.out.println("added tuple no: " + (i + 1));
+//                temp = sortTuples.get(i);
+//                temp.print(opAttr);
+//            }
             System.out.println("all tuples added");
 
             System.out.println();
@@ -187,4 +192,3 @@ public class ColumnSortTest {
         }
     }
 }
-
