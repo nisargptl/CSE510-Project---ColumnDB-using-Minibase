@@ -6,7 +6,3 @@ Connecticut	Puerto_Rico	4	0
 Montana	District_of_Columbia	5	0
 Vermont	West_Virginia	6	8
 New_Hampshire	District_of_Columbia	7	8
-Vermont	West_Virginia	6	8
-Vermont	West_Virginia	6	8
-Vermont	West_Virginia	6	8
-Vermont	Hyderbad	6	8
