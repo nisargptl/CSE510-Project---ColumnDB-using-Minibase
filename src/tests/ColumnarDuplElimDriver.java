@@ -30,8 +30,8 @@ public class ColumnarDuplElimDriver {
         String[] scanTypes = args[5].split(",");
         String[] scanConstraints = args[6].split(",");
         String[] targetColumns = args[7].split(",");
-        Integer bufferSize = Integer.parseInt(args[8]);
-        Integer sortmem = Integer.parseInt(args[9]);
+        int bufferSize = Integer.parseInt(args[8]);
+        int sortmem = Integer.parseInt(args[9]);
 
         String columndbpath = OperationUtils.dbPath(columnDB);
         new SystemDefs(columndbpath, 0, bufferSize, "Clock");
