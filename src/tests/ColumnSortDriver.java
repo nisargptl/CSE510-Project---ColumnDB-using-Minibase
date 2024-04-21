@@ -40,11 +40,12 @@ public class ColumnSortDriver {
         Integer sortmem = Integer.parseInt(args[9]);
         Integer sortField = Integer.parseInt(args[10]);
         Integer sortOrder = Integer.parseInt(args[11]);
+        Integer BufferPagesAvailable= Integer.parseInt(args[12]);
 
         String dbpath = OperationUtils.dbPath(columnDB);
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
 
-        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder);
+        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder,BufferPagesAvailable);
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
@@ -53,7 +54,8 @@ public class ColumnSortDriver {
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
-    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder) throws Exception {
+    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, 
+    int sortField, int sortOrder,int BufferPagesAvailable) throws Exception {
         Columnarfile cf = new Columnarfile(columnarFile);
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
@@ -139,7 +141,7 @@ public class ColumnSortDriver {
             } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
 
             int cnt = 0;
-            it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), 50);
+            it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), BufferPagesAvailable);
             ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
             while (true) {
                 // System.out.println(cnt);
@@ -154,6 +156,7 @@ public class ColumnSortDriver {
                 // result.print(opAttr);
             }
 
+            cnt=0;
             Boolean deleted = true;
             while (deleted) {
                 // System.out.println("deleting_goin_on");
@@ -171,7 +174,7 @@ public class ColumnSortDriver {
 
             for (int i = 0; i < sortTuples.size(); i++) {
                 cf.insertTuple(sortTuples.get(i).getTupleByteArray());
-                System.out.println("added tuple no: " + (i + 1));
+                // System.out.println("added tuple no: " + (i + 1));
             }
             System.out.println("all tuples added");
 
