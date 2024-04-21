@@ -20,7 +20,7 @@ import static tests.TestDriver.OK;
 public class Columnarfile {
     String fname;
     boolean _fileDeleted = false;
-    short numColumns;
+    public short numColumns;
     AttrType[] _ctype;
     short[] attrsizes;
     short[] asize;
@@ -550,6 +550,7 @@ public class Columnarfile {
         Tuple tuple;
         while (!flag) {
             try {
+// <<<<<<< getBM-hardcoded
                 rid = new RID();
                 tuple = SortedDTuples.get_next();
                 if (tuple == null) {
@@ -570,6 +571,15 @@ public class Columnarfile {
                     // }
                     // }
                 }
+// =======
+                AttrType[] types = new AttrType[1];
+                types[0] = new AttrType(AttrType.attrInteger);
+                short[] sizes = new short[0];
+                FldSpec[] projlist = new FldSpec[1];
+                projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
+                FileScan fs = new FileScan(getDeletedFileName(), types, sizes, (short) 1, 1, projlist, null);
+                SortedDTuples = new Sort(types, (short) 1, sizes, fs, 1, new TupleOrder(TupleOrder.Descending), 4, 50);
+// >>>>>>> testing-all-col-index-scan
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -718,6 +728,12 @@ public class Columnarfile {
         return fname + ".del";
     }
 
+    public AttrType[] getAllAttrTypes(){
+        return _ctype;
+    }
+    public short[] getAllAttrSizes(){
+        return attrsizes;
+    }
     public AttrType getAttrtypeforcolumn(int columnNo) throws Exception {
         if (columnNo < numColumns) {
             return _ctype[columnNo];

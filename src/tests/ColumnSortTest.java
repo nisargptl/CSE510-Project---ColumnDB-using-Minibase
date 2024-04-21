@@ -1,5 +1,8 @@
 package tests;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import columnar.Columnarfile;
 import diskmgr.PCounter;
 import global.AttrType;
@@ -10,12 +13,7 @@ import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
-public class Query {
+public class ColumnSortTest {
 
     private static final String FILESCAN = "FILE";
     private static final String COLUMNSCAN = "COLUMN";
@@ -26,7 +24,7 @@ public class Query {
         // Query Skeleton: COLUMNDB COLUMNFILE PROJECTION OTHERCONST SCANCOLS [SCANTYPE]
         // [SCANCONST] TARGETCOLUMNS NUMBUF SORTMEM
         // Example Query: testColumnDB columnarTable A,B,C "C = 5" A,B [BTREE,BITMAP]
-        // "(A = 5 v A = 6),(B > 7)" A,B,C 100 0
+        // "(A = 5 v A = 6),(B > 7)" A,B,C 100 0 4 0
         // In case no constraints need to be applied, pass "" as input.
         String columnDB = args[0];
         String columnarFile = args[1];
@@ -38,26 +36,23 @@ public class Query {
         String[] targetColumns = args[7].split(",");
         Integer bufferSize = Integer.parseInt(args[8]);
         Integer sortmem = Integer.parseInt(args[9]);
+        Integer sortField = Integer.parseInt(args[10]);
+        Integer sortOrder = Integer.parseInt(args[11]);
 
         String dbpath = OperationUtils.dbPath(columnDB);
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
 
-        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns,
-                sortmem);
+        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder);
 
-        // SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
 
         System.out.println("Reads: " + PCounter.rcounter);
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
-    private static void runInterface(String columnarFile, String[] projection, String otherConstraints,
-            String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem)
-            throws Exception {
-
+    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder) throws Exception {
         Columnarfile cf = new Columnarfile(columnarFile);
-        System.out.println("here");
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
         short[] str_sizes = cf.getStrSize();
@@ -65,8 +60,7 @@ public class Query {
 
         for (int i = 0; i < projection.length; i++) {
             String attribute = OperationUtils.getAttributeName(projection[i]);
-            projectionList[i] = new FldSpec(new RelSpec(RelSpec.outer),
-                    OperationUtils.getColumnPositionInTargets(attribute, targetColumns) + 1);
+            projectionList[i] = new FldSpec(new RelSpec(RelSpec.outer), OperationUtils.getColumnPositionInTargets(attribute, targetColumns) + 1);
             opAttr[i] = new AttrType(cf.getAttrtypeforcolumn(cf.getAttributePosition(attribute)).attrType);
         }
 
@@ -77,7 +71,7 @@ public class Query {
             if (!scanColumns[i].equals("")) {
                 String attribute = OperationUtils.getAttributeName(scanColumns[i]);
                 scanCols[i] = cf.getAttributePosition(attribute); // todo changed from
-                                                                  // cf.getAttributePosition(attribute) + 1;
+                // cf.getAttributePosition(attribute) + 1;
                 indName[i] = cf.getBTName(scanCols[i]);
             }
         }
@@ -92,6 +86,7 @@ public class Query {
             targets[i] = (short) cf.getAttributePosition(attribute);
         }
 
+
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
         CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
@@ -100,23 +95,21 @@ public class Query {
             scanConstraint[i] = OperationUtils.processRawConditionExpression(scanConstraints[i]);
         }
         cf.close();
-        Iterator it = null;
+        ArrayList<Iterator> it = new ArrayList<Iterator>();
+        Iterator it1 = null;
         try {
             if (scanTypes[0].equals(FILESCAN)) {
-                it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
+                for (int i = 0; i < 2; i++) {
+                    it.add(new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint));
+                }
             } else if (scanTypes[0].equals(COLUMNSCAN)) {
-                // Iterator it1 = new ColumnarFileScan(columnarFile, projectionList, targets,
-                // otherConstraint);
-                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0],
-                        otherConstraint);
-                // it=new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns,
-                // cf.getAllAttrSizes(), it1, 2, new TupleOrder(0), 50);
+                for (int i = 0; i < 2; i++) {
+                    it.add(new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint));
+                }
             } else if (scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
-                // } else if (scanTypes[0].equals(COLUMNSCAN)) {
-                // it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList,
-                // targets, scanConstraint[0], otherConstraint);
-                // } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN))
-                // {
+                //    } else if (scanTypes[0].equals(COLUMNSCAN)) {
+                //        it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
+                // } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
                 for (int i = 0; i < scanTypes.length; i++) {
@@ -137,70 +130,61 @@ public class Query {
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
 
-                Map<Integer, CondExpr[]> condExprMap = createCondExprMap(columnarFile, otherConstraints,
-                        otherConstraint);
+                // it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
+                for (int i = 0; i < 2; i++) {
+                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
+                }
 
-                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes,
-                        scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap);
-            } else
-                throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
-            // System.out.println("here");
+            } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
+            System.out.println("here");
             int cnt = 0;
+            it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), 50);
+            ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
             while (true) {
                 // System.out.println(cnt);
-                Tuple result = it.get_next();
-                // System.out.println("Count");
+                Tuple result = it1.get_next();
+
                 if (result == null) {
+                    break;
+                } else {
+                    sortTuples.add(result);
+                }
+                cnt++;
+                // result.print(opAttr);
+            }
+
+            Boolean deleted = true;
+            while (deleted) {
+                // System.out.println("deleting_goin_on");
+                deleted = it.get(1).delete_next();
+
+                if (deleted == false) {
                     break;
                 }
                 cnt++;
-                result.print(opAttr);
             }
+            it.get(1).close();
+            it.get(0).close();
+            cf.purgeAllDeletedTuples();
+            System.out.println("deleting done successfully!!!!");
+
+            for (int i = 0; i < sortTuples.size(); i++) {
+                cf.insertTuple(sortTuples.get(i).getTupleByteArray());
+                System.out.println("added tuple no: " + (i + 1));
+            }
+            System.out.println("all tuples added");
 
             System.out.println();
             System.out.println(cnt + " tuples selected");
             System.out.println();
+            cf.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            it.close();
+            it.get(0).close();
+            it.get(1).close();
+            it1.close();
         }
-    }
-
-    private static Map<Integer, CondExpr[]> createCondExprMap(String relName, String conditions,
-            CondExpr[] scanConstraint) {
-        Map<Integer, CondExpr[]> condExprMap = new HashMap<>();
-        String[] condition = conditions.split(" and | or");
-
-        for (int i = 0; i < condition.length; i++) {
-            int scanCol = Integer.parseInt(condition[i].split(" > | < | >= | <= | != | = ")[0].split(relName + ".")[1])
-                    - 1;
-
-            CondExpr newCondExpr = scanConstraint[i];
-            if (condExprMap.containsKey(scanCol)) {
-                // If there's already a CondExpr for this column, find the end of the chain and
-                // append the new one
-                CondExpr[] lastCondExpr = condExprMap.get(scanCol);
-                lastCondExpr[lastCondExpr.length - 2].next = newCondExpr;
-                // create a new array of CondExpr
-                CondExpr[] newScanConstraint = new CondExpr[lastCondExpr.length + 1];
-                for (int j = 0; j < lastCondExpr.length - 1; j++) {
-                    newScanConstraint[j] = lastCondExpr[j];
-                }
-                newScanConstraint[lastCondExpr.length - 1] = newCondExpr;
-                // pop the old one and replace it with the new one
-                condExprMap.put(scanCol, newScanConstraint);
-            } else {
-                // If there is no CondExpr for this column, put the new one in the map
-                CondExpr[] newScanConstraint = new CondExpr[2];
-                for (int j = 0; j < newScanConstraint.length - 1; j++) {
-                    newScanConstraint[j] = newCondExpr;
-                }
-                // pop the old one and replace it with the new one
-                condExprMap.put(scanCol, newScanConstraint);
-            }
-        }
-
-        return condExprMap;
     }
 }
+

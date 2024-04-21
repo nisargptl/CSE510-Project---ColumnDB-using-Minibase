@@ -116,4 +116,8 @@ public abstract class Iterator implements Flags {
     return tmpId;
 
   } // end of newPage
+
+public  boolean delete_next() throws Exception {
+  return true;
+};
 }
