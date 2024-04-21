@@ -59,30 +59,32 @@ public class ColumnarIndexScan extends Iterator {
         int i = 0;
         indexScans = new ColumnIndexScan[condExprMap.size()];
 
-// <<<<<<< getBM-hardcoded
-//         for (int i = 0; i < fldNum.length - 1; i++) {
-//             if (types[fldNum[i]].attrType == AttrType.attrString) {
-//                 indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName, indName[i], types[fldNum[i]],
-//                         str_sizes[i - c], selects, indexOnly);
-//             } else {
-//                 c += 1;
-//                 indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName, indName[i], types[fldNum[i]],
-//                         (short) 0, selects, indexOnly);
-// =======
+        // <<<<<<< getBM-hardcoded
+        // for (int i = 0; i < fldNum.length - 1; i++) {
+        // if (types[fldNum[i]].attrType == AttrType.attrString) {
+        // indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName,
+        // indName[i], types[fldNum[i]],
+        // str_sizes[i - c], selects, indexOnly);
+        // } else {
+        // c += 1;
+        // indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName,
+        // indName[i], types[fldNum[i]],
+        // (short) 0, selects, indexOnly);
+        // =======
         for (Entry<Integer, CondExpr[]> entry : condExprMap.entrySet()) {
             Integer column = entry.getKey(); // This is the column index
             CondExpr[] conditions = entry.getValue(); // This is the list of conditions for the column
 
             if (types[column].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]],
                         str_sizes[i - c], conditions, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]], (short) 0,
                         conditions, indexOnly);
-// >>>>>>> testing-all-col-index-scan
+                // >>>>>>> testing-all-col-index-scan
             }
 
             i++;
