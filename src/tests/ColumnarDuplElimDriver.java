@@ -11,6 +11,9 @@ import index.ColumnarIndexScan;
 import iterator.*;
 
 import java.util.ArrayList;
+import java.util.Map;
+
+import static tests.Query.createCondExprMap;
 
 public class ColumnarDuplElimDriver {
     private static final String FILESCAN = "FILE";
@@ -116,8 +119,9 @@ public class ColumnarDuplElimDriver {
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
+                Map<Integer, CondExpr[]> condExprMap = createCondExprMap(columnarFile, otherConstraints, otherConstraint);
                 for (int i = 0; i < 2; i++) {
-                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
+                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap));
                 }
 
             } else {

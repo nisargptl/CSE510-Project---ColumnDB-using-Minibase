@@ -1,6 +1,7 @@
 package tests;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import columnar.Columnarfile;
 import diskmgr.PCounter;
@@ -11,6 +12,8 @@ import global.TupleOrder;
 import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
+
+import static tests.Query.createCondExprMap;
 
 public class ColumnSortDriver {
 
@@ -128,9 +131,9 @@ public class ColumnSortDriver {
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
-
+                Map<Integer, CondExpr[]> condExprMap = createCondExprMap(columnarFile, otherConstraints, otherConstraint);
                 for (int i = 0; i < 2; i++) {
-                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
+                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap));
                 }
 
             } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
