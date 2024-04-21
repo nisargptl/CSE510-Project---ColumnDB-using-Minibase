@@ -1,5 +1,6 @@
 package tests;
 
+import columnar.Columnarfile;
 import global.AttrOperator;
 import global.AttrType;
 import iterator.CondExpr;
@@ -120,6 +121,52 @@ public class OperationUtils {
                     String name = getAttributeName(attributeValue);
                     conditionalExpression.operand2.symbol = new FldSpec(new RelSpec(RelSpec.outer), getColumnPositionInTargets(name, targetColumns) + 1);
                 }
+
+                if (j == orExpressions.length - 1) {
+                    conditionalExpression.next = null;
+                } else {
+                    conditionalExpression.next = new CondExpr();
+                    conditionalExpression = conditionalExpression.next;
+                }
+            }
+        }
+        condExprs[andExpressions.length] = null;
+
+        return condExprs;
+    }
+
+    public static CondExpr[] processEquiJoinConditionExpression(String expression, Columnarfile innerColumnarFile, Columnarfile outerColumnarFile) {
+        CondExpr[] condExprs;
+
+        if (expression.length() == 0) {
+            condExprs = new CondExpr[1];
+            condExprs[0] = null;
+
+            return condExprs;
+        }
+
+        String[] andExpressions = expression.split(" \\^ ");
+        condExprs = new CondExpr[andExpressions.length + 1];
+        for (int i = 0; i < andExpressions.length; i++) {
+            String temp = andExpressions[i].replace("(", "");
+            temp = temp.replace(")", "");
+            String[] orExpressions = temp.split(" v ");
+
+            condExprs[i] = new CondExpr();
+            CondExpr conditionalExpression = condExprs[i];
+            for (int j = 0; j < orExpressions.length; j++) {
+                String singleExpression = orExpressions[j].replace("[", "");
+                singleExpression = singleExpression.replace("]", "");
+                String[] expressionParts = singleExpression.split(" ");
+                String attribute1Name = expressionParts[0].split("\\.")[1];
+                String stringOperator = expressionParts[1];
+                String attribute2Name = expressionParts[2].split("\\.")[1];
+
+                conditionalExpression.type1 = new AttrType(AttrType.attrSymbol);
+                conditionalExpression.operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerColumnarFile.getAttributePosition(attribute1Name) + 1);
+                conditionalExpression.op = getOperatorForString(stringOperator);
+                conditionalExpression.type2 = new AttrType(AttrType.attrSymbol);
+                conditionalExpression.operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerColumnarFile.getAttributePosition(attribute2Name) + 1);
 
                 if (j == orExpressions.length - 1) {
                     conditionalExpression.next = null;
