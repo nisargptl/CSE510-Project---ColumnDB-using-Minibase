@@ -20,5 +20,5 @@ java BitmapEquiJoin COLUMNDB OUTERFILE INNERFILE OUTERCONST INNERCONST EQUICONST
 ## BITMAP EQUIJOIN TEST COMMANDS
 javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Query.java && javac -d out -cp src src/tests/BatchInsert.java && javac -d out -cp src src/tests/BitMapEquiJoin.java && java -cp out tests.BatchInsert sample_2.txt name name 4 1 && java -cp out tests.Index name name 3 BITMAP && java -cp out tests.Index name name 4 BITMAP && java -cp out tests.Index name name 4 CBITMAP && java -cp out tests.Index name name 3 CBITMAP
 java -cp out tests.Query name name name.3,name.4 "name.3 > 4" name.3,name.4 BITMAP,BITMAP "name.3 > 4" name.3,name.4 100 0
-java -cp out tests.Query name name name.3,name.4 "name.3 > 4" name.3,name.4 CITMAP,CBITMAP "name.3 > 4" name.3,name.4 100 0
+java -cp out tests.Query name name name.3,name.4 "name.3 > 4" name.3,name.4 CBITMAP,CBITMAP "name.3 > 4" name.3,name.4 100 0
 java -cp out tests.BitMapEquiJoin name name name "name.3 > 4" "name.4 < 2" "name.3 = name.4" name.3,name.4 100 100

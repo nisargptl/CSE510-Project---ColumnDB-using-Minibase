@@ -115,6 +115,8 @@ public class BitMapEquiJoin {
                 equiJoinConstraint,
                 innerColumnarConstraint, outerColumnarConstraint, opAttr);
 
+
+
         outer.close();
         inner.close();
     }
