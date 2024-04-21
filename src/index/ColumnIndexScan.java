@@ -124,7 +124,19 @@ public class ColumnIndexScan extends Iterator {
                 }
                 // todo: implement bitmap index case here
                 // (needs BitMapFileScan or implements something similar here)
-                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
+                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only, false);
+                // System.out.println(indScan.get_next().data);
+                break;
+            case IndexType.CBitMapIndex:
+                try {
+                    indFile = new BitMapFile(relName);
+                } catch (GetFileEntryException e) {
+                    throw new IndexException(e,
+                            "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
+                }
+                // todo: implement bitmap index case here
+                // (needs BitMapFileScan or implements something similar here)
+                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only, true);
                 // System.out.println(indScan.get_next().data);
                 break;
             case IndexType.None:
@@ -225,7 +237,7 @@ public class ColumnIndexScan extends Iterator {
     }
 
     public Tuple get_bm_next() throws IOException, IndexException {
-        if (index.indexType != IndexType.BitMapIndex || indScan == null) {
+        if (index.indexType != IndexType.BitMapIndex && index.indexType != IndexType.CBitMapIndex || indScan == null) {
             throw new IndexException("Index scan type is not bitmap or the scan is not initialized.");
         }
 

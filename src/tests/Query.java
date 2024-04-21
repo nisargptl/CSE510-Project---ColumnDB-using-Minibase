@@ -14,6 +14,7 @@ public class Query {
     private static final String FILESCAN = "FILE";
     private static final String COLUMNSCAN = "COLUMN";
     private static final String BITMAPSCAN = "BITMAP";
+    private static final String CBITMAPSCAN = "CBITMAP";
     private static final String BTREESCAN = "BTREE";
 
     public static void main(String[] args) throws Exception {
@@ -101,14 +102,17 @@ public class Query {
             } else if (scanTypes[0].equals(COLUMNSCAN)) {
                 it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0],
                         otherConstraint);
-            } else if (scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
+            } else if (scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN) || scanTypes[0].equals(CBITMAPSCAN)) {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
                 for (int i = 0; i < scanTypes.length; i++) {
                     if (scanTypes[i].equals(BITMAPSCAN)) {
                         indexType[i] = new IndexType(IndexType.BitMapIndex);
                         // indexName[i] = cf.getBMName();
-                    } else if (scanTypes[i].equals(BTREESCAN)) {
+                    } else if (scanTypes[i].equals(CBITMAPSCAN)) {
+                        indexType[i] = new IndexType(IndexType.CBitMapIndex);
+                    }
+                    else if (scanTypes[i].equals(BTREESCAN)) {
                         indexType[i] = new IndexType(IndexType.B_Index);
                         indexName[i] = cf.getBTName(i); // todo: why is this based on i?
                     } else {

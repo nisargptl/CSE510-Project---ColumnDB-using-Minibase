@@ -421,7 +421,7 @@ public class Columnarfile {
     }
 
     // todo
-    public List<String> getAvailableBM(int columnNo) throws Exception {
+    public List<String> getAvailableBM(int columnNo, boolean isCompressed) throws Exception {
         // System.out.println("BMMAP SIZE: " + BMMap.size());
         // Tuple tuple = new Tuple();
         // AttrType attrType = _ctype[columnNo - 1];
@@ -435,7 +435,8 @@ public class Columnarfile {
         String attrTypeName = attrType.toString();
 
         // Create the prefix to filter bitmap names
-        String prefix = "BM." + fname + "." + columnNo + "." + attrTypeName;
+        String indexType = isCompressed ? "CBM." : "BM.";
+        String prefix = indexType + fname + "." + columnNo + "." + attrTypeName;
 
         // get all bitmap names
         Set<String> allBitMapNames = bmDirectory.getBitmapNames();

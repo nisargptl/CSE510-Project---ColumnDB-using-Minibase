@@ -206,13 +206,13 @@ public class IndexUtils {
 	}
 
 	public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int columnNo, CondExpr[] selects,
-											boolean indexOnly) throws IndexException {
+											boolean indexOnly, boolean isCompressed) throws IndexException {
 		try {
 			List<BitmapFileScan> scans = new ArrayList<>();
 			Object value = null;
 			// Loop through available bitmap files for the specified column
 			// System.out.println("COLUMN NUMBER: " + columnNo);
-			for (String bmName : columnarFile.getAvailableBM(columnNo)) {
+			for (String bmName : columnarFile.getAvailableBM(columnNo, isCompressed)) {
 				AttrType columnAttrType = columnarFile.getAttrtypeforcolumn(columnNo);
 				if (columnAttrType.attrType == AttrType.attrInteger) {
 					// System.out.println("INTEGER");
