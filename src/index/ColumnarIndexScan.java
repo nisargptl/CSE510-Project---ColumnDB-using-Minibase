@@ -94,7 +94,7 @@ public class ColumnarIndexScan extends Iterator {
         try {
             Jtuple = new Tuple();
             AttrType[] Jtypes = new AttrType[noOutFlds];
-            System.out.println("num out: " + noOutFlds);
+            // System.out.println("num out: " + noOutFlds);
             short[] ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,
                     new AttrType[0], 0,
                     str_sizes, new short[0],
@@ -113,10 +113,7 @@ public class ColumnarIndexScan extends Iterator {
         boolean isResultTuplePopulated = false;
 
         for (ColumnIndexScan scan : indexScans) {
-            System.out.println("here1");
             Tuple tempTuple = scan.get_next();
-            System.out.println("ColumnarIndexScan");
-
             if (tempTuple == null)
                 continue;
             // int position = tempTuple.getIntFld(1); // Assuming the position is stored in

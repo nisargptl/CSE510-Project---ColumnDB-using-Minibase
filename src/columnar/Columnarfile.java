@@ -48,7 +48,7 @@ public class Columnarfile {
 
             if (pid == null) {
                 throw new Exception(
-                        "Columnar file " + _fileName + "does not exist! Please try again with a different CF name");
+                        "Columnar file " + _fileName + " does not exist! Please try again with a different CF name");
             }
 
             hf = new Heapfile(_fileName + ".hdr");
@@ -714,8 +714,8 @@ public class Columnarfile {
 
     public int getAttributePosition(String name) {
         name = fname + "." + name;
-        System.out.println(name);
-        System.out.println(columnMap.get(name));
+        // System.out.println(name);
+        // System.out.println(columnMap.get(name));
         return columnMap.get(name);
     }
 

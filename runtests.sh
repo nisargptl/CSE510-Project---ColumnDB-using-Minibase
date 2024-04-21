@@ -31,3 +31,5 @@ javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Quer
 
 ## combined for bitmap 
 javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Query.java && javac -d out -cp src src/tests/BatchInsert.java && java -cp out tests.BatchInsert sample_2.txt name name 4 1 && java -cp out tests.Index name name 3 BITMAP && java -cp out tests.Index name name 4 BITMAP
+# ColumnarDuplElimDriver:
+java -cp out tests.Query name name  name.1,name.2,name.3,name.4 "name.3 > -1" name.1,name.2 "FILE" " " name.1,name.2,name.3,name.4 100 0
