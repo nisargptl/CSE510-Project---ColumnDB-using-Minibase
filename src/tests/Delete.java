@@ -16,9 +16,6 @@ public class Delete {
     private static String BTREESCAN = "BTREE";
 
     public static void main(String args[]) throws Exception {
-        // Query Skeleton: COLUMNDB COLUMNFILE PROJECTION OTHERCONST SCANCOLS [SCANTYPE] [SCANCONST] TARGETCOLUMNS NUMBUF
-        // Example Query: testColumnDB columnarTable A,B,C "C = 5" A,B [BTREE,BITMAP] "(A = 5 v A = 6),(B > 7)" A,B,C 100
-        // In case no constraints need to be applied, pass "" as input.
         for (int i = 0; i <= 9; i++) {
             System.out.println(args[i]);
         }
@@ -32,7 +29,6 @@ public class Delete {
         String[] targetColumns = args[7].split(",");
         Integer bufferSize = Integer.parseInt(args[8]);
         String purge = args[9];
-//        Integer sortmem = Integer.parseInt(args[10]);
 
         String dbpath = OperationUtils.dbPath(columnDB);
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");

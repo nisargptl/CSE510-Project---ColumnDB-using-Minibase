@@ -98,7 +98,41 @@ public class Phase3Driver {
                     }
                     break;
                 case 4:
-                    // Code for performing deletion on a columnar file
+                    System.out.println("Enter the following parameters separated by a space \"columndbname columnarfilename projection\": ");
+                    try{
+                        String[] params;
+                        params = reader.readLine().split(" ");
+                        System.out.println("Column DB name: " + params[0]);
+                        System.out.println("Columnar file name: " + params[1]);
+                        System.out.println("Projection: " + params[2]);
+                        String constr, scancols, scantypes, scanconst, targetcols, numbuf, purge;
+                        Integer p;
+                        System.out.print("Enter Constraint: ");
+                        constr = reader.readLine();
+                        System.out.print("Enter the Scan Cols: ");
+                        scancols = reader.readLine();
+                        System.out.print("Enter Scan Type: ");
+                        scantypes = reader.readLine();
+                        System.out.print("Enter Scan constraint: ");
+                        scanconst = reader.readLine();
+                        System.out.print("Enter Target Columns: ");
+                        targetcols = reader.readLine();
+                        System.out.print("Enter Number of buffer frames: ");
+                        numbuf = reader.readLine();
+                        System.out.print("Enter Amount of sort memory: ");
+                        p = Integer.parseInt(reader.readLine());
+                        if(p == 1) {
+                            purge = "PURGE";
+                        } else {
+                            purge = "PU";
+                        }
+                        params = new String[]{params[0], params[1], params[2], constr, scancols, scantypes, scanconst, targetcols, numbuf, purge};
+
+                        Delete.main(params);
+                    }
+                    catch (IOException e) {
+                        System.out.println("IOException thrown at getInput!");
+                    }
                     break;
                 case 5:
                     // Code for performing Nested Loop Join operation
