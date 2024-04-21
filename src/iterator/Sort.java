@@ -63,6 +63,7 @@ public class Sort extends Iterator implements GlobalConst
           Exception
   {
     // don't know what will happen if n_R_runs > _n_pages
+    // System.out.println("_n_pages:"+_n_pages);
     if (n_R_runs > _n_pages) 
       throw new LowMemException("Sort.java: Not enough memory to sort in two passes."); 
 
@@ -657,7 +658,7 @@ public class Sort extends Iterator implements GlobalConst
       
       // generate runs
       Nruns = generate_runs(max_elems_in_heap, _in[_sort_fld-1], sortFldLen);
-      //      System.out.println("Generated " + Nruns + " runs");
+           System.out.println("Generated " + Nruns + " runs");
       
       // setup state to perform merge of runs. 
       // Open input buffers for all the input file
