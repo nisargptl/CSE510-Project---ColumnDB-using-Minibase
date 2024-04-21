@@ -1,6 +1,7 @@
 package columnar;
 
 import bitmap.BitMapFile;
+import bitmap.BitmapDirectory;
 import btree.IntegerKey;
 import btree.KeyDataEntry;
 import heap.*;
@@ -11,6 +12,7 @@ import btree.BTreeFile;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static tests.TestDriver.FAIL;
 import static tests.TestDriver.OK;
@@ -30,6 +32,8 @@ public class Columnarfile {
     HashMap<String, BitMapFile> BMMap = new HashMap<>();
     HashMap<String, BTreeFile> BTMap;
     List<String> bmName = new ArrayList<>();
+    // private static Set<String> allBitMapNames = new HashSet<String>();
+    BitmapDirectory bmDirectory = new BitmapDirectory("bitmap_directory.dat");
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
         Heapfile hf;
@@ -388,7 +392,9 @@ public class Columnarfile {
     public String getBMName(int columnNo, AttrType attrType, Object value) {
         // Convert the value to a string safe for inclusion in a filename.
         String valueString = convertValueToString(value);
-        String filename = "BM" + "." + fname + "." + columnNo + "." + attrType.toString() + "." + valueString;
+        String filename = "BM" + "." + fname + "." + columnNo + "." + attrType.toString() + "_" + valueString;
+        // allBitMapNames.add(filename);
+        bmDirectory.addBitmapName(filename);
         return filename;
     }
 
@@ -415,15 +421,35 @@ public class Columnarfile {
     }
 
     // todo
-    public String[] getAvailableBM(int columnNo) throws Exception {
+    public List<String> getAvailableBM(int columnNo) throws Exception {
         // System.out.println("BMMAP SIZE: " + BMMap.size());
-        Tuple tuple = new Tuple();
-        AttrType attrType = _ctype[columnNo - 1];
-        Object value = extractValueFromTuple(tuple, attrType);
-        String bitMapFileName = getBMName(columnNo, attrType, value);
+        // Tuple tuple = new Tuple();
+        // AttrType attrType = _ctype[columnNo - 1];
+        // Object value = extractValueFromTuple(tuple, attrType);
+        // String bitMapFileName = getBMName(columnNo, attrType, value);
 
-        bmName.add(bitMapFileName);
-        return bmName.toArray(new String[bmName.size()]);
+        // bmName.add(bitMapFileName);
+        // return bmName.toArray(new String[bmName.size()]);
+
+        AttrType attrType = _ctype[columnNo - 1];
+        String attrTypeName = attrType.toString();
+
+        // Create the prefix to filter bitmap names
+        String prefix = "BM." + fname + "." + columnNo + "." + attrTypeName;
+
+        // get all bitmap names
+        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
+        List<String> matchingBitmaps = new ArrayList<>();
+
+        if (allBitMapNames != null) {
+            for (String bmName : allBitMapNames) {
+                if (bmName.startsWith(prefix)) {
+                    matchingBitmaps.add(bmName);
+                }
+            }
+        }
+
+        return matchingBitmaps;
     }
 
     public boolean markTupleDeleted(int position) {
