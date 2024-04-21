@@ -28,7 +28,7 @@ java -cp out tests.Query name name  name.1,name.2,name.3,name.4 " " name.1,name.
 # javac -d out -cp src src/tests/ColumnSortTest.java
 # echo "Sleeping for 5 seconds..."
 # sleep 1
-# java -cp out tests.ColumnSortTest name name  name.1,name.2,name.3,name.4 " " name.1,name.2,name.3,name.4 "FILE" " " name.1,name.2,name.3,name.4 100 0 2 0
+# java -cp out tests.ColumnSortTest name name  name.1,name.2,name.3,name.4 " " name.1,name.2,name.3,name.4 "FILE" " " name.1,name.2,name.3,name.4 100 0 2 0 50
 
 
 
