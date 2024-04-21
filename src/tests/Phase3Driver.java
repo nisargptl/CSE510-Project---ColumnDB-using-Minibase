@@ -165,7 +165,7 @@ public class Phase3Driver {
                         System.out.print("Enter the buffer size: ");
                         bufsize = reader.readLine();
                         params = new String[]{params[0], params[1], params[2], params[3], outerconstr, outerscancols, outerscantypes, outerscanconstr, outertargetcols, innerconstr, innertargetcols, joinconstr, bufsize};
-
+                        for(int i = 0; i < params.length; i++) System.out.println(params[i]);
                         ColumnarNestedLoopJoinDriver.main(params);
                     }
                     catch (IOException e) {
