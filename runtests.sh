@@ -15,7 +15,7 @@ java -cp out tests.Query name name  name.1,name.2,name.3 "name.3 > 4" name.1,nam
 java -cp out tests.Query name name name.3 "name.3 = 4" name.3 BTREE "name.3 = 4" name.3 100 0
 
 java -cp out tests.Delete name name  name.1,name.2,name.3 "name.3 > 2" name.1,name.2 "FILE" "name.3 < 4" name.1,name.2,name.3 100 PURGE   
-
+java -cp out tests.Delete name name name.1,name.3 "name.1 = 'New_Hampshire'" name.3 FILE " " name.1,name.3 100 PU
 
 # for testing index scans
 javac -d out -cp src src/tests/BatchInsert.java     
