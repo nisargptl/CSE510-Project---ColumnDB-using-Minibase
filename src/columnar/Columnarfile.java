@@ -340,7 +340,7 @@ public class Columnarfile {
     }
 
     // BITMAP CREATION IMPLEMENTATION
-    public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
+    public boolean createAllBitMapIndexForColumn(int columnNo, boolean isCompressed) throws Exception {
         // Adjusted method to use class-level BMMap
         Scan columnScan = openColumnScan(columnNo - 1);
         RID rid = new RID();
@@ -358,13 +358,12 @@ public class Columnarfile {
             Object value = extractValueFromTuple(tuple, attrType); // You'll need to implement this
 
             // Use the value to determine the bitmap file name
-            String bitMapFileName = getBMName(columnNo, attrType, value); // Modify to include value
-            System.out.println("BITMAP FILE NAME: " + bitMapFileName);
+            String bitMapFileName = getBMName(columnNo, attrType, value, isCompressed); // Modify to include value
 
             // Ensure a bitmap file for each unique value
             BitMapFile bitMapFile = BMMap.computeIfAbsent(bitMapFileName, k -> {
                 try {
-                    return new BitMapFile(bitMapFileName, this, columnNo, attrType);
+                    return new BitMapFile(bitMapFileName, this, columnNo, attrType, isCompressed);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return null;
@@ -389,10 +388,11 @@ public class Columnarfile {
         return true;
     }
 
-    public String getBMName(int columnNo, AttrType attrType, Object value) {
+    public String getBMName(int columnNo, AttrType attrType, Object value, boolean isCompressed) {
         // Convert the value to a string safe for inclusion in a filename.
         String valueString = convertValueToString(value);
-        String filename = "BM" + "." + fname + "." + columnNo + "." + attrType.toString() + "_" + valueString;
+        String filePrefix = isCompressed ? "CBM" : "BM";
+        String filename = filePrefix + "." + fname + "." + columnNo + "." + attrType.toString() + "_" + valueString;
         // allBitMapNames.add(filename);
         bmDirectory.addBitmapName(filename);
         return filename;
