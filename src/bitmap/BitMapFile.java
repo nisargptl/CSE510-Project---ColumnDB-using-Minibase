@@ -59,16 +59,6 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     return headerPage;
   }
 
-  public Boolean insert(int position) throws Exception {
-    setValueAtPosition(true, position);
-    return Boolean.TRUE;
-  }
-
-  public Boolean delete(int position) throws Exception {
-    setValueAtPosition(false, position);
-    return Boolean.TRUE;
-  }
-
   private PageId get_file_entry(String filename) throws GetFileEntryException {
     try {
       return SystemDefs.JavabaseDB.get_file_entry(filename);
@@ -85,27 +75,11 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     }
   }
 
-  private void delete_file_entry(String filename) throws DeleteFileEntryException {
-    try {
-      SystemDefs.JavabaseDB.delete_file_entry(filename);
-    } catch (Exception e) {
-      throw new DeleteFileEntryException(e, "");
-    }
-  }
-
   private void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
     try {
       SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
     } catch (Exception e) {
       throw new UnpinPageException(e, "");
-    }
-  }
-
-  private void freePage(PageId pageno) throws FreePageException {
-    try {
-      SystemDefs.JavabaseBM.freePage(pageno);
-    } catch (Exception e) {
-      throw new FreePageException(e, "");
     }
   }
 
@@ -116,6 +90,22 @@ public class BitMapFile extends IndexFile implements GlobalConst {
       return page;
     } catch (Exception e) {
       throw new PinPageException(e, "");
+    }
+  }
+
+  public BitmapFileScan new_scan() throws Exception {
+    return new BitmapFileScan(this);
+  }
+
+  public Boolean insert(int position) throws Exception {
+    setValueAtPosition(true, position);
+    return Boolean.TRUE;
+  }
+
+  public void scanClose() throws Exception {
+    if (headerPage != null) {
+      SystemDefs.JavabaseBM.unpinPage(headerPageId, false);
+      headerPage = null;
     }
   }
 
@@ -182,13 +172,6 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     }
   }
 
-  public int getTotalPositions() throws Exception {
-    if (headerPage == null) {
-      throw new Exception("Bitmap header page is null");
-    }
-    return headerPage.getCounter();
-  }
-
   private PageId getNewBMPage(PageId prevPageId) throws Exception {
     Page apage = new Page();
     PageId pageId = newPage(apage, 1);
@@ -209,15 +192,32 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     return tmpId;
   }
 
-  public void scanClose() throws Exception {
-    if (headerPage != null) {
-      SystemDefs.JavabaseBM.unpinPage(headerPageId, false);
-      headerPage = null;
+  public Boolean delete(int position) throws Exception {
+    setValueAtPosition(false, position);
+    return Boolean.TRUE;
+  }
+
+  public int getTotalPositions() throws Exception {
+    if (headerPage == null) {
+      throw new Exception("Bitmap header page is null");
+    }
+    return headerPage.getCounter();
+  }
+
+  private void delete_file_entry(String filename) throws DeleteFileEntryException {
+    try {
+      SystemDefs.JavabaseDB.delete_file_entry(filename);
+    } catch (Exception e) {
+      throw new DeleteFileEntryException(e, "");
     }
   }
 
-  public BitmapFileScan new_scan() throws Exception {
-    return new BitmapFileScan(this);
+  private void freePage(PageId pageno) throws FreePageException {
+    try {
+      SystemDefs.JavabaseBM.freePage(pageno);
+    } catch (Exception e) {
+      throw new FreePageException(e, "");
+    }
   }
 
   @Override
