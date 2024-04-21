@@ -66,7 +66,7 @@ public class Phase3Driver {
                     break;
                 case 3:
                     // Code for querying data in a columnar file
-                    System.out.println("Enter the following parameters separated by a space \"columndbname columnarfilename projection constraint scancols [scantype] [scanconst] targetcolumns numbuf sortmem\": ");
+                    System.out.println("Enter the following parameters separated by a space \"columndbname columnarfilename projection constraint scancols scantypes scanconst targetcolumns numbuf sortmem\": ");
                     try{
                         String[] params;
                         params= reader.readLine().split(" ");
