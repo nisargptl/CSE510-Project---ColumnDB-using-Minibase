@@ -58,8 +58,8 @@ public class BT implements GlobalConst {
         } else if ((key1 instanceof StringKey) && (key2 instanceof StringKey)) {
             return ((StringKey) key1).getKey().compareTo(((StringKey) key2).getKey());
         } else {
-            System.out.println(key1);
-            System.out.println(key2);
+            // System.out.println(key1);
+            // System.out.println(key2);
             throw new KeyNotMatchException(null, "key types do not match");
         }
     }

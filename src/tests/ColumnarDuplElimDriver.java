@@ -136,6 +136,7 @@ public class ColumnarDuplElimDriver {
                 } else {
 //                    it.get(0).delete_next();
                     sortTuples.add(result);
+                    result.print(opAttr);
                 }
                 cnt++;
                 // result.print(opAttr);

@@ -68,7 +68,6 @@ public class Query {
         int[] scanCols = new int[scanColumns.length];
 
         for (int i = 0; i < scanColumns.length; i++) {
-            System.out.println(scanColumns[i]);
             if (!scanColumns[i].equals("")) {
                 String attribute = OperationUtils.getAttributeName(scanColumns[i]);
                 scanCols[i] = cf.getAttributePosition(attribute); // todo changed from

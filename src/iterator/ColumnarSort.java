@@ -627,10 +627,6 @@ public class ColumnarSort extends Iterator implements GlobalConst {
         
     }
 
-    public int getPasses() {
-        return passes;
-    }
-
     /**
      * Cleaning up, including releasing buffer pages from the buffer pool
      * and removing temporary files from the database.
@@ -639,7 +635,6 @@ public class ColumnarSort extends Iterator implements GlobalConst {
      * @throws SortException something went wrong in the lower layer.
      */
     public void close() throws SortException, IOException {
-        // clean up
         if (!closeFlag) {
 
             try {

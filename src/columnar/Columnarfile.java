@@ -707,8 +707,8 @@ public class Columnarfile {
 
     public int getAttributePosition(String name) {
         name = fname + "." + name;
-        System.out.println(name);
-        System.out.println(columnMap.get(name));
+        // System.out.println(name);
+        // System.out.println(columnMap.get(name));
         return columnMap.get(name);
     }
 

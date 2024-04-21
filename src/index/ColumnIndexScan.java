@@ -147,7 +147,7 @@ public class ColumnIndexScan extends Iterator {
                 // but not symbol op symbol || value op value
                 try {
                     System.out.println("");
-                    System.out.println(indName);
+                    // System.out.println(indName);
                     System.out.println("");
                     indFile = new BTreeFile(indName);
                 } catch (Exception e) {
