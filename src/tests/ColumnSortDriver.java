@@ -54,8 +54,15 @@ public class ColumnSortDriver {
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
+<<<<<<< HEAD
     private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, 
     int sortField, int sortOrder,int BufferPagesAvailable) throws Exception {
+=======
+    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, 
+    String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder,
+    int BufferPagesAvailable)
+     throws Exception {
+>>>>>>> aa3cf9f098c1ed2b14bdb1f0d29c6770f1491fb5
         Columnarfile cf = new Columnarfile(columnarFile);
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
@@ -133,10 +140,18 @@ public class ColumnSortDriver {
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
+<<<<<<< HEAD
                 Map<Integer, CondExpr[]> condExprMap = createCondExprMap(columnarFile, otherConstraints, otherConstraint);
                 for (int i = 0; i < 2; i++) {
                     it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap));
                 }
+=======
+
+                // it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
+                // for (int i = 0; i < 2; i++) {
+                //     it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
+                // }
+>>>>>>> aa3cf9f098c1ed2b14bdb1f0d29c6770f1491fb5
 
             } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
 
@@ -153,11 +168,12 @@ public class ColumnSortDriver {
                     sortTuples.add(result);
                 }
                 cnt++;
-                // result.print(opAttr);
+                result.print(opAttr);
             }
 
             cnt=0;
             Boolean deleted = true;
+            cnt=0;
             while (deleted) {
                 // System.out.println("deleting_goin_on");
                 deleted = it.get(1).delete_next();
