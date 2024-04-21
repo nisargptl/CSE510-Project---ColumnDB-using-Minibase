@@ -13,7 +13,7 @@ import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
 
-public class ColumnSortTest {
+public class ColumnSortDriver {
 
     private static final String FILESCAN = "FILE";
     private static final String COLUMNSCAN = "COLUMN";
