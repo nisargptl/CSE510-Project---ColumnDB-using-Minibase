@@ -132,7 +132,7 @@ public class ColumnarDuplElim extends Iterator {
 
         // Now copy the the TempTuple2 (new o/p tuple) into TempTuple1.
         TempTuple1.tupleCopy(TempTuple2);
-        Jtuple.tupleCopy(TempTuple2);
+        Jtuple = new Tuple(TempTuple2);
         return Jtuple;
     }
 
