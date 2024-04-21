@@ -172,7 +172,7 @@ public class ColumnIndexScan extends Iterator {
                 // only need to return the key
 
                 AttrType[] attrType = new AttrType[1];
-                short[] s_sizes = new short[0];
+                short[] s_sizes = new short[1];
 
                 if (_type.attrType == AttrType.attrInteger) {
                     attrType[0] = new AttrType(AttrType.attrInteger);
