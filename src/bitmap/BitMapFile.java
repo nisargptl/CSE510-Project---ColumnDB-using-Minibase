@@ -16,6 +16,7 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
   private final String fileName;
+  private boolean isCompressed;
 
   public BitMapFile(String filename) throws Exception {
     this.fileName = filename;
@@ -26,9 +27,11 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     headerPage = new BitMapHeaderPage(headerPageId);
   }
 
-  public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, AttrType attrType)
-          throws Exception {
+  public BitMapFile(String filename, Columnarfile columnarFile, int columnNo, AttrType attrType, boolean isCompressed)
+      throws Exception {
     this.fileName = filename;
+    this.isCompressed = isCompressed;
+
     headerPageId = get_file_entry(filename);
     if (headerPageId == null) {
       headerPage = new BitMapHeaderPage();
@@ -44,7 +47,6 @@ public class BitMapFile extends IndexFile implements GlobalConst {
       headerPage = new BitMapHeaderPage(headerPageId);
     }
   }
-
 
   public void close() throws Exception {
     if (headerPage != null) {
@@ -145,29 +147,44 @@ public class BitMapFile extends IndexFile implements GlobalConst {
         pageCounter++;
         position -= BMPage.NUM_POSITIONS_IN_A_PAGE;
       }
+
       PageId bmPageId = headerPage.get_rootId();
       Page page = pinPage(bmPageId);
       pinnedPages.add(bmPageId);
       BMPage bmPage = new BMPage(page);
-      for (int i = 1; i < pageCounter; i++) {
-        bmPageId = bmPage.getNextPage();
-        if (bmPageId.pid == BMPage.INVALID_PAGE) {
-          PageId newPageId = getNewBMPage(bmPage.getCurPage());
-          pinnedPages.add(newPageId);
-          bmPage.setNextPage(newPageId);
-          bmPageId = newPageId;
-        }
-        page = pinPage(bmPageId);
-        bmPage = new BMPage(page);
+
+      byte[] currData;
+      if (this.isCompressed) {
+        currData = CBitMapPage.decodeRLE(bmPage.getBMpageArray());
+      } else {
+        currData = bmPage.getBMpageArray();
       }
-      byte[] currData = bmPage.getBMpageArray();
-      int bytoPos = position/8;
-      int bitPos = position%8;
-      if(set)
-        currData[bytoPos] |= (1<<bitPos);
-      else
-        currData[bytoPos] &= ~(1<<bitPos);
-      bmPage.writeBMPageArray(currData);
+
+      if (currData == null || currData.length == 0) {
+        currData = new byte[(position / 8) + 1];  // Ensure there is enough space
+      }
+
+      int bytePos = position / 8;
+      if (bytePos >= currData.length) {
+        byte[] newCurrData = new byte[bytePos + 1];
+        System.arraycopy(currData, 0, newCurrData, 0, currData.length);
+        currData = newCurrData;
+      }
+
+      int bitPos = position % 8;
+      if (set) {
+        currData[bytePos] |= (1 << bitPos);
+      } else {
+        currData[bytePos] &= ~(1 << bitPos);
+      }
+
+      if (this.isCompressed) {
+        byte[] newRleData = CBitMapPage.encodeRLE(currData);
+        bmPage.writeBMPageArray(newRleData);
+      } else {
+        bmPage.writeBMPageArray(currData);
+      }
+
       if (bmPage.getCounter() < position + 1) {
         bmPage.updateCounter((short) (position + 1));
       }
@@ -180,6 +197,13 @@ public class BitMapFile extends IndexFile implements GlobalConst {
     for (PageId pinnedPage : pinnedPages) {
       unpinPage(pinnedPage, true);
     }
+  }
+
+  public int getTotalPositions() throws Exception {
+    if (headerPage == null) {
+      throw new Exception("Bitmap header page is null");
+    }
+    return headerPage.getCounter();
   }
 
   private PageId getNewBMPage(PageId prevPageId) throws Exception {
@@ -214,12 +238,18 @@ public class BitMapFile extends IndexFile implements GlobalConst {
   }
 
   @Override
-  public void insert(KeyClass data, RID rid) throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException, ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException, DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
+  public void insert(KeyClass data, RID rid)
+      throws KeyTooLongException, KeyNotMatchException, LeafInsertRecException, IndexInsertRecException,
+      ConstructPageException, UnpinPageException, PinPageException, NodeNotMatchException, ConvertException,
+      DeleteRecException, IndexSearchException, IteratorException, LeafDeleteException, InsertException, IOException {
     System.out.println("Insert function");
   }
 
   @Override
-  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException, RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException, FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException, IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
+  public boolean Delete(KeyClass data, RID rid) throws DeleteFashionException, LeafRedistributeException,
+      RedistributeException, InsertRecException, KeyNotMatchException, UnpinPageException, IndexInsertRecException,
+      FreePageException, RecordNotFoundException, PinPageException, IndexFullDeleteException, LeafDeleteException,
+      IteratorException, ConstructPageException, DeleteRecException, IndexSearchException, IOException {
     return false;
   }
 }

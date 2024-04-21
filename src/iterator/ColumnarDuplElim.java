@@ -22,7 +22,7 @@ public class ColumnarDuplElim extends Iterator {
 
     private final AttrType sortFldType;
     private int sortFldLen;
-    private final Tuple Jtuple;
+    private Tuple Jtuple;
 
     private Tuple TempTuple1, TempTuple2;
 
@@ -76,7 +76,7 @@ public class ColumnarDuplElim extends Iterator {
         TupleOrder order = new TupleOrder(TupleOrder.Ascending);
         if (!inp_sorted) {
             try {
-                _am = new ColumnarSort(in, len_in, s_sizes, am, 1, order, amt_of_mem);
+                _am = new ColumnarSort(in, len_in, s_sizes, am, 1, order, 100);
             } catch (SortException e) {
                 e.printStackTrace();
                 throw new DuplElimException(e, "SortException is caught by DuplElim.java");
@@ -132,7 +132,7 @@ public class ColumnarDuplElim extends Iterator {
 
         // Now copy the the TempTuple2 (new o/p tuple) into TempTuple1.
         TempTuple1.tupleCopy(TempTuple2);
-        Jtuple.tupleCopy(TempTuple2);
+        Jtuple = new Tuple(TempTuple2);
         return Jtuple;
     }
 

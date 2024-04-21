@@ -223,13 +223,9 @@ public class Heapfile implements Filetype, GlobalConst {
 
         Page apage = new Page();
         _firstDirPageId = null;
-        System.out.println("_ftype: " + _ftype);
-        System.out.println("ORDINARY: " + ORDINARY);
-        System.out.println("_fileName: " + _fileName);
 
         if (_ftype == ORDINARY && _fileName != null) {
             _firstDirPageId = get_file_entry(_fileName);
-            System.out.println("_firstDirPageId: " + _firstDirPageId);
         }
 
         if (_firstDirPageId == null) {

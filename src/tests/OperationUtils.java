@@ -103,7 +103,7 @@ public class OperationUtils {
                 singleExpression = singleExpression.replace("]", "");
                 String[] expressionParts = singleExpression.split(" ");
                 String attributeName = getAttributeName(expressionParts[0]);
-                System.out.println("ATTR: " + attributeName);
+                // System.out.println("ATTR: " + attributeName);
                 String stringOperator = expressionParts[1];
                 String attributeValue = expressionParts[2];
 
@@ -227,11 +227,11 @@ public class OperationUtils {
     }
 
     public static int getColumnPositionInTargets(String columnName, String[] targetColumns) throws Exception {
-        System.out.println("Column Name " + columnName);
+        // System.out.println("Column Name " + columnName);
         System.out.println();
-        for(int i = 0; i < targetColumns.length; i++) {
-            System.out.println("target column " + i + targetColumns[i]);
-        }
+        // for(int i = 0; i < targetColumns.length; i++) {
+        //     // System.out.println("target column " + i + targetColumns[i]);
+        // }
         for(int i = 0; i < targetColumns.length; i++){
             String targetColumn;
             if(targetColumns[i].split("\\.").length == 2){
@@ -241,14 +241,14 @@ public class OperationUtils {
             }
             String[] columnNames = columnName.split("\\.");
             if(columnNames.length == 3){
-                System.out.println("HERE");
+                // System.out.println("HERE");
                 columnName = columnNames[2];
             } else if (columnNames.length == 2) {
                 columnName = columnNames[1];
             } else {
                 columnName = columnNames[0];
             }
-            System.out.println("TARGET" + targetColumn + " " + columnNames[0]);
+            // System.out.println("TARGET" + targetColumn + " " + columnNames[0]);
             if(columnName.equals(targetColumn))
                 return i;
         }

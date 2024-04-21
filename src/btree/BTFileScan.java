@@ -89,8 +89,13 @@ public class BTFileScan  extends IndexFileScan
     }
   }
 
+    @Override
+    public void close() throws Exception {
+        System.out.println("Implemement close function");
+    }
 
-  /**
+
+    /**
    * Delete currently-being-scanned(i.e., just scanned)
    * data entry.
    *@exception ScanDeleteException  delete error when scan

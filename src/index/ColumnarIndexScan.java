@@ -59,19 +59,32 @@ public class ColumnarIndexScan extends Iterator {
         int i = 0;
         indexScans = new ColumnIndexScan[condExprMap.size()];
 
+        // <<<<<<< getBM-hardcoded
+        // for (int i = 0; i < fldNum.length - 1; i++) {
+        // if (types[fldNum[i]].attrType == AttrType.attrString) {
+        // indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName,
+        // indName[i], types[fldNum[i]],
+        // str_sizes[i - c], selects, indexOnly);
+        // } else {
+        // c += 1;
+        // indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName,
+        // indName[i], types[fldNum[i]],
+        // (short) 0, selects, indexOnly);
+        // =======
         for (Entry<Integer, CondExpr[]> entry : condExprMap.entrySet()) {
             Integer column = entry.getKey(); // This is the column index
             CondExpr[] conditions = entry.getValue(); // This is the list of conditions for the column
 
             if (types[column].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]],
                         str_sizes[i - c], conditions, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]], (short) 0,
                         conditions, indexOnly);
+                // >>>>>>> testing-all-col-index-scan
             }
 
             i++;
@@ -81,7 +94,7 @@ public class ColumnarIndexScan extends Iterator {
         try {
             Jtuple = new Tuple();
             AttrType[] Jtypes = new AttrType[noOutFlds];
-            System.out.println("num out: " + noOutFlds);
+            // System.out.println("num out: " + noOutFlds);
             short[] ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds,
                     new AttrType[0], 0,
                     str_sizes, new short[0],
@@ -100,10 +113,7 @@ public class ColumnarIndexScan extends Iterator {
         boolean isResultTuplePopulated = false;
 
         for (ColumnIndexScan scan : indexScans) {
-            System.out.println("here1");
             Tuple tempTuple = scan.get_next();
-            System.out.println("ColumnarIndexScan");
-
             if (tempTuple == null)
                 continue;
             // int position = tempTuple.getIntFld(1); // Assuming the position is stored in
