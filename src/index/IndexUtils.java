@@ -139,15 +139,39 @@ public class IndexUtils {
 			AttrType type;
 
 			if (selects[0].type1.attrType != AttrType.attrSymbol) {
+				if (selects[0].op.attrOperator == AttrOperator.aopGT) {
+					selects[0].operand1.integer++;
+				}
+				if (selects[0].op.attrOperator == AttrOperator.aopLT) {
+					selects[0].operand1.integer--;
+				}
 				key1 = getValue(selects[0], selects[0].type1, 1);
 				type = selects[0].type1;
 			} else {
+				if (selects[0].op.attrOperator == AttrOperator.aopGT) {
+					selects[0].operand2.integer++;
+				}
+				if (selects[0].op.attrOperator == AttrOperator.aopLT) {
+					selects[0].operand2.integer--;
+				}
 				key1 = getValue(selects[0], selects[0].type2, 2);
 				type = selects[0].type2;
 			}
 			if (selects[1].type1.attrType != AttrType.attrSymbol) {
+				if (selects[1].op.attrOperator == AttrOperator.aopGT) {
+					selects[1].operand1.integer++;
+				}
+				if (selects[1].op.attrOperator == AttrOperator.aopLT) {
+					selects[1].operand1.integer--;
+				}
 				key2 = getValue(selects[1], selects[1].type1, 1);
 			} else {
+				if (selects[1].op.attrOperator == AttrOperator.aopGT) {
+					selects[1].operand2.integer++;
+				}
+				if (selects[1].op.attrOperator == AttrOperator.aopLT) {
+					selects[1].operand2.integer--;
+				}
 				key2 = getValue(selects[1], selects[1].type2, 2);
 			}
 

@@ -10,6 +10,11 @@ import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 public class Query {
 
     private static final String FILESCAN = "FILE";
@@ -132,11 +137,14 @@ public class Query {
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
 
+                Map<Integer, CondExpr[]> condExprMap = createCondExprMap(columnarFile, otherConstraints,
+                        otherConstraint);
+
                 it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes,
-                        scanColumns.length, projection.length, projectionList, otherConstraint, true);
+                        scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap);
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
-            System.out.println("here");
+            // System.out.println("here");
             int cnt = 0;
             while (true) {
                 // System.out.println(cnt);
@@ -157,5 +165,42 @@ public class Query {
         } finally {
             it.close();
         }
+    }
+
+    private static Map<Integer, CondExpr[]> createCondExprMap(String relName, String conditions,
+            CondExpr[] scanConstraint) {
+        Map<Integer, CondExpr[]> condExprMap = new HashMap<>();
+        String[] condition = conditions.split(" and | or");
+
+        for (int i = 0; i < condition.length; i++) {
+            int scanCol = Integer.parseInt(condition[i].split(" > | < | >= | <= | != | = ")[0].split(relName + ".")[1])
+                    - 1;
+
+            CondExpr newCondExpr = scanConstraint[i];
+            if (condExprMap.containsKey(scanCol)) {
+                // If there's already a CondExpr for this column, find the end of the chain and
+                // append the new one
+                CondExpr[] lastCondExpr = condExprMap.get(scanCol);
+                lastCondExpr[lastCondExpr.length - 2].next = newCondExpr;
+                // create a new array of CondExpr
+                CondExpr[] newScanConstraint = new CondExpr[lastCondExpr.length + 1];
+                for (int j = 0; j < lastCondExpr.length - 1; j++) {
+                    newScanConstraint[j] = lastCondExpr[j];
+                }
+                newScanConstraint[lastCondExpr.length - 1] = newCondExpr;
+                // pop the old one and replace it with the new one
+                condExprMap.put(scanCol, newScanConstraint);
+            } else {
+                // If there is no CondExpr for this column, put the new one in the map
+                CondExpr[] newScanConstraint = new CondExpr[2];
+                for (int j = 0; j < newScanConstraint.length - 1; j++) {
+                    newScanConstraint[j] = newCondExpr;
+                }
+                // pop the old one and replace it with the new one
+                condExprMap.put(scanCol, newScanConstraint);
+            }
+        }
+
+        return condExprMap;
     }
 }
