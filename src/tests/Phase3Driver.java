@@ -66,16 +66,32 @@ public class Phase3Driver {
                     break;
                 case 3:
                     // Code for querying data in a columnar file
-                    System.out.println("Enter the following parameters separated by a space \"columndbname columnarfilename projection constraint scancols scantypes scanconst targetcolumns numbuf sortmem\": ");
+                    System.out.println("Enter the following parameters separated by a space \"columndbname columnarfilename projection\": ");
                     try{
                         String[] params;
-                        params= reader.readLine().split(" ");
+                        params = reader.readLine().split(" ");
                         System.out.println("Column DB name: " + params[0]);
                         System.out.println("Columnar file name: " + params[1]);
-                        System.out.println("column number: " + params[2]);
-                        System.out.println("Index type: " + params[3]);
+                        System.out.println("Projection: " + params[2]);
+//                        constraint scancols scantypes scanconst targetcolumns numbuf sortmem
+                        String constr, scancols, scantypes, scanconst, targetcols, numbuf, sortmem;
+                        System.out.print("Enter Constraint: ");
+                        constr = reader.readLine();
+                        System.out.print("Enter the Scan Cols: ");
+                        scancols = reader.readLine();
+                        System.out.print("Enter Scan Type: ");
+                        scantypes = reader.readLine();
+                        System.out.print("Enter Scan constraint: ");
+                        scanconst = reader.readLine();
+                        System.out.print("Enter Target Columns: ");
+                        targetcols = reader.readLine();
+                        System.out.print("Enter Number of buffer frames: ");
+                        numbuf = reader.readLine();
+                        System.out.print("Enter Amount of sort memory: ");
+                        sortmem = reader.readLine();
+                        params = new String[]{params[0], params[1], params[2], constr, scancols, scantypes, scanconst, targetcols, numbuf, sortmem};
 
-                        Index.main(params);
+                        Query.main(params);
                     }
                     catch (IOException e) {
                         System.out.println("IOException thrown at getInput!");
