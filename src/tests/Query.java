@@ -10,6 +10,11 @@ import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 public class Query {
 
     private static final String FILESCAN = "FILE";
@@ -85,32 +90,32 @@ public class Query {
             String attribute = OperationUtils.getAttributeName(targetColumns[i]);
             targets[i] = (short) cf.getAttributePosition(attribute);
         }
-       
 
         CondExpr[] otherConstraint = OperationUtils.processRawConditionExpression(otherConstraints, targetColumns);
 
         CondExpr[][] scanConstraint = new CondExpr[scanTypes.length][1];
-        
+
         for (int i = 0; i < scanTypes.length; i++) {
-        scanConstraint[i] =
-        OperationUtils.processRawConditionExpression(scanConstraints[i]);
+            scanConstraint[i] = OperationUtils.processRawConditionExpression(scanConstraints[i]);
         }
         cf.close();
         Iterator it = null;
         try {
-            if (scanTypes[0].equals(FILESCAN)) {               
+            if (scanTypes[0].equals(FILESCAN)) {
                 it = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
-            } 
-           else if (scanTypes[0].equals(COLUMNSCAN)) {
-                Iterator it1 = new ColumnarFileScan(columnarFile, projectionList, targets, otherConstraint);
-                // it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
-                // it=new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it1, 2, new TupleOrder(0), 50);
-                it = new ColumnarDuplElim(cf.getAllAttrTypes(), cf.numColumns, cf.getStrSize(), it1, 10, false);
-            }
-            else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
-        //    } else if (scanTypes[0].equals(COLUMNSCAN)) {
-        //        it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0], otherConstraint);
-            // } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
+            } else if (scanTypes[0].equals(COLUMNSCAN)) {
+                // Iterator it1 = new ColumnarFileScan(columnarFile, projectionList, targets,
+                // otherConstraint);
+                it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList, targets, scanConstraint[0],
+                        otherConstraint);
+                // it=new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns,
+                // cf.getAllAttrSizes(), it1, 2, new TupleOrder(0), 50);
+            } else if (scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN)) {
+                // } else if (scanTypes[0].equals(COLUMNSCAN)) {
+                // it = new ColumnarColumnScan(columnarFile, scanCols[0], projectionList,
+                // targets, scanConstraint[0], otherConstraint);
+                // } else if(scanTypes[0].equals(BTREESCAN) || scanTypes[0].equals(BITMAPSCAN))
+                // {
                 IndexType[] indexType = new IndexType[scanTypes.length];
                 String[] indexName = new String[scanTypes.length];
                 for (int i = 0; i < scanTypes.length; i++) {
@@ -131,10 +136,14 @@ public class Query {
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
 
-                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true);
+                Map<Integer, CondExpr[]> condExprMap = createCondExprMap(columnarFile, otherConstraints,
+                        otherConstraint);
+
+                it = new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes,
+                        scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap);
             } else
                 throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
-            System.out.println("here");
+            // System.out.println("here");
             int cnt = 0;
             while (true) {
                 // System.out.println(cnt);
@@ -155,5 +164,42 @@ public class Query {
         } finally {
             it.close();
         }
+    }
+
+    private static Map<Integer, CondExpr[]> createCondExprMap(String relName, String conditions,
+            CondExpr[] scanConstraint) {
+        Map<Integer, CondExpr[]> condExprMap = new HashMap<>();
+        String[] condition = conditions.split(" and | or");
+
+        for (int i = 0; i < condition.length; i++) {
+            int scanCol = Integer.parseInt(condition[i].split(" > | < | >= | <= | != | = ")[0].split(relName + ".")[1])
+                    - 1;
+
+            CondExpr newCondExpr = scanConstraint[i];
+            if (condExprMap.containsKey(scanCol)) {
+                // If there's already a CondExpr for this column, find the end of the chain and
+                // append the new one
+                CondExpr[] lastCondExpr = condExprMap.get(scanCol);
+                lastCondExpr[lastCondExpr.length - 2].next = newCondExpr;
+                // create a new array of CondExpr
+                CondExpr[] newScanConstraint = new CondExpr[lastCondExpr.length + 1];
+                for (int j = 0; j < lastCondExpr.length - 1; j++) {
+                    newScanConstraint[j] = lastCondExpr[j];
+                }
+                newScanConstraint[lastCondExpr.length - 1] = newCondExpr;
+                // pop the old one and replace it with the new one
+                condExprMap.put(scanCol, newScanConstraint);
+            } else {
+                // If there is no CondExpr for this column, put the new one in the map
+                CondExpr[] newScanConstraint = new CondExpr[2];
+                for (int j = 0; j < newScanConstraint.length - 1; j++) {
+                    newScanConstraint[j] = newCondExpr;
+                }
+                // pop the old one and replace it with the new one
+                condExprMap.put(scanCol, newScanConstraint);
+            }
+        }
+
+        return condExprMap;
     }
 }

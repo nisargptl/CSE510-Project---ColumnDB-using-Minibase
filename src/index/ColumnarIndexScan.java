@@ -8,6 +8,9 @@ import iterator.*;
 import heap.*;
 import java.io.*;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import columnar.*;
 
@@ -40,7 +43,8 @@ public class ColumnarIndexScan extends Iterator {
             int noOutFlds,
             FldSpec[] outFlds,
             CondExpr[] selects,
-            boolean indexOnly) throws Exception {
+            boolean indexOnly,
+            Map<Integer, CondExpr[]> condExprMap) throws Exception {
         this.types = types;
         this.str_sizes = str_sizes;
         this.noInFlds = noInFlds;
@@ -52,15 +56,25 @@ public class ColumnarIndexScan extends Iterator {
         // Assuming columnarfile provides access to the columnar storage.
         this.columnarfile = new Columnarfile(relName);
         int c = 0;
-        indexScans = new ColumnIndexScan[fldNum.length - 1];
+        int i = 0;
+        indexScans = new ColumnIndexScan[condExprMap.size()];
 
-        for (int i = 0; i < fldNum.length - 1; i++) {
-            if (types[fldNum[i]].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i]], str_sizes[i - c], selects, indexOnly);
+        for (Entry<Integer, CondExpr[]> entry : condExprMap.entrySet()) {
+            Integer column = entry.getKey(); // This is the column index
+            CondExpr[] conditions = entry.getValue(); // This is the list of conditions for the column
+
+            if (types[column].attrType == AttrType.attrString) {
+                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                        types[fldNum[i]],
+                        str_sizes[i - c], conditions, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i], types[fldNum[i]], (short) 0, selects, indexOnly);
+                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                        types[fldNum[i]], (short) 0,
+                        conditions, indexOnly);
             }
+
+            i++;
         }
 
         // Prepare a tuple template for projections.
