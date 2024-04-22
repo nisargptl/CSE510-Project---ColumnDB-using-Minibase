@@ -29,15 +29,15 @@ public class Index {
     private static void runInterface(String columnarFile, String num, String indexType) throws Exception {
        Columnarfile cf = new Columnarfile(columnarFile);
 
-       if (indexType.equals("BITMAP")) {
-           cf.createAllBitMapIndexForColumn(Integer.parseInt(num), false);
-           //System.out.println("no bitmap");
-       } else if (indexType.equals("CBITMAP")) {
-           cf.createAllBitMapIndexForColumn(Integer.parseInt(num), true);
-       }
-       else {
-           cf.createBtreeIndex(Integer.parseInt(num));
-       }
+        if (indexType.equals("BITMAP")) {
+            cf.createAllBitMapIndexForColumn(Integer.parseInt(num), false);
+            //System.out.println("no bitmap");
+        } else if (indexType.equals("CBITMAP")) {
+            cf.createAllBitMapIndexForColumn(Integer.parseInt(num), true);
+        }
+        else {
+            cf.createBtreeIndex(Integer.parseInt(num));
+        }
        cf.close();
 
         System.out.println(indexType + " created successfully on "+columnarFile+"."+num);

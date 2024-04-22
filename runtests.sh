@@ -14,6 +14,7 @@ java -cp out tests.Query name name name.3,name.4 "name.3 > 4" name.3,name.4 BITM
 java -cp out tests.Query name name  name.1,name.2,name.3 "name.3 > 4" name.1,name.2 "FILE" "(name.1 = 5 v name.1 = 6),(name.2 > 7)" name.1,name.2,name.3 100 0
 
 
+javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Query.java && javac -d out -cp src src/tests/BatchInsert.java && java -cp out tests.BatchInsert sample_2.txt name name 4 1 && java -cp out tests.Index name name 3 BTREE && java -cp out tests.Index name name 4 BTREE
 java -cp out tests.Query name name name.3 "name.3 = 4" name.3 BTREE "name.3 = 4" name.3 100 0
 
 java -cp out tests.Delete name name  name.1,name.2,name.3 "name.3 > 2" name.1,name.2 "FILE" "name.3 < 4" name.1,name.2,name.3 100 PURGE   
@@ -39,4 +40,5 @@ javac -d out -cp src src/tests/Index.java && javac -d out -cp src src/tests/Quer
 java -cp out tests.Query name name name.3,name.4 "name.3 > 4" name.3,name.4 BITMAP,BITMAP "name.3 > 4" name.3,name.4 100 0
 java -cp out tests.Query name name name.3,name.4 "name.3 > 4" name.3,name.4 CBITMAP,CBITMAP "name.3 > 4" name.3,name.4 100 0
 java -cp out tests.BitMapEquiJoin name name name "" "" "name.1 = name.2" name.3,name.4 100 100
+java -cp out tests.BitMapEquiJoin name name name "" "" "name.3 = name.4" name.3,name.4 100 100
 java -cp out tests.BitMapEquiJoin name name name "" "" "name.3 = name.4" name.3,name.4 100 100
