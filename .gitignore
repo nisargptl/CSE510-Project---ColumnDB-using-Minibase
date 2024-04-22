@@ -15,4 +15,5 @@ src/iterator/*.class
 src/tests/*.class
 C:/Windows/Temp/name.minibase-db
 C:\\Windows\\Temp\\name.minibase-db
+C:\Windows\Temp\name.minibase-db
 .DS_Store
