@@ -18,7 +18,10 @@
 # rm -rf /tmp/name*
 # java -cp out tests.BatchInsert sample_2.txt name name 4 1
 
-
+# javac -d out -cp src src/tests/Phase3Driver.java
+# echo "Sleeping for 5 seconds..."
+# sleep 1
+# java -cp out tests.Phase3Driver 
 
 javac -d out -cp src src/tests/Query.java
 echo "Sleeping for 5 seconds..."

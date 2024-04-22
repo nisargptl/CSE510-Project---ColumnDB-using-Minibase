@@ -177,6 +177,42 @@ public class Phase3Driver {
                 break;
             case 7:
                 // Code for sorting the columnarfile on a column
+                System.out.println("Enter the following parameters separated by a space \"columndbname columnarfilename projection\": ");
+                try{
+                    String[] params;
+                    params = reader.readLine().split(" ");
+                    System.out.println("Column DB name: " + params[0]);
+                    System.out.println("Columnar file name: " + params[1]);
+                    System.out.println("Projection: " + params[2]);
+                    String constr, scancols, scantypes, scanconst, targetcols, numbuf, sortmem,sortField,sortOrder,bufferSizeAvailable;
+
+                    System.out.print("Enter Constraint: ");
+                    constr = reader.readLine();
+                    System.out.print("Enter the Scan Cols: ");
+                    scancols = reader.readLine();
+                    System.out.print("Enter Scan Type: ");
+                    scantypes = reader.readLine();
+                    System.out.print("Enter Scan constraint: ");
+                    scanconst = reader.readLine();
+                    System.out.print("Enter Target Columns: ");
+                    targetcols = reader.readLine();
+                    System.out.print("Enter Number of buffer frames: ");
+                    numbuf = reader.readLine();
+                    System.out.print("Enter Amount of sort memory: ");
+                    sortmem = reader.readLine();
+                    System.out.print("Enter the field No for Sorting: ");
+                    sortField=reader.readLine();
+                    System.out.print("Enter the order of sorting (0-Asceding/1-descending): ");
+                    sortOrder= reader.readLine();
+                    System.out.print("Enter the buffer size allocated for sorting (>3): ");
+                    bufferSizeAvailable= reader.readLine();
+                    params=new String[]{params[0], params[1], params[2],constr, scancols, scantypes, scanconst, targetcols, numbuf, sortmem,sortField,sortOrder,bufferSizeAvailable };
+                    for(int i = 0; i < params.length; i++) System.out.println(params[i]);
+                    ColumnSortDriver.main(params);
+                }
+                catch (IOException e) {
+                    System.out.println("IOException thrown at getInput!");
+                }
                 break;
             case 8:
                 // Code for deleting duplicates in a columnarfile
