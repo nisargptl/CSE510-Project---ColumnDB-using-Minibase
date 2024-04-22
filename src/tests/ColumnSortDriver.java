@@ -44,7 +44,7 @@ public class ColumnSortDriver {
         String dbpath = OperationUtils.dbPath(columnDB);
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
 
-        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder,bufferSizeAvailable);
+        runOperation(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder,bufferSizeAvailable);
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
@@ -53,7 +53,7 @@ public class ColumnSortDriver {
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
-    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder, int bufferSizeAvailable) throws Exception {
+    private static void runOperation(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder, int bufferSizeAvailable) throws Exception {
         Columnarfile cf = new Columnarfile(columnarFile);
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
@@ -131,8 +131,7 @@ public class ColumnSortDriver {
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
-                Map<Integer, CondExpr[]> condExprMap = Query.createCondExprMap(columnarFile, otherConstraints,
-                        otherConstraint);
+                Map<Integer, CondExpr[]> condExprMap = Query.createCondExprMap(columnarFile, otherConstraints, otherConstraint);
                 for (int i = 0; i < 2; i++) {
                     it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true,condExprMap));
                 }
