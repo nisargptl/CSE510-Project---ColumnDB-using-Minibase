@@ -10,12 +10,6 @@ import iterator.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//test R1 R2 "([R1.X = 10] v [R1.B > 2])" "([R2.C = 20])" "([R1.A = R2.C]) ^ ([R1.B = R1.D])" R1.A,R1.B,R2.C,R2.D 100
-//test R1 R2 "([R1.B > 2])" "([R2.C = 20])" "([R1.A = R2.C]) ^ ([R1.B = R1.D])" R1.A,R1.B,R2.C,R2.D 100
-//test R1 R2 "([R1.X = A])" "([R2.C = 20])" "([R1.A = R2.C]) ^ ([R1.B = R1.D])" R1.A,R1.B,R2.C,R2.D 100
-//test R1 R2 "[R1.A > 2])" "([R2.C < 20])" "([R1.A = R2.C]) ^ ([R1.B = R2.D])" R1.A,R1.B,R2.C,R2.D 100
-//todo check writes?
-
 public class ColumnarBitmapEquiJoins {
     private final Columnarfile leftColumnarFile;
     private final Columnarfile rightColumnarFile;
@@ -27,27 +21,6 @@ public class ColumnarBitmapEquiJoins {
     // need to change to ValueClass
     private final boolean isCompressed = false;
 
-    /**
-     *
-     * @param in1
-     * @param len_in1
-     * @param t1_str_sizes
-     * @param in2
-     * @param len_in2
-     * @param t2_str_sizes
-     * @param amt_of_mem
-     * @param leftColumnarFileName
-     * @param leftJoinField
-     * @param rightColumnarFileName
-     * @param rightJoinField
-     * @param proj_list
-     * @param n_out_flds
-     * @param joinExp
-     * @param innerExp
-     * @param outerExp
-     * @param opAttr
-     * @throws Exception
-     */
     public ColumnarBitmapEquiJoins(
             AttrType[] in1,
             int len_in1,
@@ -201,9 +174,6 @@ public class ColumnarBitmapEquiJoins {
                 offset2 = symbol2.offset;
                 offsets.get(1).add(offset2);
 
-                //todo remove before submission
-//                rightColumnarFile.createAllBitMapIndexForColumn(offset2 -1);
-
                 HashSet<String> set1 = extractUniqueValues(offset1 - 1, allBitMaps);
                 HashMap<String, BitMapFile> allRightRelationBitMaps = rightColumnarFile.getAllBitMaps();
 
@@ -244,23 +214,6 @@ public class ColumnarBitmapEquiJoins {
         return collect;
     }
 
-    private void bt(List<HashSet<String>> uniqueSets, int index, List<List<String>> res, List<String> path) {
-
-        if(path.size() == uniqueSets.size()) {
-            ArrayList<String> k = new ArrayList<>(path);
-            res.add(k);
-            return;
-        }
-
-        HashSet<String> uniqueSet = uniqueSets.get(index);
-        for(String entry: uniqueSet) {
-            path.add(entry);
-            bt(uniqueSets, index+1, res, path);
-            path.remove(path.size() - 1);
-        }
-    }
-
-
     public List<List<Integer>> nestedLoop(List<List<Integer>> uniqueSets)  {
         List<List<Integer>> res = new ArrayList<>();
         nestedLoopBt(uniqueSets, 0,res, new ArrayList<>());
@@ -282,6 +235,4 @@ public class ColumnarBitmapEquiJoins {
             path.remove(path.size() - 1);
         }
     }
-
-
 }
