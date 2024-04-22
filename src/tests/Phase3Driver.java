@@ -217,33 +217,33 @@ public class Phase3Driver {
             case 8:
                 // Code for deleting duplicates in a columnarfile
                 System.out.println("Enter the following parameters separated by a space \"columndbname columnarfile projection\": ");
-                try{
-                    String[] params;
-                    params = reader.readLine().split(" ");
-                    System.out.println("Column DB name: " + params[0]);
-                    System.out.println("Columnar file name: " + params[1]);
-                    System.out.println("Projection: " + params[3]);
-                    String constr, scancols, scantypes, scanconstr, targetcols, innerconstr, innertargetcols, joinconstr, bufsize, sortmem;
-                    System.out.print("Enter the Constraint: ");
-                    constr = reader.readLine();
-                    System.out.print("Enter scan cols: ");
-                    scancols = reader.readLine();
-                    System.out.print("Enter the scan types: ");
-                    scantypes = reader.readLine();
-                    System.out.print("Enter scan constr: ");
-                    scanconstr = reader.readLine();
-                    System.out.print("Enter target cols: ");
-                    targetcols = reader.readLine();
-                    System.out.print("Enter the buffer size: ");
-                    bufsize = reader.readLine();
-                    sortmem = reader.readLine();
-                    params = new String[]{params[0], params[1], params[2], constr, scancols, scantypes, scanconstr, targetcols, innerconstr, innertargetcols, joinconstr, bufsize, sortmem};
-                    for(int i = 0; i < params.length; i++) System.out.println(params[i]);
-                    ColumnarNestedLoopJoinDriver.main(params);
-                }
-                catch (IOException e) {
-                    System.out.println("IOException thrown at getInput!");
-                }
+//                try{
+//                    String[] params;
+//                    params = reader.readLine().split(" ");
+//                    System.out.println("Column DB name: " + params[0]);
+//                    System.out.println("Columnar file name: " + params[1]);
+//                    System.out.println("Projection: " + params[3]);
+//                    String constr, scancols, scantypes, scanconstr, targetcols, innerconstr, innertargetcols, joinconstr, bufsize, sortmem;
+//                    System.out.print("Enter the Constraint: ");
+//                    constr = reader.readLine();
+//                    System.out.print("Enter scan cols: ");
+//                    scancols = reader.readLine();
+//                    System.out.print("Enter the scan types: ");
+//                    scantypes = reader.readLine();
+//                    System.out.print("Enter scan constr: ");
+//                    scanconstr = reader.readLine();
+//                    System.out.print("Enter target cols: ");
+//                    targetcols = reader.readLine();
+//                    System.out.print("Enter the buffer size: ");
+//                    bufsize = reader.readLine();
+//                    sortmem = reader.readLine();
+//                    params = new String[]{params[0], params[1], params[2], constr, scancols, scantypes, scanconstr, targetcols, innerconstr, innertargetcols, joinconstr, bufsize, sortmem};
+//                    for(int i = 0; i < params.length; i++) System.out.println(params[i]);
+//                    ColumnarNestedLoopJoinDriver.main(params);
+//                }
+//                catch (IOException e) {
+//                    System.out.println("IOException thrown at getInput!");
+//                }
                 break;
             default:
                 System.out.println("Invalid choice!");
