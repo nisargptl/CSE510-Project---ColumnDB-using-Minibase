@@ -106,7 +106,7 @@ public class Projection {
         // TODO: For columnarindex scan, outflds is working when we set it to 1. for this query:
         // java -cp .\out\ tests.Query "name" "name" name.3,name.4 "name.3 > 4" name.3,name.4 BTREE,BTREE "name.3 > 4" name.3,name.4 100 0
         for (int i = 0; i < nOutFlds; i++) {
-            System.out.println(nOutFlds);
+            // System.out.println(nOutFlds);
             switch (perm_mat[i].relation.key) {
                 case RelSpec.outer:      // Field of outer (t1)
                     switch (type1[perm_mat[i].offset - 1].attrType) {

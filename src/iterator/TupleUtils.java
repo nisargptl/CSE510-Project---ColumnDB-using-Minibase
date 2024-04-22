@@ -69,9 +69,9 @@ public class TupleUtils
 	  
 	case AttrType.attrString:                // Compare two strings
 	  try {
-		  System.out.println(t1_fld_no);
-		  System.out.println(t2_fld_no);
-		  System.out.println(t1.fldCnt);
+		  // System.out.println(t1_fld_no);
+		  // System.out.println(t2_fld_no);
+		  // System.out.println(t1.fldCnt);
 	    t1_s = t1.getStrFld(t1_fld_no);
 	    t2_s = t2.getStrFld(t2_fld_no);
 	  }catch (FieldNumberOutOfBoundException e){

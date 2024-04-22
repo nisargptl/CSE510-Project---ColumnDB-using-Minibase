@@ -25,3 +25,6 @@ java -cp out tests.BatchInsert sample_2.txt name name 4 1
 java -cp out tests.Index name name 3 BTREE
 java -cp out tests.Index name name 4 BTREE
 java -cp out tests.Query name name name.3,name.4 "name.3 = 4" name.3,name.4 BTREE,BTREE "name.3 = 4" name.3,name.4 100 0 # or BITMAP,BITMAP for bitmap index testing
+
+# ColumnarDuplElimDriver:
+java -cp out tests.Query name name  name.1,name.2,name.3,name.4 "name.3 > -1" name.1,name.2 "FILE" " " name.1,name.2,name.3,name.4 100 0

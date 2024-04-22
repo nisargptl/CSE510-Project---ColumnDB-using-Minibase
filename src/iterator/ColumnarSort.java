@@ -49,7 +49,6 @@ public class ColumnarSort extends Iterator implements GlobalConst {
      *
      * @param in             array containing attribute types of the relation
      * @param len_in         number of columns in the relation
-     * @param str_sizes      array of sizes of string attributes
      * @param am             an iterator for accessing the tuples
      * @param sort_fld       the field number of the field to sort on
      * @param sort_order     the sorting order (ASCENDING, DESCENDING)
@@ -59,12 +58,10 @@ public class ColumnarSort extends Iterator implements GlobalConst {
      */
     public ColumnarSort(AttrType[] in,
                         short len_in,
-                        // short[] str_sizes,
                         short[] attr_sizes,
                         Iterator am,
                         int sort_fld,
                         TupleOrder sort_order,
-                        // int sort_fld_len,
                         int n_pages
     ) throws IOException, SortException {
         _in = new AttrType[len_in];
@@ -617,17 +614,10 @@ public class ColumnarSort extends Iterator implements GlobalConst {
         }
         if (k > -1) {
             tuples[k] = null;
-            /*int l = i;
-            for (; l < i +_n_pages; l++) {
-                if (l < size && l != k && temp_files.get(l)!= null) {
-                    temp_files.get(l).setPrev();
-                }
-            }*/
         } else {
             passes++;
             t = null;
         }
-        //Tuple output_tuple = temp_files.get(0).getNext();
         if(t != null){
             t.setHdr(n_cols, _in, str_lens);
             return t;
@@ -635,10 +625,6 @@ public class ColumnarSort extends Iterator implements GlobalConst {
         close();
         return null;
         
-    }
-
-    public int getPasses() {
-        return passes;
     }
 
     /**
@@ -649,7 +635,6 @@ public class ColumnarSort extends Iterator implements GlobalConst {
      * @throws SortException something went wrong in the lower layer.
      */
     public void close() throws SortException, IOException {
-        // clean up
         if (!closeFlag) {
 
             try {
