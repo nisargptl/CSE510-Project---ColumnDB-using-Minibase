@@ -15,7 +15,6 @@ import java.io.*;
 public class ColumnarDuplElim extends Iterator {
     private final AttrType[] _in;     // memory for array allocated by constructor
     private final short in_len;
-    private short[] str_lens;
 
     private Iterator _am;
     private boolean done;
@@ -76,7 +75,7 @@ public class ColumnarDuplElim extends Iterator {
         TupleOrder order = new TupleOrder(TupleOrder.Ascending);
         if (!inp_sorted) {
             try {
-                _am = new ColumnarSort(in, len_in, s_sizes, am, 1, order, 100);
+                _am = new ColumnarSort(in, len_in, s_sizes, am, 1, order, amt_of_mem);
             } catch (SortException e) {
                 e.printStackTrace();
                 throw new DuplElimException(e, "SortException is caught by DuplElim.java");
@@ -148,7 +147,7 @@ public class ColumnarDuplElim extends Iterator {
             try {
                 _am.close();
             } catch (Exception e) {
-                throw new JoinsException(e, "DuplElim.java: error in closing iterator.");
+                throw new JoinsException(e, "ColumnarDuplElim.java: error in closing iterator.");
             }
             closeFlag = true;
         }
