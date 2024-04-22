@@ -206,7 +206,7 @@ public class IndexUtils {
 	}
 
 	public static IndexFileScan Bitmap_scan(Columnarfile columnarFile, int columnNo, CondExpr[] selects,
-											boolean indexOnly, boolean isCompressed) throws IndexException {
+											boolean isCompressed) throws IndexException {
 		try {
 			List<BitmapFileScan> scans = new ArrayList<>();
 			Object value = null;
@@ -256,7 +256,6 @@ public class IndexUtils {
 		for (CondExpr cond : selects) {
 			if (cond != null) {
 				Object condValue = getValueFromCondExpr(cond);
-				System.out.println("condValue: " + condValue);
 				// System.out.println("cond.op.attrOperator, bitmapValue, condValue");
 				if (!applyOperator(cond.op, bitmapValue, condValue)) {
 					matches = false;

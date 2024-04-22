@@ -1,10 +1,14 @@
 package tests;
 
+import btree.IndexFileScan;
 import columnar.ColumnarBitmapEquiJoins;
 import columnar.Columnarfile;
 import diskmgr.PCounter;
 import global.AttrType;
+import global.IndexType;
 import global.SystemDefs;
+import index.IndexScan;
+import index.IndexUtils;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;

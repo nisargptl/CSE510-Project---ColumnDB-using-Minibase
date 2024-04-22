@@ -224,10 +224,6 @@ public class OperationUtils {
 
     public static int getColumnPositionInTargets(String columnName, String[] targetColumns) throws Exception {
         System.out.println("Column Name " + columnName);
-        System.out.println();
-        for(int i = 0; i < targetColumns.length; i++) {
-            System.out.println("target column " + i + targetColumns[i]);
-        }
         for(int i = 0; i < targetColumns.length; i++){
             String targetColumn = targetColumns[i].split("\\.")[1];
             String[] columnNames = columnName.split("\\.");

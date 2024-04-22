@@ -124,7 +124,7 @@ public class ColumnIndexScan extends Iterator {
                 }
                 // todo: implement bitmap index case here
                 // (needs BitMapFileScan or implements something similar here)
-                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only, false);
+                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, false);
                 // System.out.println(indScan.get_next().data);
                 break;
             case IndexType.CBitMapIndex:
@@ -136,7 +136,7 @@ public class ColumnIndexScan extends Iterator {
                 }
                 // todo: implement bitmap index case here
                 // (needs BitMapFileScan or implements something similar here)
-                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only, true);
+                indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, true);
                 // System.out.println(indScan.get_next().data);
                 break;
             case IndexType.None:
