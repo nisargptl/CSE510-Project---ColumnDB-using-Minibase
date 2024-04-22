@@ -122,8 +122,6 @@ public class ColumnIndexScan extends Iterator {
                     throw new IndexException(e,
                             "ColumnIndexScan.java: GetFileEntryException caught from BitMapFile constructor");
                 }
-                // todo: implement bitmap index case here
-                // (needs BitMapFileScan or implements something similar here)
                 indScan = IndexUtils.Bitmap_scan(columnarfile, columnNo, selects, index_only);
                 // System.out.println(indScan.get_next().data);
                 break;
@@ -172,7 +170,12 @@ public class ColumnIndexScan extends Iterator {
                 // only need to return the key
 
                 AttrType[] attrType = new AttrType[1];
-                short[] s_sizes = new short[0];
+                short[] s_sizes;
+                if (_type.attrType == AttrType.attrString) {
+                    s_sizes = new short[1];
+                } else {
+                    s_sizes = new short[0];
+                }
 
                 if (_type.attrType == AttrType.attrInteger) {
                     attrType[0] = new AttrType(AttrType.attrInteger);
@@ -235,13 +238,12 @@ public class ColumnIndexScan extends Iterator {
                 return null; // No more entries
             }
 
-            // Assuming the key indicates the tuple position in the columnar file
             IntegerKey key = (IntegerKey) entry.key;
             int position = key.getKey();
             if (index_only) {
                 // Setup for index-only requirement
                 AttrType[] attrTypes = { new AttrType(AttrType.attrInteger) };
-                short[] s_sizes = new short[0]; // No string sizes needed
+                short[] s_sizes = new short[0];
                 Tuple Jtuple = new Tuple();
                 Jtuple.setHdr((short) 1, attrTypes, s_sizes);
                 Jtuple.setIntFld(1, position);
@@ -278,4 +280,7 @@ public class ColumnIndexScan extends Iterator {
         }
     }
 
+    public AttrType getScanAttrType() {
+        return _type;
+    }
 }

@@ -59,18 +59,6 @@ public class ColumnarIndexScan extends Iterator {
         int i = 0;
         indexScans = new ColumnIndexScan[condExprMap.size()];
 
-        // <<<<<<< getBM-hardcoded
-        // for (int i = 0; i < fldNum.length - 1; i++) {
-        // if (types[fldNum[i]].attrType == AttrType.attrString) {
-        // indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName,
-        // indName[i], types[fldNum[i]],
-        // str_sizes[i - c], selects, indexOnly);
-        // } else {
-        // c += 1;
-        // indexScans[i] = new ColumnIndexScan(fldNum[i] + 1, index[i], relName,
-        // indName[i], types[fldNum[i]],
-        // (short) 0, selects, indexOnly);
-        // =======
         for (Entry<Integer, CondExpr[]> entry : condExprMap.entrySet()) {
             Integer column = entry.getKey(); // This is the column index
             CondExpr[] conditions = entry.getValue(); // This is the list of conditions for the column
@@ -84,7 +72,6 @@ public class ColumnarIndexScan extends Iterator {
                 indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]], (short) 0,
                         conditions, indexOnly);
-                // >>>>>>> testing-all-col-index-scan
             }
 
             i++;
@@ -123,9 +110,13 @@ public class ColumnarIndexScan extends Iterator {
             // minPosition = position;
             // resultTuple = tempTuple;
             for (int i = 0; i < tempTuple.fldCnt; i++) {
-                resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
-                resultFldNo++;
-
+                if (scan.getScanAttrType().attrType == AttrType.attrInteger) {
+                    resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
+                    resultFldNo++;
+                } else if (scan.getScanAttrType().attrType == AttrType.attrString) {
+                    resultTuple.setStrFld(resultFldNo + 1, tempTuple.getStrFld(i + 1));
+                    resultFldNo++;
+                }
             }
             isResultTuplePopulated = true;
             // }
