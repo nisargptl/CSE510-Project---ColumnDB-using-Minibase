@@ -211,7 +211,7 @@ public class IndexUtils {
 							"IndexUtils.java: Only Integer and String keys are supported so far");
 			}
 		} // end of else
-		// <<<<<<< getBM-hardcoded
+
 	}
 
 	/**
@@ -361,108 +361,7 @@ public class IndexUtils {
 		}
 		return false;
 	}
-	// =======
-	// }
 
-	// /**
-	// * getValue returns the key value extracted from the selection condition.
-	// *
-	// * @param cd the selection condition
-	// * @param type attribute type of the selection field
-	// * @param choice first (1) or second (2) operand is the value
-	// * @return an instance of the KeyClass (IntegerKey or StringKey)
-	// * @exception UnknownKeyTypeException only int and string keys are supported
-	// */
-	// private static KeyClass getValue(CondExpr cd, AttrType type, int choice)
-	// throws UnknownKeyTypeException {
-	// // error checking
-	// if (cd == null) {
-	// return null;
-	// }
-	// if (choice < 1 || choice > 2) {
-	// return null;
-	// }
-
-	// switch (type.attrType) {
-	// case AttrType.attrString:
-	// if (choice == 1)
-	// return new StringKey(cd.operand1.string);
-	// else
-	// return new StringKey(cd.operand2.string);
-	// case AttrType.attrInteger:
-	// if (choice == 1)
-	// return new IntegerKey(Integer.valueOf(cd.operand1.integer));
-	// else
-	// return new IntegerKey(Integer.valueOf(cd.operand2.integer));
-	// case AttrType.attrReal:
-	// /*
-	// * // need FloatKey class in bt.java
-	// * if (choice == 1) return new FloatKey(new Float(cd.operand.real));
-	// * else return new FloatKey(new Float(cd.operand.real));
-	// */
-	// default:
-	// throw new UnknownKeyTypeException("IndexUtils.java: Only Integer and String
-	// keys are supported so far");
-	// }
-
-	// }
-
-	// public static IndexFileScan Bitmap_scan(Columnarfile cf,
-	// int columnNo,
-	// CondExpr[] selects,
-	// boolean indexOnly) throws IndexException {
-
-	// try {
-	// columnarfile = cf;
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-
-	// try {
-	// List<BitmapFileScan> scans = new ArrayList<>();
-	// for (String bmName : columnarfile.getAvailableBM(columnNo)) {
-	// if (evalBMName(bmName, columnNo)) {
-	// scans.add((new BitMapFile(bmName)).new_scan());
-	// }
-	// }
-	// } catch (Exception e) {
-	// // any exception is swalled into a Index Exception
-	// throw new IndexException(e, "IndexScan.java: BitMapFile exceptions caught
-	// from BitMapFile constructor");
-	// }
-	// return null;
-	// }
-
-	// static boolean evalBMName(String s, int _columnNo) throws Exception {
-	// if (_selects == null)
-	// return true;
-
-	// short[] _sizes = new short[1];
-	// _sizes[0] = columnarfile.getAttrsizeforcolumn(_columnNo);
-	// AttrType[] _types = new AttrType[1];
-	// _types[0] = columnarfile.getAttrtypeforcolumn(_columnNo);
-
-	// byte[] data = new byte[6 + _sizes[0]];
-	// String val = s.split("\\.")[3];
-	// if (_types[0].attrType == AttrType.attrInteger) {
-	// int t = Integer.parseInt(val);
-	// Convert.setIntValue(t, 6, data);
-	// } else {
-	// Convert.setStrValue(val, 6, data);
-	// }
-
-	// Tuple jTuple = new Tuple(data, 0, data.length);
-	// _sizes[0] -= 2;
-
-	// jTuple.setHdr((short) 1, _types, _sizes);
-
-	// if (PredEval.Eval(_selects, jTuple, null, _types, null)) {
-	// return true;
-	// }
-
-	// return false;
-	// }
-	// >>>>>>> testing-all-col-index-scan
 
 	private static IndexFileScan generateIndexFileScan(List<BitmapFileScan> scans) {
 		return new IndexFileScan() {
@@ -521,14 +420,6 @@ public class IndexUtils {
 						}
 						scanCounter++;
 					}
-					// while (scanCounter <= counter) {
-					// if (bitMaps.get(scanCounter)) {
-					// int position = scanCounter++;
-					// return position;
-					// } else {
-					// scanCounter++;
-					// }
-					// }
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

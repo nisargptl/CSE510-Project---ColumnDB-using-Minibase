@@ -1,6 +1,7 @@
 package tests;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import columnar.Columnarfile;
 import diskmgr.PCounter;
@@ -11,6 +12,7 @@ import global.TupleOrder;
 import heap.Tuple;
 import index.ColumnarIndexScan;
 import iterator.*;
+import tests.Query;
 
 public class ColumnSortDriver {
 
@@ -37,11 +39,12 @@ public class ColumnSortDriver {
         Integer sortmem = Integer.parseInt(args[9]);
         Integer sortField = Integer.parseInt(args[10]);
         Integer sortOrder = Integer.parseInt(args[11]);
+        Integer bufferSizeAvailable= Integer.parseInt(args[12]);
 
         String dbpath = OperationUtils.dbPath(columnDB);
         SystemDefs sysdef = new SystemDefs(dbpath, 0, bufferSize, "Clock");
 
-        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder);
+        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem, sortField, sortOrder,bufferSizeAvailable);
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
@@ -50,7 +53,7 @@ public class ColumnSortDriver {
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
-    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder) throws Exception {
+    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem, int sortField, int sortOrder, int bufferSizeAvailable) throws Exception {
         Columnarfile cf = new Columnarfile(columnarFile);
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
@@ -128,15 +131,16 @@ public class ColumnSortDriver {
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
-
+                Map<Integer, CondExpr[]> condExprMap = Query.createCondExprMap(columnarFile, otherConstraints,
+                        otherConstraint);
                 for (int i = 0; i < 2; i++) {
-                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
+                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true,condExprMap));
                 }
 
             } else throw new Exception("Scan type <" + scanTypes[0] + "> not recognized.");
 
             int cnt = 0;
-            it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), 50);
+            it1 = new ColumnarSort(cf.getAllAttrTypes(), cf.numColumns, cf.getAllAttrSizes(), it.get(0), sortField, new TupleOrder(sortOrder), bufferSizeAvailable);
             ArrayList<Tuple> sortTuples = new ArrayList<Tuple>();
             while (true) {
                 // System.out.println(cnt);
@@ -152,6 +156,7 @@ public class ColumnSortDriver {
             }
 
             Boolean deleted = true;
+            cnt=0;
             while (deleted) {
                 // System.out.println("deleting_goin_on");
                 deleted = it.get(1).delete_next();
@@ -168,7 +173,7 @@ public class ColumnSortDriver {
 
             for (int i = 0; i < sortTuples.size(); i++) {
                 cf.insertTuple(sortTuples.get(i).getTupleByteArray());
-                System.out.println("added tuple no: " + (i + 1));
+                // System.out.println("added tuple no: " + (i + 1));
             }
             System.out.println("all tuples added");
 

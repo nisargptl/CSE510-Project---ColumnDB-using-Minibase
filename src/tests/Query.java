@@ -166,7 +166,7 @@ public class Query {
         }
     }
 
-    private static Map<Integer, CondExpr[]> createCondExprMap(String relName, String conditions,
+    public static Map<Integer, CondExpr[]> createCondExprMap(String relName, String conditions,
             CondExpr[] scanConstraint) {
         Map<Integer, CondExpr[]> condExprMap = new HashMap<>();
         String[] condition = conditions.split(" and | or");

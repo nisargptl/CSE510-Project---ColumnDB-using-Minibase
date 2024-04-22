@@ -18,7 +18,10 @@
 # rm -rf /tmp/name*
 # java -cp out tests.BatchInsert sample_2.txt name name 4 1
 
-
+# javac -d out -cp src src/tests/Phase3Driver.java
+# echo "Sleeping for 5 seconds..."
+# sleep 1
+# java -cp out tests.Phase3Driver 
 
 javac -d out -cp src src/tests/Query.java
 echo "Sleeping for 5 seconds..."
@@ -28,7 +31,7 @@ java -cp out tests.Query name name  name.1,name.2,name.3,name.4 " " name.1,name.
 # javac -d out -cp src src/tests/ColumnSortDriver.java
 # echo "Sleeping for 5 seconds..."
 # sleep 1
-# java -cp out tests.ColumnSortDriver name name  name.1,name.2,name.3,name.4 " " name.1,name.2,name.3,name.4 "FILE" " " name.1,name.2,name.3,name.4 100 0 2 0
+# java -cp out tests.ColumnSortDriver name name  name.1,name.2,name.3,name.4 " " name.1,name.2,name.3,name.4 "FILE" " " name.1,name.2,name.3,name.4 100 0 2 0 50
 
 
 
