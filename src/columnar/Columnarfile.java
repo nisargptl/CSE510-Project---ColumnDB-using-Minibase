@@ -10,11 +10,9 @@ import btree.KeyFactory;
 import iterator.*;
 import btree.BTreeFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static tests.TestDriver.FAIL;
 import static tests.TestDriver.OK;
@@ -32,8 +30,10 @@ public class Columnarfile {
     RID _hdrRid;
     HashMap<String, Integer> columnMap;
     HashMap<String, BitMapFile> BMMap = new HashMap<>();
+    HashMap<String, BTreeFile> BTMap;
+    List<String> bmName = new ArrayList<>();
+    // private static Set<String> allBitMapNames = new HashSet<String>();
     BitmapDirectory bmDirectory = new BitmapDirectory("bitmap_directory.dat");
-
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
         Heapfile hf;
@@ -353,73 +353,6 @@ public class Columnarfile {
         return filename;
     }
 
-    private String convertValueToString(Object value) {
-        if (value == null) {
-            return "null";
-        }
-        // Convert the value to a string, replacing spaces and special characters that
-        // are not safe in filenames
-        String valueString = value.toString().replaceAll("[^a-zA-Z0-9_]", "_");
-        return valueString;
-    }
-
-    public List<String> getAvailableBM(int columnNo, boolean isCompressed) throws Exception {
-        // System.out.println("BMMAP SIZE: " + BMMap.size());
-        // Tuple tuple = new Tuple();
-        // AttrType attrType = _ctype[columnNo - 1];
-        // Object value = extractValueFromTuple(tuple, attrType);
-        // String bitMapFileName = getBMName(columnNo, attrType, value);
-
-        // bmName.add(bitMapFileName);
-        // return bmName.toArray(new String[bmName.size()]);
-
-        AttrType attrType = _ctype[columnNo - 1];
-        String attrTypeName = attrType.toString();
-
-        // Create the prefix to filter bitmap names
-        String indexType = isCompressed ? "CBM." : "BM.";
-        String prefix = indexType + fname + "." + columnNo + "." + attrTypeName;
-
-        // get all bitmap names
-        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
-        List<String> matchingBitmaps = new ArrayList<>();
-
-        if (allBitMapNames != null) {
-            for (String bmName : allBitMapNames) {
-                if (bmName.startsWith(prefix)) {
-                    matchingBitmaps.add(bmName);
-                }
-            }
-        }
-
-        return matchingBitmaps;
-    }
-
-    public HashMap<String, BitMapFile> getAllBitMaps() throws Exception {
-        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
-        HashMap<String, BitMapFile> allBitMaps = new HashMap<>();
-
-        if (allBitMapNames != null) {
-            for (String bmName : allBitMapNames) {
-                allBitMaps.put(bmName, new BitMapFile(bmName));
-            }
-        }
-
-        return allBitMaps;
-    }
-
-    private Object extractValueFromTuple(Tuple tuple, AttrType attrType) throws IOException {
-        // Assumes that the tuple consists of a single value of the type specified
-        switch (attrType.attrType) {
-            case AttrType.attrInteger:
-                return Convert.getIntValue(0, tuple.getTupleByteArray());
-            case AttrType.attrString:
-                return Convert.getStrValue(0, tuple.getTupleByteArray(), tuple.getLength());
-            // Add more cases as necessary for other data types
-        }
-        return null;
-    }
-
     public boolean createAllBitMapIndexForColumn(int columnNo, boolean isCompressed) throws Exception {
         // Adjusted method to use class-level BMMap
         Scan columnScan = openColumnScan(columnNo - 1);
@@ -468,6 +401,75 @@ public class Columnarfile {
         return true;
     }
 
+    private String convertValueToString(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        // Convert the value to a string, replacing spaces and special characters that
+        // are not safe in filenames
+        String valueString = value.toString().replaceAll("[^a-zA-Z0-9_]", "_");
+        return valueString;
+    }
+
+    private Object extractValueFromTuple(Tuple tuple, AttrType attrType) throws IOException {
+        // Assumes that the tuple consists of a single value of the type specified
+        switch (attrType.attrType) {
+            case AttrType.attrInteger:
+                return Convert.getIntValue(0, tuple.getTupleByteArray());
+            case AttrType.attrString:
+                return Convert.getStrValue(0, tuple.getTupleByteArray(), tuple.getLength());
+            // Add more cases as necessary for other data types
+        }
+        return null;
+    }
+
+    // todo
+    public List<String> getAvailableBM(int columnNo, boolean isCompressed) throws Exception {
+        // System.out.println("BMMAP SIZE: " + BMMap.size());
+        // Tuple tuple = new Tuple();
+        // AttrType attrType = _ctype[columnNo - 1];
+        // Object value = extractValueFromTuple(tuple, attrType);
+        // String bitMapFileName = getBMName(columnNo, attrType, value);
+
+        // bmName.add(bitMapFileName);
+        // return bmName.toArray(new String[bmName.size()]);
+
+        AttrType attrType = _ctype[columnNo - 1];
+        String attrTypeName = attrType.toString();
+
+        // Create the prefix to filter bitmap names
+        String indexType = isCompressed ? "CBM." : "BM.";
+        String prefix = indexType + fname + "." + columnNo + "." + attrTypeName;
+
+        // get all bitmap names
+        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
+        List<String> matchingBitmaps = new ArrayList<>();
+
+        if (allBitMapNames != null) {
+            for (String bmName : allBitMapNames) {
+                if (bmName.startsWith(prefix)) {
+                    matchingBitmaps.add(bmName);
+                }
+            }
+        }
+
+        return matchingBitmaps;
+    }
+
+    public HashMap<String, BitMapFile> getAllBitMaps() throws Exception {
+        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
+        HashMap<String, BitMapFile> allBitMaps = new HashMap<>();
+
+        if (allBitMapNames != null) {
+            for (String bmName : allBitMapNames) {
+                allBitMaps.put(bmName, new BitMapFile(bmName));
+            }
+        }
+
+        return allBitMaps;
+
+    }
+
     public boolean markTupleDeleted(int position) {
         String DeletedFileName = getDeletedFileName();
         try {
@@ -481,28 +483,28 @@ public class Columnarfile {
             t.setIntFld(1, pos);
             f.insertRecord(t.getTupleByteArray());
 
-//            for (int i = 0; i < numColumns; i++) {
-//                Tuple tuple = getColumn(i).getRecord(position);
-//                ValueClass valueClass;
-//                KeyClass keyClass;
-//                valueClass = ValueFactory.getValueClass(tuple.getTupleByteArray(),
-//                        atype[i],
-//                        asize[i]);
-//                keyClass = KeyFactory.getKeyClass(tuple.getTupleByteArray(),
-//                        atype[i],
-//                        asize[i]);
-//
-//                String bTreeFileName = getBTName(i);
-//                String bitMapFileName = getBMName(i, valueClass);
-//                if (BTMap.containsKey(bTreeFileName)) {
-//                    BTreeFile bTreeFile = getBTIndex(bTreeFileName);
-//                    bTreeFile.Delete(keyClass, position);
-//                }
-//                if (BMMap.containsKey(bitMapFileName)) {
-//                    BitMapFile bitMapFile = getBMIndex(bitMapFileName);
-//                    bitMapFile.delete(position);
-//                }
-//            }
+            // for (int i = 0; i < numColumns; i++) {
+            // Tuple tuple = getColumn(i).getRecord(position);
+            // ValueClass valueClass;
+            // KeyClass keyClass;
+            // valueClass = ValueFactory.getValueClass(tuple.getTupleByteArray(),
+            // atype[i],
+            // asize[i]);
+            // keyClass = KeyFactory.getKeyClass(tuple.getTupleByteArray(),
+            // atype[i],
+            // asize[i]);
+            //
+            // String bTreeFileName = getBTName(i);
+            // String bitMapFileName = getBMName(i, valueClass);
+            // if (BTMap.containsKey(bTreeFileName)) {
+            // BTreeFile bTreeFile = getBTIndex(bTreeFileName);
+            // bTreeFile.Delete(keyClass, position);
+            // }
+            // if (BMMap.containsKey(bitMapFileName)) {
+            // BitMapFile bitMapFile = getBMIndex(bitMapFileName);
+            // bitMapFile.delete(position);
+            // }
+            // }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -519,7 +521,8 @@ public class Columnarfile {
     }
 
     /**
-     * Purges all tuples marked for deletion. Removes keys/positions from indexes too
+     * Purges all tuples marked for deletion. Removes keys/positions from indexes
+     * too
      *
      * @return
      * @throws HFDiskMgrException
@@ -530,7 +533,8 @@ public class Columnarfile {
      * @throws HFBufMgrException
      * @throws SortException
      */
-    public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
+    public boolean purgeAllDeletedTuples() throws HFDiskMgrException, InvalidTupleSizeException, IOException,
+            InvalidSlotNumberException, FileAlreadyDeletedException, HFBufMgrException, SortException {
 
         Sort SortedDTuples = null;
         RID rid;
@@ -719,8 +723,6 @@ public class Columnarfile {
 
     public int getAttributePosition(String name) {
         name = fname + "." + name;
-        // System.out.println(name);
-        // System.out.println(columnMap.get(name));
         return columnMap.get(name);
     }
 
@@ -754,4 +756,48 @@ public class Columnarfile {
             throw new Exception("Invalid Column Number");
         }
     }
+
+    // public int getPositionFromRID(Heapfile heap, RID rid) throws Exception {
+    // Scan scan = heap.openScan();
+    // RID currentRID;
+    // Tuple tuple;
+    // int position = 0; // Start position index from 0
+
+    // while ((tuple = scan.getNext(currentRID = new RID())) != null) {
+    // System.out.println("Current RID: " + currentRID);
+    // if (currentRID.equals(rid)) {
+    // scan.closescan();
+    // return position;
+    // }
+    // position++;
+    // }
+    // scan.closescan();
+
+    // throw new Exception("Given RID not found in the specified Heapfile.");
+    // }
+
+    // public TID getTIDFromRID(int columnNo, RID rid) throws Exception {
+    // if (columnNo < 0 || columnNo >= numColumns) {
+    // throw new IllegalArgumentException("Invalid column number.");
+    // }
+
+    // Heapfile column = getColumn(columnNo);
+    // Tuple tuple = column.getRecord(rid); // Get the tuple from the column
+    // int position = getPositionFromRID(column, rid); // Get the position of the
+    // RID in its column
+
+    // // Assuming RIDs in all columns for a given row are aligned
+    // RID[] rids = new RID[numColumns];
+    // for (int i = 0; i < numColumns; i++) {
+    // if (i == columnNo) {
+    // rids[i] = rid; // Assign the input RID directly for the queried column
+    // } else {
+    // Heapfile otherColumn = getColumn(i);
+    // rids[i] = otherColumn.recordAtPosition(position); // or a similar method to
+    // retrieve RID by position
+    // }
+    // }
+
+    // return new TID(numColumns, position, rids);
+    // }
 }

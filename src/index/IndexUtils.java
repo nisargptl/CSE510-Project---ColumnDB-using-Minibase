@@ -5,10 +5,12 @@ import bitmap.BitmapFileScan;
 import columnar.Columnarfile;
 import global.*;
 import btree.*;
+import heap.FieldNumberOutOfBoundException;
 import heap.Tuple;
 import iterator.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -424,5 +426,4 @@ public class IndexUtils {
 			}
 		};
 	}
-
 }

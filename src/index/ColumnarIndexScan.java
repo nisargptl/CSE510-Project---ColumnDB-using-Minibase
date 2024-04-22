@@ -64,12 +64,12 @@ public class ColumnarIndexScan extends Iterator {
             CondExpr[] conditions = entry.getValue(); // This is the list of conditions for the column
 
             if (types[column].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]],
                         str_sizes[i - c], conditions, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(i, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
                         types[fldNum[i]], (short) 0,
                         conditions, indexOnly);
             }
@@ -103,14 +103,15 @@ public class ColumnarIndexScan extends Iterator {
             Tuple tempTuple = scan.get_next();
             if (tempTuple == null)
                 continue;
-            // int position = tempTuple.getIntFld(1); // Assuming the position is stored in
-            // the first field.
 
-            // if (position < minPosition) {
-            // minPosition = position;
-            // resultTuple = tempTuple;
             for (int i = 0; i < tempTuple.fldCnt; i++) {
-                resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
+                if (scan.getScanAttrType().attrType == AttrType.attrInteger) {
+                    resultTuple.setIntFld(resultFldNo + 1, tempTuple.getIntFld(i + 1));
+                    resultFldNo++;
+                } else if (scan.getScanAttrType().attrType == AttrType.attrString) {
+                    resultTuple.setStrFld(resultFldNo + 1, tempTuple.getStrFld(i + 1));
+                    resultFldNo++;
+                }
                 resultFldNo++;
 
             }

@@ -11,6 +11,7 @@ import index.ColumnarIndexScan;
 import iterator.*;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ColumnarDuplElimDriver {
     private static final String FILESCAN = "FILE";
@@ -32,8 +33,8 @@ public class ColumnarDuplElimDriver {
 
         String columndbpath = OperationUtils.dbPath(columnDB);
         new SystemDefs(columndbpath, 0, bufferSize, "Clock");
-
-        runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem);
+        // Example query: java -cp out tests.ColumnarDuplElimDriver columnDB cf1 cf1.1,cf1.2,cf1.3,cf1.4 " " cf1.1,cf1.2,cf1.3,cf1.4 "FILE" " " cf1.1,cf1.2,cf1.3,cf1.4 200 1
+        runOperator(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns, sortmem);
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
@@ -42,7 +43,7 @@ public class ColumnarDuplElimDriver {
         System.out.println("Writes: " + PCounter.wcounter);
     }
 
-    private static void runInterface(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem) throws Exception {
+    private static void runOperator(String columnarFile, String[] projection, String otherConstraints, String[] scanColumns, String[] scanTypes, String[] scanConstraints, String[] targetColumns, int sortmem) throws Exception {
         Columnarfile cf = new Columnarfile(columnarFile);
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
@@ -116,8 +117,9 @@ public class ColumnarDuplElimDriver {
                 System.out.println("Fldnum len: " + scanCols.length);
                 System.out.println("str sizes len: " + str_sizes.length);
                 System.out.println("Projection len: " + projection.length);
+                Map<Integer, CondExpr[]> condExprMap = Query.createCondExprMap(columnarFile, otherConstraints, otherConstraint);
                 for (int i = 0; i < 2; i++) {
-                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true));
+                    it.add(new ColumnarIndexScan(columnarFile, scanCols, indexType, indName, opAttr, str_sizes, scanColumns.length, projection.length, projectionList, otherConstraint, true, condExprMap));
                 }
 
             } else {

@@ -47,7 +47,6 @@ public class BM implements GlobalConst {
     return BitSet.valueOf(outputStream.toByteArray());
   }
 
-
   public static void printBitMap(BitMapHeaderPage header) throws Exception {
     if (header == null) {
       System.out.println("\n Empty Header!!!");

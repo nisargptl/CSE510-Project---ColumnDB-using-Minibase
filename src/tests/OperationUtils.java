@@ -285,7 +285,6 @@ public class OperationUtils {
         return condExprs;
     }
 
-
     private static Boolean isString(String value) {
         if (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'') {
             return Boolean.TRUE;
