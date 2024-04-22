@@ -8,7 +8,9 @@ import iterator.*;
 import heap.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.List;
 
 import bitmap.*;
@@ -81,6 +83,7 @@ public class ColumnIndexScan extends Iterator {
         this.index = index;
         this.columnNo = columnNo;
         columnarfile = new Columnarfile(relName);
+        this.columnNo = columnNo;
 
         Jtuple = new Tuple();
 
@@ -184,7 +187,12 @@ public class ColumnIndexScan extends Iterator {
                 // only need to return the key
 
                 AttrType[] attrType = new AttrType[1];
-                short[] s_sizes = new short[0];
+                short[] s_sizes;
+                if (_type.attrType == AttrType.attrString) {
+                    s_sizes = new short[1];
+                } else {
+                    s_sizes = new short[0];
+                }
 
                 if (_type.attrType == AttrType.attrInteger) {
                     attrType[0] = new AttrType(AttrType.attrInteger);
@@ -267,6 +275,10 @@ public class ColumnIndexScan extends Iterator {
         } catch (Exception e) {
             throw new IndexException("Failed to get next tuple from bitmap index: " + e.getMessage());
         }
+    }
+
+    public AttrType getScanAttrType() {
+        return _type;
     }
 
     /**
