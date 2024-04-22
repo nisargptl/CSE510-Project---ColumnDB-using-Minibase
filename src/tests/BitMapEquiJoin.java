@@ -50,6 +50,7 @@ public class BitMapEquiJoin {
         Columnarfile outer = new Columnarfile(outerColumnarFile);
         Columnarfile inner = new Columnarfile(innerColumnarFile);
 
+        System.out.println(rawInnerConstraint + targetColumns[0] + targetColumns[1]);
         CondExpr[] innerColumnarConstraint = OperationUtils.processBMRawConditionExpression(rawInnerConstraint, targetColumns);
         CondExpr[] outerColumnarConstraint = OperationUtils.processBMRawConditionExpression(rawOuterConstraint, targetColumns);
         CondExpr[] equiJoinConstraint = OperationUtils.processBMEquiJoinConditionExpression(rawEquijoinConstraint, inner, outer);

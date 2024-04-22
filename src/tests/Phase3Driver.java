@@ -173,7 +173,31 @@ public class Phase3Driver {
                 }
                 break;
             case 6:
-                // Code for performing Index EquiJoin operation
+                System.out.println("Please enter the necessary parameters for the Bitmap Equijoin.");
+                try {
+                    System.out.print("Enter Column DB Name: ");
+                    String columnDBName = reader.readLine();
+                    System.out.print("Enter Outer Columnar File Name: ");
+                    String outerColumnarFileName = reader.readLine();
+                    System.out.print("Enter Inner Columnar File Name: ");
+                    String innerColumnarFileName = reader.readLine();
+                    System.out.print("Enter Outer Constraints (e.g., outerTable.column = value): ");
+                    String rawOuterConstraint = reader.readLine();
+                    System.out.print("Enter Inner Constraints (e.g., innerTable.column = value): ");
+                    String rawInnerConstraint = reader.readLine();
+                    System.out.print("Enter Equijoin Constraints (e.g., outerTable.column1 = innerTable.column2): ");
+                    String rawEquijoinConstraint = reader.readLine();
+                    System.out.print("Enter Target Columns (comma-separated, e.g., outerTable.column1,innerTable.column2): ");
+                    String targetColumns = reader.readLine();
+                    System.out.print("Enter Buffer Size: ");
+                    String bufferSize = reader.readLine();
+
+                    String[] mainArgs = {columnDBName, outerColumnarFileName, innerColumnarFileName, rawOuterConstraint, rawInnerConstraint, rawEquijoinConstraint, targetColumns, bufferSize};
+                    BitMapEquiJoin.main(mainArgs);
+                    System.out.println("Bitmap Equijoin operation completed successfully.");
+                } catch (IOException e) {
+                    System.out.println("An error occurred while reading inputs: " + e.getMessage());
+                }
                 break;
             case 7:
                 // Code for sorting the columnarfile on a column
