@@ -17,15 +17,17 @@ public class BitMapHeaderPage extends HFPage {
   private static final int ATTR_TYPE_SIZE = 2;
   private static final int COLUMNAR_FILE_NAME_SIZE = 200;
   private static final int VALUE_SIZE = 400; // Assuming value is stored as a string
-
+  private static final int COUNTER_SIZE = 4; // Size for an integer counter
   // Positions for each field within the data array
   private static final int COLUMN_NUMBER_POSITION = DPFIXED;
   private static final int ATTR_TYPE_POSITION =
-    COLUMN_NUMBER_POSITION + COLUMN_NUMBER_SIZE;
+          COLUMN_NUMBER_POSITION + COLUMN_NUMBER_SIZE;
   private static final int COLUMNAR_FILE_NAME_POSITION =
-    ATTR_TYPE_POSITION + ATTR_TYPE_SIZE;
+          ATTR_TYPE_POSITION + ATTR_TYPE_SIZE;
   private static final int VALUE_POSITION =
-    COLUMNAR_FILE_NAME_POSITION + COLUMNAR_FILE_NAME_SIZE;
+          COLUMNAR_FILE_NAME_POSITION + COLUMNAR_FILE_NAME_SIZE;
+  private static final int COUNTER_POSITION = VALUE_POSITION + VALUE_SIZE; // Position immediately following the value
+
 
   /**
    * Constructor for creating a BitMapHeaderPage object from an existing page.
@@ -87,8 +89,8 @@ public class BitMapHeaderPage extends HFPage {
 
   public String getColumnarFileName() throws Exception {
     return Convert
-      .getStrValue(COLUMNAR_FILE_NAME_POSITION, data, COLUMNAR_FILE_NAME_SIZE)
-      .trim();
+            .getStrValue(COLUMNAR_FILE_NAME_POSITION, data, COLUMNAR_FILE_NAME_SIZE)
+            .trim();
   }
 
   public void setValue(String value) throws Exception {
@@ -115,5 +117,13 @@ public class BitMapHeaderPage extends HFPage {
    */
   public PageId getPageId() throws IOException {
     return getCurPage();
+  }
+
+  public void setCounter(int counter) throws IOException {
+    Convert.setIntValue(counter, COUNTER_POSITION, data);
+  }
+
+  public int getCounter() throws IOException {
+    return Convert.getIntValue(COUNTER_POSITION, data);
   }
 }

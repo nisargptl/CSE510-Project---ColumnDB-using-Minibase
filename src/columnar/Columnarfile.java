@@ -1,6 +1,7 @@
 package columnar;
 
 import bitmap.BitMapFile;
+import bitmap.BitmapDirectory;
 import btree.IntegerKey;
 import btree.KeyDataEntry;
 import heap.*;
@@ -31,6 +32,7 @@ public class Columnarfile {
     RID _hdrRid;
     HashMap<String, Integer> columnMap;
     HashMap<String, BitMapFile> BMMap = new HashMap<>();
+    BitmapDirectory bmDirectory = new BitmapDirectory("bitmap_directory.dat");
 
 
     public Columnarfile(String _fileName) throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -181,6 +183,10 @@ public class Columnarfile {
         fname = null;
         _fileDeleted = true;
         numColumns = 0;
+    }
+
+    public short[] getAttrSizes() {
+        return attrsizes;
     }
 
     // Functionality - Inserts tuple into a columnar file
@@ -337,76 +343,85 @@ public class Columnarfile {
         return true;
     }
 
-    public String getBMName(int columnNo, AttrType attrType) {
-        return "BM" + "." + fname + "." + columnNo + "." + attrType.toString();
+    public String getBMName(int columnNo, AttrType attrType, Object value, boolean isCompressed) {
+        // Convert the value to a string safe for inclusion in a filename.
+        String valueString = convertValueToString(value);
+        String filePrefix = isCompressed ? "CBM" : "BM";
+        String filename = filePrefix + "." + fname + "." + columnNo + "." + attrType.toString() + "_" + valueString;
+        // allBitMapNames.add(filename);
+        bmDirectory.addBitmapName(filename);
+        return filename;
     }
 
-    public String[] getAvailableBM(int columnNo) {
-        List<String> bmName = new ArrayList<>();
-        AttrType attrType = _ctype[columnNo];
+    private String convertValueToString(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        // Convert the value to a string, replacing spaces and special characters that
+        // are not safe in filenames
+        String valueString = value.toString().replaceAll("[^a-zA-Z0-9_]", "_");
+        return valueString;
+    }
 
-        String prefix = getBMName(columnNo, attrType);
+    public List<String> getAvailableBM(int columnNo, boolean isCompressed) throws Exception {
+        // System.out.println("BMMAP SIZE: " + BMMap.size());
+        // Tuple tuple = new Tuple();
+        // AttrType attrType = _ctype[columnNo - 1];
+        // Object value = extractValueFromTuple(tuple, attrType);
+        // String bitMapFileName = getBMName(columnNo, attrType, value);
 
-        for(String s : BMMap.keySet()){
-            if(s.substring(0,prefix.length()).equals(prefix)){
-                bmName.add(s);
+        // bmName.add(bitMapFileName);
+        // return bmName.toArray(new String[bmName.size()]);
+
+        AttrType attrType = _ctype[columnNo - 1];
+        String attrTypeName = attrType.toString();
+
+        // Create the prefix to filter bitmap names
+        String indexType = isCompressed ? "CBM." : "BM.";
+        String prefix = indexType + fname + "." + columnNo + "." + attrTypeName;
+
+        // get all bitmap names
+        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
+        List<String> matchingBitmaps = new ArrayList<>();
+
+        if (allBitMapNames != null) {
+            for (String bmName : allBitMapNames) {
+                if (bmName.startsWith(prefix)) {
+                    matchingBitmaps.add(bmName);
+                }
             }
         }
-        return  bmName.toArray(new String[bmName.size()]);
+
+        return matchingBitmaps;
     }
 
-//    public boolean createBitMapIndex(int columnNo, ValueClass value) throws Exception {
-//        // Define the name for the bitmap file based on the column number and the
-//        // specific value
-//        String indexName = getBMName(columnNo, value);
-//
-//        String prefix = getBMName(columnNo, attrType);
-//
-//        for(String s : BMMap.keySet()){
-//            if(s.substring(0,prefix.length()).equals(prefix)){
-//                bmName.add(s);
-//            }
-//
-//            // Directly extract and compare the value from the tuple based on the column's
-//            // attribute type
-//            boolean matchesValue = false;
-//            switch (_ctype[columnNo].attrType) {
-//                case AttrType.attrInteger:
-//                    int intValue = tuple.getIntFld(1);
-//                    if (value instanceof ValueInt && ((ValueInt) value).getValue() == intValue) {
-//                        matchesValue = true;
-//                    }
-//                    break;
-//                case AttrType.attrString:
-//                    String stringValue = tuple.getStrFld(1);
-//                    if (value instanceof ValueString && ((ValueString) value).getValue().equals(stringValue)) {
-//                        matchesValue = true;
-//                    }
-//                    break;
-//                case AttrType.attrReal:
-//                    float floatValue = tuple.getFloFld(1);
-//                    if (value instanceof ValueFloat && ((ValueFloat) value).getValue() == floatValue) {
-//                        matchesValue = true;
-//                    }
-//                    break;
-//                // Include other types as necessary
-//            }
-//
-//            if (matchesValue) {
-//                bitMapFile.insert(position);
-//            } else {
-//                bitMapFile.delete(position);
-//            }
-//            position++;
-//        }
-//        return  bmName.toArray(new String[bmName.size()]);
-//    }
+    public HashMap<String, BitMapFile> getAllBitMaps() throws Exception {
+        Set<String> allBitMapNames = bmDirectory.getBitmapNames();
+        HashMap<String, BitMapFile> allBitMaps = new HashMap<>();
 
-    public boolean createAllBitMapIndexForColumn(int columnNo) throws Exception {
-        // Initialize a map to keep track of bitmap files created during this operation
-        HashMap<String, BitMapFile> BMMap = new HashMap<>();
+        if (allBitMapNames != null) {
+            for (String bmName : allBitMapNames) {
+                allBitMaps.put(bmName, new BitMapFile(bmName));
+            }
+        }
 
-        // Open a scan on the specified column
+        return allBitMaps;
+    }
+
+    private Object extractValueFromTuple(Tuple tuple, AttrType attrType) throws IOException {
+        // Assumes that the tuple consists of a single value of the type specified
+        switch (attrType.attrType) {
+            case AttrType.attrInteger:
+                return Convert.getIntValue(0, tuple.getTupleByteArray());
+            case AttrType.attrString:
+                return Convert.getStrValue(0, tuple.getTupleByteArray(), tuple.getLength());
+            // Add more cases as necessary for other data types
+        }
+        return null;
+    }
+
+    public boolean createAllBitMapIndexForColumn(int columnNo, boolean isCompressed) throws Exception {
+        // Adjusted method to use class-level BMMap
         Scan columnScan = openColumnScan(columnNo - 1);
         RID rid = new RID();
         Tuple tuple;
@@ -418,18 +433,17 @@ public class Columnarfile {
                 break;
             }
 
-            // Use _ctype[columnNo] directly to identify the attribute type
+            // Retrieve and convert the value from the tuple
             AttrType attrType = _ctype[columnNo - 1];
+            Object value = extractValueFromTuple(tuple, attrType); // You'll need to implement this
 
-            // Generate a bitmap file name based on the column number and the attribute type
-            String bitMapFileName = getBMName(columnNo, attrType);
+            // Use the value to determine the bitmap file name
+            String bitMapFileName = getBMName(columnNo, attrType, value, isCompressed); // Modify to include value
 
-            // Create or retrieve a BitMapFile for the current attribute type
+            // Ensure a bitmap file for each unique value
             BitMapFile bitMapFile = BMMap.computeIfAbsent(bitMapFileName, k -> {
                 try {
-                    BitMapFile newBitMapFile = new BitMapFile(bitMapFileName, this, columnNo, attrType);
-                    addIndexToColumnar(1, bitMapFileName); // Register the new bitmap index
-                    return newBitMapFile;
+                    return new BitMapFile(bitMapFileName, this, columnNo, attrType, isCompressed);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return null;
@@ -440,17 +454,15 @@ public class Columnarfile {
             if (bitMapFile != null) {
                 bitMapFile.insert(position);
             }
-
             position++;
         }
 
         columnScan.closescan();
 
-        // Close all the bitmap files
-        for (BitMapFile bitMapFile : BMMap.values()) {
-            if (bitMapFile != null) {
-                bitMapFile.close();
-            }
+        // Close all opened bitmap files
+        for (BitMapFile bmp : BMMap.values()) {
+            if (bmp != null)
+                bmp.close();
         }
 
         return true;
