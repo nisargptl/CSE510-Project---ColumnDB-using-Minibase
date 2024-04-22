@@ -24,11 +24,6 @@ public class Query {
     private static final String BTREESCAN = "BTREE";
 
     public static void main(String[] args) throws Exception {
-        // Query Skeleton: COLUMNDB COLUMNFILE PROJECTION OTHERCONST SCANCOLS [SCANTYPE]
-        // [SCANCONST] TARGETCOLUMNS NUMBUF SORTMEM
-        // Example Query: testColumnDB columnarTable A,B,C "C = 5" A,B [BTREE,BITMAP]
-        // "(A = 5 v A = 6),(B > 7)" A,B,C 100 0
-        // In case no constraints need to be applied, pass "" as input.
         String columnDB = args[0];
         String columnarFile = args[1];
         String[] projection = args[2].split(",");
@@ -46,7 +41,7 @@ public class Query {
         runInterface(columnarFile, projection, otherConstraints, scanColumns, scanTypes, scanConstraints, targetColumns,
                 sortmem);
 
-        // SystemDefs.JavabaseBM.flushAllPages();
+
         SystemDefs.JavabaseDB.closeDB();
 
         System.out.println("Reads: " + PCounter.rcounter);
@@ -58,7 +53,6 @@ public class Query {
             throws Exception {
 
         Columnarfile cf = new Columnarfile(columnarFile);
-        System.out.println("here");
         AttrType[] opAttr = cf.getAttributes();
         FldSpec[] projectionList = new FldSpec[projection.length];
         short[] str_sizes = cf.getStrSize();
@@ -76,15 +70,11 @@ public class Query {
         for (int i = 0; i < scanColumns.length; i++) {
             if (!scanColumns[i].equals("")) {
                 String attribute = OperationUtils.getAttributeName(scanColumns[i]);
-                scanCols[i] = cf.getAttributePosition(attribute); // todo changed from
-                                                                  // cf.getAttributePosition(attribute) + 1;
+                scanCols[i] = cf.getAttributePosition(attribute); 
                 indName[i] = cf.getBTName(scanCols[i]);
             }
         }
 
-        for (int i = 0; i < scanCols.length; i++) {
-            System.out.println("ScanCols[" + i + "]: " + scanCols[i]);
-        }
 
         short[] targets = new short[targetColumns.length];
         for (int i = 0; i < targetColumns.length; i++) {
@@ -119,7 +109,7 @@ public class Query {
                     }
                     else if (scanTypes[i].equals(BTREESCAN)) {
                         indexType[i] = new IndexType(IndexType.B_Index);
-                        indexName[i] = cf.getBTName(i); // todo: why is this based on i?
+                        indexName[i] = cf.getBTName(i);
                     } else {
                         indexType[i] = new IndexType(IndexType.None);
                     }
