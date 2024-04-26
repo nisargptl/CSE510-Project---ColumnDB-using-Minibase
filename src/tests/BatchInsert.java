@@ -79,11 +79,12 @@ public class BatchInsert {
                 String[] vals = record.split("\t");
 
                 Tuple t = new Tuple();
-                t.setHdr((short) numColumns, attrTypes, attrSizes);
+                
+                t.setHdr((short) numColumns, attrTypes, cf.getStrSize());
                 int size = t.size();
 
                 t = new Tuple(size);
-                t.setHdr((short) numColumns, attrTypes, attrSizes);
+                t.setHdr((short) numColumns, attrTypes, cf.getStrSize());
                 int j = 0;
                 for (String val : vals) {
                     System.out.println(val);

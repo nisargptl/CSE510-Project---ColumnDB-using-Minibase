@@ -126,12 +126,15 @@ public class Columnarfile {
                     case 1:
                     case 2:
                         asize[i] = attrsizes[i] = 4;
+                        k++;
                         break;
                     case 3:
                         asize[i] = attrsizes[i] = 1;
+                        k++;
                         break;
                     case 4:
                         attrsizes[i] = 0;
+                        k++;
                         break;
                 }
             }

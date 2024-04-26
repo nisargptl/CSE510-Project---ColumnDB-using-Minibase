@@ -1,0 +1,22 @@
+!!!! Not able to fetch column 5 when querying !!!!
+
+1. Batchinsert - Working
+2. index -
+    a. BTREE - Working
+    b. BITMAP - Working
+    c. CBITMAP - Working
+3. Query (including Task 1)-
+    a. File scan - Working
+    b. BTREE - Working
+    b. BITMAP - Working (Vijay)
+    c. CBITMAP - Working (Vijay)
+4. Deletion -
+    a. File scan - Working
+    b. BTREE - Edit code
+    c. BITMAP - Edit code
+    d. CBITMAP - Edit code
+5. CNLJ -
+    a. File scan - If we do join on the same col number in both the CFs (not working for 5th col)
+6. BitmapEquiJoin - Working for Vijay
+7. ColumnarSort - Check with 4 cols
+8. ColumnarDuplElim - Check with 4 cols

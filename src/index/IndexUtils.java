@@ -263,7 +263,7 @@ public class IndexUtils {
 			Object value = null;
 			// Loop through available bitmap files for the specified column
 			// System.out.println("COLUMN NUMBER: " + columnNo);
-			for (String bmName : columnarFile.getAvailableBM(columnNo, isCompressed)) {
+			for (String bmName : columnarFile.getAvailableBM(columnNo + 1, isCompressed)) {
 				AttrType columnAttrType = columnarFile.getAttrtypeforcolumn(columnNo);
 				if (columnAttrType.attrType == AttrType.attrInteger) {
 					// System.out.println("INTEGER");

@@ -64,12 +64,12 @@ public class ColumnarIndexScan extends Iterator {
             CondExpr[] conditions = entry.getValue(); // This is the list of conditions for the column
 
             if (types[column].attrType == AttrType.attrString) {
-                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column, index[i], relName, indName[i],
                         types[fldNum[i]],
                         str_sizes[i - c], conditions, indexOnly);
             } else {
                 c += 1;
-                indexScans[i] = new ColumnIndexScan(column + 1, index[i], relName, indName[i],
+                indexScans[i] = new ColumnIndexScan(column, index[i], relName, indName[i],
                         types[fldNum[i]], (short) 0,
                         conditions, indexOnly);
             }
